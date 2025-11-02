@@ -1,0 +1,54 @@
+import axios, { AxiosInstance } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_CONFIG } from './config/api.config';
+
+const TOKEN_KEY = '@auth_token';
+
+/**
+ * Axios API Client
+ * Centralized HTTP client with interceptors
+ */
+const apiClient: AxiosInstance = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+/**
+ * Request Interceptor
+ * Automatically adds authentication token to requests
+ */
+apiClient.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem(TOKEN_KEY);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+/**
+ * Response Interceptor
+ * Handles errors globally
+ */
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    // Handle 401 Unauthorized errors
+    if (error.response?.status === 401) {
+      // Clear token and redirect to login
+      await AsyncStorage.removeItem(TOKEN_KEY);
+      await AsyncStorage.removeItem('@auth_user');
+      // Navigation will be handled by AuthContext
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;

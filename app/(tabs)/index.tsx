@@ -1,13 +1,40 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomeScreen() {
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+            } catch {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -18,9 +45,30 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">Welcome, {user?.name || 'User'}!</ThemedText>
         <HelloWave />
       </ThemedView>
+
+      <ThemedView style={styles.userInfoContainer}>
+        <ThemedText type="subtitle">Your Profile</ThemedText>
+        <ThemedView style={styles.infoRow}>
+          <ThemedText type="defaultSemiBold">Name: </ThemedText>
+          <ThemedText>{user?.name || 'N/A'}</ThemedText>
+        </ThemedView>
+        <ThemedView style={styles.infoRow}>
+          <ThemedText type="defaultSemiBold">Email: </ThemedText>
+          <ThemedText>{user?.email || 'N/A'}</ThemedText>
+        </ThemedView>
+        <ThemedView style={styles.infoRow}>
+          <ThemedText type="defaultSemiBold">User ID: </ThemedText>
+          <ThemedText>{user?.userId || 'N/A'}</ThemedText>
+        </ThemedView>
+        
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <ThemedText style={styles.logoutText}>Logout</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
@@ -64,16 +112,6 @@ export default function HomeScreen() {
           {`Tap the Explore tab to learn more about what's included in this starter app.`}
         </ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
     </ParallaxScrollView>
   );
 }
@@ -94,5 +132,29 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  userInfoContainer: {
+    gap: 12,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+    borderRadius: 12,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoutButton: {
+    marginTop: 12,
+    backgroundColor: '#FF3B30',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
