@@ -1,10 +1,452 @@
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    FlatList,
+    TouchableOpacity,
+    ActivityIndicator,
+    Alert,
+    Platform,
+    PermissionsAndroid,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
+import { BleManager, Device, State } from 'react-native-ble-plx';
+
+interface BluetoothDevice {
+    id: string;
+    name: string;
+    rssi: number;
+}
+
+// Safe initialization of BleManager
+let manager: BleManager;
+try {
+    manager = new BleManager();
+} catch (error) {
+    console.warn('Failed to initialize BleManager. Running in mock mode.', error);
+    // Mock manager functionality
+    manager = {
+        onStateChange: (listener: (state: State) => void) => {
+            // Mock state change after a short delay
+            setTimeout(() => listener(State.PoweredOn), 100);
+            return { remove: () => { } };
+        },
+        startDeviceScan: (uuids: any, options: any, listener: (error: any, device: any) => void) => {
+            console.log('Mock scanning started');
+            // Simulate finding devices
+            setTimeout(() => {
+                listener(null, {
+                    id: 'mock-1',
+                    name: 'Mock Device 1',
+                    rssi: -60,
+                    services: () => Promise.resolve([]),
+                    connectToDevice: () => Promise.resolve({
+                        name: 'Mock Device 1',
+                        discoverAllServicesAndCharacteristics: () => Promise.resolve(),
+                        services: () => Promise.resolve([])
+                    })
+                });
+            }, 1000);
+            setTimeout(() => {
+                listener(null, {
+                    id: 'mock-2',
+                    name: 'SoterCare Band',
+                    rssi: -45,
+                    services: () => Promise.resolve([]),
+                    connectToDevice: () => Promise.resolve({
+                        name: 'SoterCare Band',
+                        discoverAllServicesAndCharacteristics: () => Promise.resolve(),
+                        services: () => Promise.resolve([])
+                    })
+                });
+            }, 2000);
+        },
+        stopDeviceScan: () => {
+            console.log('Mock scanning stopped');
+        },
+        connectToDevice: (deviceId: string) => {
+            return Promise.resolve({
+                name: 'Mock Device',
+                discoverAllServicesAndCharacteristics: () => Promise.resolve(),
+                services: () => Promise.resolve([])
+            });
+        },
+        cancelDeviceConnection: (deviceId: string) => {
+            return Promise.resolve({ id: deviceId });
+        }
+    } as unknown as BleManager;
+}
 
 export default function DeviceScreen() {
+    const [isScanning, setIsScanning] = useState(false);
+    const [devices, setDevices] = useState<BluetoothDevice[]>([]);
+    const [connectedDevice, setConnectedDevice] = useState<string | null>(null);
+    const [isConnecting, setIsConnecting] = useState<string | null>(null);
+    const [bluetoothState, setBluetoothState] = useState<State>(State.Unknown);
+
+    useEffect(() => {
+        // Subscribe to Bluetooth state changes
+        const subscription = manager.onStateChange((state) => {
+            console.log('Bluetooth state changed:', state);
+            setBluetoothState(state);
+            if (state === State.PoweredOn) {
+                console.log('Bluetooth is powered on');
+            } else if (state === State.PoweredOff) {
+                Alert.alert('Bluetooth Off', 'Please enable Bluetooth to scan for devices');
+            }
+        }, true);
+
+        // Request permissions on mount
+        if (Platform.OS === 'android') {
+            requestBluetoothPermissions();
+        }
+
+        return () => {
+            subscription.remove();
+            manager.stopDeviceScan();
+        };
+    }, []);
+
+    const requestBluetoothPermissions = async () => {
+        if (Platform.OS === 'android') {
+            if (Platform.Version >= 31) {
+                // Android 12+ (API 31+)
+                try {
+                    const granted = await PermissionsAndroid.requestMultiple([
+                        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+                        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+                        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                    ]);
+
+                    const allGranted = Object.values(granted).every(
+                        (status) => status === PermissionsAndroid.RESULTS.GRANTED
+                    );
+
+                    if (!allGranted) {
+                        Alert.alert(
+                            'Permissions Required',
+                            'Bluetooth and Location permissions are required to scan for devices.'
+                        );
+                        return false;
+                    }
+                    return true;
+                } catch (err) {
+                    console.warn('Permission error:', err);
+                    return false;
+                }
+            } else {
+                // Android 11 and below
+                try {
+                    const granted = await PermissionsAndroid.request(
+                        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                        {
+                            title: 'Location Permission',
+                            message: 'Bluetooth requires location permission to scan for devices.',
+                            buttonNeutral: 'Ask Me Later',
+                            buttonNegative: 'Cancel',
+                            buttonPositive: 'OK',
+                        }
+                    );
+
+                    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                        Alert.alert(
+                            'Permission Denied',
+                            'Location permission is required to scan for Bluetooth devices.'
+                        );
+                        return false;
+                    }
+                    return true;
+                } catch (err) {
+                    console.warn('Permission error:', err);
+                    return false;
+                }
+            }
+        }
+        return true; // iOS handles permissions automatically
+    };
+
+    const startScan = async () => {
+        console.log('Start Scan pressed. Current State:', bluetoothState);
+        if (bluetoothState !== State.PoweredOn) {
+            console.log('Bluetooth not powered on:', bluetoothState);
+            Alert.alert(
+                'Bluetooth Off',
+                'Please enable Bluetooth in your device settings to scan for devices.',
+                [{ text: 'OK' }]
+            );
+            return;
+        }
+
+        console.log('Requesting permissions...');
+        const hasPermissions = await requestBluetoothPermissions();
+        console.log('Permissions granted:', hasPermissions);
+        if (!hasPermissions) {
+            return;
+        }
+
+        setIsScanning(true);
+        setDevices([]);
+
+        console.log('Starting Bluetooth scan...');
+
+        // Start scanning for all devices
+        manager.startDeviceScan(null, null, (error, device) => {
+            if (error) {
+                console.error('Scan error:', error);
+                setIsScanning(false);
+                Alert.alert('Scan Error', error.message || 'Failed to scan for devices');
+                return;
+            }
+
+            if (device && device.name) {
+                console.log('Found device:', device.name, device.id);
+
+                setDevices((prevDevices) => {
+                    const deviceExists = prevDevices.find((d) => d.id === device.id);
+                    if (!deviceExists) {
+                        const newDevice: BluetoothDevice = {
+                            id: device.id,
+                            name: device.name || 'Unknown Device',
+                            rssi: device.rssi || -100,
+                        };
+                        return [...prevDevices, newDevice].sort((a, b) => b.rssi - a.rssi);
+                    } else {
+                        // Update RSSI if device already exists
+                        return prevDevices
+                            .map((d) =>
+                                d.id === device.id ? { ...d, rssi: device.rssi || d.rssi } : d
+                            )
+                            .sort((a, b) => b.rssi - a.rssi);
+                    }
+                });
+            }
+        });
+
+        // Stop scanning after 10 seconds
+        setTimeout(() => {
+            manager.stopDeviceScan();
+            setIsScanning(false);
+            console.log('Scan stopped');
+        }, 10000);
+    };
+
+    const connectToDevice = async (deviceId: string, deviceName: string) => {
+        if (isConnecting) return;
+
+        setIsConnecting(deviceId);
+
+        try {
+            // Stop scanning before connecting
+            manager.stopDeviceScan();
+            setIsScanning(false);
+
+            console.log('Connecting to device:', deviceId);
+
+            // Connect to the device
+            const device = await manager.connectToDevice(deviceId);
+            console.log('Connected to:', device.name);
+
+            // Discover all services and characteristics
+            await device.discoverAllServicesAndCharacteristics();
+            console.log('Services discovered');
+
+            setConnectedDevice(deviceId);
+            setIsConnecting(null);
+
+            Alert.alert(
+                'Connected',
+                `Successfully connected to ${deviceName}`,
+                [{ text: 'OK' }]
+            );
+
+            // Optional: Get device services
+            const services = await device.services();
+            console.log('Available services:', services.length);
+        } catch (error: any) {
+            console.error('Connection error:', error);
+            setIsConnecting(null);
+            Alert.alert(
+                'Connection Failed',
+                error.message || `Unable to connect to ${deviceName}. Please try again.`,
+                [{ text: 'OK' }]
+            );
+        }
+    };
+
+    const disconnectDevice = async (deviceId: string, deviceName: string) => {
+        try {
+            await manager.cancelDeviceConnection(deviceId);
+            setConnectedDevice(null);
+            console.log('Disconnected from:', deviceId);
+            Alert.alert('Disconnected', `Disconnected from ${deviceName}`);
+        } catch (error: any) {
+            console.error('Disconnect error:', error);
+            Alert.alert('Error', 'Failed to disconnect. The device may already be disconnected.');
+        }
+    };
+
+    const renderDevice = ({ item }: { item: BluetoothDevice }) => {
+        const isConnected = connectedDevice === item.id;
+        const isConnectingToThis = isConnecting === item.id;
+
+        const getSignalColor = (rssi: number) => {
+            if (rssi > -60) return '#4CAF50';
+            if (rssi > -70) return '#8BC34A';
+            if (rssi > -80) return '#FFC107';
+            return '#FF5722';
+        };
+
+        return (
+            <TouchableOpacity
+                style={[styles.deviceCard, isConnected && styles.connectedCard]}
+                onPress={() => {
+                    if (isConnected) {
+                        disconnectDevice(item.id, item.name);
+                    } else if (!isConnectingToThis && !isConnecting) {
+                        connectToDevice(item.id, item.name);
+                    }
+                }}
+                disabled={isConnectingToThis || (isConnecting !== null && !isConnected)}
+                activeOpacity={0.7}
+            >
+                <View style={styles.deviceInfo}>
+                    <View style={[styles.iconContainer, { backgroundColor: isConnected ? '#E8F5E9' : '#E3F2FD' }]}>
+                        <Ionicons
+                            name="bluetooth"
+                            size={28}
+                            color={isConnected ? '#4CAF50' : '#03A9F4'}
+                        />
+                    </View>
+                    <View style={styles.deviceDetails}>
+                        <Text style={styles.deviceName} numberOfLines={1}>
+                            {item.name}
+                        </Text>
+                        <Text style={styles.deviceId} numberOfLines={1}>
+                            {item.id}
+                        </Text>
+                        <View style={styles.signalContainer}>
+                            <View
+                                style={[
+                                    styles.signalDot,
+                                    { backgroundColor: getSignalColor(item.rssi) },
+                                ]}
+                            />
+                            <Text style={styles.deviceRssi}>
+                                Signal: {item.rssi} dBm
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                {isConnectingToThis ? (
+                    <ActivityIndicator size="small" color="#03A9F4" />
+                ) : (
+                    <View
+                        style={[
+                            styles.statusBadge,
+                            isConnected && styles.connectedBadge,
+                        ]}
+                    >
+                        <Text
+                            style={[
+                                styles.statusText,
+                                isConnected && styles.connectedText,
+                            ]}
+                        >
+                            {isConnected ? 'Connected' : 'Connect'}
+                        </Text>
+                    </View>
+                )}
+            </TouchableOpacity>
+        );
+    };
+
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-            <Text style={styles.text}>Device Connection Screen</Text>
+            <StatusBar style="dark" />
+
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Bluetooth Devices</Text>
+                <View style={styles.headerRow}>
+                    <Text style={styles.headerSubtitle}>
+                        {connectedDevice
+                            ? '✓ Device Connected'
+                            : isScanning
+                                ? 'Scanning for devices...'
+                                : 'Tap below to scan for nearby devices'}
+                    </Text>
+                    <View style={[
+                        styles.bluetoothStatus,
+                        { backgroundColor: bluetoothState === State.PoweredOn ? '#4CAF50' : '#F44336' }
+                    ]}>
+                        <Text style={styles.bluetoothStatusText}>
+                            {bluetoothState === State.PoweredOn ? 'BT ON' : 'BT OFF'}
+                        </Text>
+                    </View>
+                </View>
+            </View>
+
+            <TouchableOpacity
+                style={[styles.scanButton, isScanning && styles.scanningButton]}
+                onPress={startScan}
+                disabled={isScanning}
+                activeOpacity={0.8}
+            >
+                {isScanning ? (
+                    <>
+                        <ActivityIndicator size="small" color="#fff" style={styles.scanIcon} />
+                        <Text style={styles.scanButtonText}>Scanning...</Text>
+                    </>
+                ) : (
+                    <>
+                        <Ionicons name="scan" size={24} color="#fff" style={styles.scanIcon} />
+                        <Text style={styles.scanButtonText}>
+                            {devices.length > 0 ? 'Scan Again' : 'Start Scan'}
+                        </Text>
+                    </>
+                )}
+            </TouchableOpacity>
+
+            {devices.length > 0 && (
+                <View style={styles.countContainer}>
+                    <Text style={styles.countText}>
+                        Found {devices.length} device{devices.length !== 1 ? 's' : ''}
+                    </Text>
+                </View>
+            )}
+
+            {devices.length === 0 && !isScanning ? (
+                <View style={styles.emptyState}>
+                    <View style={styles.emptyIconContainer}>
+                        <Ionicons name="bluetooth-outline" size={64} color="#ccc" />
+                    </View>
+                    <Text style={styles.emptyText}>No devices found</Text>
+                    <Text style={styles.emptySubtext}>
+                        Make sure Bluetooth is enabled and devices are nearby
+                    </Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={devices}
+                    renderItem={renderDevice}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    ListEmptyComponent={
+                        isScanning ? (
+                            <View style={styles.scanningState}>
+                                <ActivityIndicator size="large" color="#03A9F4" />
+                                <Text style={styles.scanningText}>
+                                    Looking for devices...
+                                </Text>
+                            </View>
+                        ) : null
+                    }
+                />
+            )}
         </SafeAreaView>
     );
 }
@@ -12,13 +454,191 @@ export default function DeviceScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#f2f3f7',
+    },
+    header: {
+        padding: 20,
+        paddingBottom: 10,
+    },
+    headerTitle: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#201d1d',
+        marginBottom: 4,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: '#666',
+        flex: 1,
+    },
+    bluetoothStatus: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        marginLeft: 8,
+    },
+    bluetoothStatusText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    scanButton: {
+        flexDirection: 'row',
+        backgroundColor: '#03A9F4',
+        marginHorizontal: 20,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        marginBottom: 12,
+    },
+    scanningButton: {
+        backgroundColor: '#0288D1',
+    },
+    scanIcon: {
+        marginRight: 8,
+    },
+    scanButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    countContainer: {
+        paddingHorizontal: 20,
+        paddingBottom: 8,
+    },
+    countText: {
+        fontSize: 13,
+        color: '#666',
+        fontWeight: '500',
+    },
+    listContent: {
+        padding: 20,
+        paddingTop: 8,
+    },
+    deviceCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+    },
+    connectedCard: {
+        backgroundColor: '#E8F5E9',
+        borderWidth: 2,
+        borderColor: '#4CAF50',
+    },
+    deviceInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        marginRight: 12,
+    },
+    iconContainer: {
+        width: 56,
+        height: 56,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f2f3f7', // Neumorphic Base
     },
-    text: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
+    deviceDetails: {
+        marginLeft: 12,
+        flex: 1,
+    },
+    deviceName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#201d1d',
+        marginBottom: 3,
+    },
+    deviceId: {
+        fontSize: 11,
+        color: '#999',
+        marginBottom: 4,
+    },
+    signalContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    signalDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        marginRight: 6,
+    },
+    deviceRssi: {
+        fontSize: 12,
+        color: '#666',
+    },
+    statusBadge: {
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 8,
+        backgroundColor: '#E3F2FD',
+    },
+    connectedBadge: {
+        backgroundColor: '#C8E6C9',
+    },
+    statusText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#03A9F4',
+    },
+    connectedText: {
+        color: '#4CAF50',
+    },
+    emptyState: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 40,
+        paddingTop: 60,
+    },
+    emptyIconContainer: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: '#f8f9fa',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    emptyText: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#666',
+        marginBottom: 8,
+    },
+    emptySubtext: {
+        fontSize: 14,
+        color: '#999',
+        textAlign: 'center',
+        lineHeight: 20,
+    },
+    scanningState: {
+        paddingTop: 60,
+        alignItems: 'center',
+    },
+    scanningText: {
+        marginTop: 16,
+        fontSize: 16,
+        color: '#666',
     },
 });
