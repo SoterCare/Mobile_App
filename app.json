@@ -30,8 +30,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/SoterCare-Primary-logo.png",
+          "imageWidth": 246,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {

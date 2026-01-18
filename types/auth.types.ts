@@ -11,26 +11,13 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface SignupCredentials {
-  email: string;
-  password: string;
-  name: string;
-  // Add other signup fields as needed
-}
-
 export interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  signup: (credentials: SignupCredentials) => Promise<void>;
-  logout: () => Promise<void>;
+  signIn: (token: string, user: User) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 export interface JWTPayload {

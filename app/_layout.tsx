@@ -2,11 +2,11 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Image } from 'react-native';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -25,7 +25,7 @@ function RootLayoutNav() {
 
     if (!isAuthenticated && !inAuthGroup) {
       // Redirect to login if not authenticated
-      router.replace('/(auth)/login');
+      router.replace('/(auth)/welcome');
     } else if (isAuthenticated && inAuthGroup) {
       // Redirect to home if authenticated
       router.replace('/(tabs)');
@@ -35,7 +35,11 @@ function RootLayoutNav() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <Animated.Image
+          source={require('@/assets/images/SoterCare-Primary-logo.png')}
+          style={styles.logo}
+          entering={FadeIn.duration(1000)}
+        />
       </View>
     );
   }
@@ -66,5 +70,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  logo: {
+    width: 246,
+    height: 96,
+    resizeMode: 'contain',
   },
 });

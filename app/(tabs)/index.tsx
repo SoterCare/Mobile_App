@@ -9,7 +9,7 @@ import { Link } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomeScreen() {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   const handleLogout = async () => {
     Alert.alert(
@@ -25,7 +25,7 @@ export default function HomeScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await logout();
+              await signOut();
             } catch {
               Alert.alert('Error', 'Failed to logout. Please try again.');
             }
@@ -63,7 +63,7 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">User ID: </ThemedText>
           <ThemedText>{user?.userId || 'N/A'}</ThemedText>
         </ThemedView>
-        
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <ThemedText style={styles.logoutText}>Logout</ThemedText>
         </TouchableOpacity>

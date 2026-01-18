@@ -4,16 +4,18 @@
 
 export const API_CONFIG = {
   // Base URL - Update this with your backend API URL
-  BASE_URL: 'https://your-api-url.com/api',
-  
+  BASE_URL: 'http://192.168.1.100:3000',
+
   // Request timeout (milliseconds)
   TIMEOUT: 10000,
-  
+
   // API Endpoints
   ENDPOINTS: {
     AUTH: {
       LOGIN: '/auth/login',
-      SIGNUP: '/auth/signup',
+      LOGIN_VERIFY: '/auth/login-verify',
+      REGISTER: '/auth/register',
+      VERIFY_REGISTER: '/auth/verify',
       LOGOUT: '/auth/logout',
       REFRESH: '/auth/refresh',
     },

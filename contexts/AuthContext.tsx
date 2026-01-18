@@ -1,16 +1,10 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   AuthContextType,
   AuthState,
-  LoginCredentials,
-  SignupCredentials,
+  User,
 } from '@/types/auth.types';
-import {
-  loginUser,
-  signupUser,
-  logoutUser,
-  getAuthData,
-} from '@/services/auth.service';
 
 // Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,16 +30,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
-  /**
-   * Initialize authentication state from AsyncStorage
-   */
   const initializeAuth = async () => {
     try {
-      const { token, user } = await getAuthData();
-      
-      if (token && user) {
+      const token = await AsyncStorage.getItem('accessToken');
+      const userJson = await AsyncStorage.getItem('user');
+
+      if (token && userJson) {
         setAuthState({
-          user,
+          user: JSON.parse(userJson),
           token,
           isLoading: false,
           isAuthenticated: true,
@@ -69,72 +61,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  /**
-   * Login function
-   */
-  const login = async (credentials: LoginCredentials): Promise<void> => {
+  const signIn = async (token: string, user: User): Promise<void> => {
     try {
-      setAuthState((prev) => ({ ...prev, isLoading: true }));
-      
-      const { token, user } = await loginUser(credentials);
-      
+      await AsyncStorage.setItem('accessToken', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+
       setAuthState({
         user,
         token,
         isLoading: false,
         isAuthenticated: true,
       });
-    } catch (error: any) {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
+    } catch (error) {
+      console.error('SignIn error:', error);
       throw error;
     }
   };
 
-  /**
-   * Signup function
-   */
-  const signup = async (credentials: SignupCredentials): Promise<void> => {
+  const signOut = async (): Promise<void> => {
     try {
-      setAuthState((prev) => ({ ...prev, isLoading: true }));
-      
-      const { token, user } = await signupUser(credentials);
-      
-      setAuthState({
-        user,
-        token,
-        isLoading: false,
-        isAuthenticated: true,
-      });
-    } catch (error: any) {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
-      throw error;
-    }
-  };
+      await AsyncStorage.removeItem('accessToken');
+      await AsyncStorage.removeItem('user');
 
-  /**
-   * Logout function
-   */
-  const logout = async (): Promise<void> => {
-    try {
-      setAuthState((prev) => ({ ...prev, isLoading: true }));
-      
-      await logoutUser();
-      
       setAuthState({
         user: null,
         token: null,
         isLoading: false,
         isAuthenticated: false,
       });
-    } catch (error: any) {
-      console.error('Logout error:', error);
-      // Even if logout fails, clear local state
-      setAuthState({
-        user: null,
-        token: null,
-        isLoading: false,
-        isAuthenticated: false,
-      });
+    } catch (error) {
+      console.error('SignOut error:', error);
       throw error;
     }
   };
@@ -144,9 +100,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     token: authState.token,
     isLoading: authState.isLoading,
     isAuthenticated: authState.isAuthenticated,
-    login,
-    signup,
-    logout,
+    signIn,
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -157,10 +112,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
  */
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  
+
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
+
   return context;
 };
