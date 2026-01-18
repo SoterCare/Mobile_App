@@ -1,12 +1,13 @@
 import React from 'react';
-import { StyleSheet, ScrollView, Alert } from 'react-native';
+import { StyleSheet, ScrollView, Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Components
-import { ProfileHeader } from '@/components/profile/ProfileHeader';
-import { ProfileMenu } from '@/components/profile/ProfileMenu';
+import { ProfileUserCard } from '@/components/profile/ProfileUserCard';
+import { ProfileSettingsCard } from '@/components/profile/ProfileSettingsCard';
+import { ProfileSupportCard } from '@/components/profile/ProfileSupportCard';
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
@@ -33,13 +34,17 @@ export default function ProfileScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <StatusBar style="dark" />
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                <ProfileHeader user={user} />
+                <Text style={styles.screenTitle}>Profile</Text>
 
-                <ProfileMenu onLogout={handleLogout} />
+                <ProfileUserCard user={user} />
+
+                <ProfileSettingsCard />
+
+                <ProfileSupportCard onLogout={handleLogout} />
 
             </ScrollView>
         </SafeAreaView>
@@ -49,9 +54,17 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F7F7',
+        backgroundColor: '#f2f3f7', // Neumorphic Base
     },
     scrollContent: {
+        padding: 20,
         paddingBottom: 40,
+    },
+    screenTitle: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 20,
+        marginTop: 10,
     },
 });

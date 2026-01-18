@@ -12,35 +12,47 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
+import { useState } from 'react';
+
+// ... (previous imports)
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const [isSplashAnimationFinished, setIsSplashAnimationFinished] = useState(false);
 
   useEffect(() => {
+    // Only trigger routing logic if BOTH data loading AND animation are done
+    // Or, allow routing behind the scenes, but cover with splash.
+
+    // Optimization: Let the router work, splash covers it.
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
     if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to login if not authenticated
       router.replace('/(auth)/welcome');
     } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to home if authenticated
       router.replace('/(tabs)');
     }
   }, [isAuthenticated, segments, isLoading, router]);
 
-  if (isLoading) {
+  // Combined Loading State
+  // We show SplashScreen if:
+  // 1. Data is Loading (isLoading = true)
+  // OR
+  // 2. Animation hasn't finished (isSplashAnimationFinished = false)
+
+  if (isLoading || !isSplashAnimationFinished) {
+    // If data is loaded but animation isn't done, we still show the Splash.
+    // We pass onFinish to update state.
+    // NOTE: We wrap this to ensure it sits ON TOP of everything if we mount the rest of the app underneath?
+    // Actually, standard practice: Return Splash.
     return (
-      <View style={styles.loadingContainer}>
-        <Animated.Image
-          source={require('@/assets/images/SoterCare-Primary-logo.png')}
-          style={styles.logo}
-          entering={FadeIn.duration(1000)}
-        />
-      </View>
+      <CustomSplashScreen onFinish={() => setIsSplashAnimationFinished(true)} />
     );
   }
 

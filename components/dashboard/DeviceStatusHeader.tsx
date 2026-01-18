@@ -1,10 +1,11 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { NeumorphicCard } from '@/components/ui/NeumorphicCard';
 
 export const DeviceStatusHeader = () => {
     return (
-        <View style={styles.headerCard}>
+        <NeumorphicCard style={styles.headerCard}>
             <View>
                 <Text style={styles.statusLabel}>
                     Thigh Band: <Text style={styles.statusOnline}>Online</Text>
@@ -23,24 +24,18 @@ export const DeviceStatusHeader = () => {
                     <Ionicons name="chevron-down" size={16} color="#333" />
                 </TouchableOpacity>
             </View>
-        </View>
+        </NeumorphicCard>
     );
 };
 
 const styles = StyleSheet.create({
     headerCard: {
-        backgroundColor: '#fff',
-        borderRadius: 16,
         padding: 16,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
+        // Removed manual shadows/elevation as NeumorphicCard handles it
     },
     statusLabel: {
         fontSize: 14,

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { NeumorphicCard } from '@/components/ui/NeumorphicCard';
 
 interface AlertCardProps {
     type: 'movement' | 'fall';
@@ -16,7 +17,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp, sh
     const bgColor = isFall ? '#FFEBEE' : '#E0F7FA';
 
     return (
-        <View style={styles.alertCard}>
+        <NeumorphicCard style={styles.alertCard}>
             <View style={styles.alertTopRow}>
                 <View style={[styles.alertIconCircle, { backgroundColor: bgColor }]}>
                     <Ionicons name={iconName} size={24} color={iconColor} />
@@ -44,23 +45,15 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp, sh
                     </TouchableOpacity>
                 </View>
             )}
-        </View>
+        </NeumorphicCard>
     );
 };
 
 const styles = StyleSheet.create({
     alertCard: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#f0f0f0',
-        borderRadius: 16,
+        // NeumorphicCard handles BG/BorderRadius/Shadow
         padding: 16,
         marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 4,
-        elevation: 1,
     },
     alertTopRow: {
         flexDirection: 'row',
