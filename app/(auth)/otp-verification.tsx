@@ -66,7 +66,13 @@ export default function OTPVerificationScreen() {
 
                 // 1. Check for token FIRST (Auto-login)
                 if (response?.accessToken) {
-                    await signIn(response.accessToken, response.user || { email, userId: 'temp' });
+                    const userData = response.user ? {
+                        userId: String(response.user.id),
+                        email: response.user.email,
+                        name: response.user.name,
+                    } : { email, userId: 'temp' };
+
+                    await signIn(response.accessToken, userData);
                     // No need to alert, root layout handles redirect
                     return;
                 }
@@ -85,7 +91,12 @@ export default function OTPVerificationScreen() {
             }
 
             if (response && response.accessToken) {
-                await signIn(response.accessToken, response.user || { email, userId: 'temp' });
+                const userData = response.user ? {
+                    userId: String(response.user.id),
+                    email: response.user.email,
+                    name: response.user.name,
+                } : { email, userId: 'temp' };
+                await signIn(response.accessToken, userData);
             } else {
                 throw new Error('Invalid response from server');
             }
