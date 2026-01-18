@@ -9,25 +9,38 @@ import { Ionicons } from '@expo/vector-icons';
 export default function OTPVerificationScreen() {
     const router = useRouter();
     const { email, mode } = useLocalSearchParams<{ email: string; mode: 'signup' | 'signin' }>();
-    // Defaulting to 4 digits based on the provided design image.
-    // If your backend requires 6, change this array length to 6.
-    const [otp, setOtp] = useState(['', '', '', '']);
+    // 6 digits state
+    const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const inputRefs = useRef<Array<TextInput | null>>([]);
     const [isLoading, setIsLoading] = useState(false);
     const { signIn } = useAuth();
 
     const handleOtpChange = (value: string, index: number) => {
         const newOtp = [...otp];
+
+        // Handle paste event (length > 1)
+        if (value.length > 1) {
+            const pastedCode = value.slice(0, 6).split('');
+            for (let i = 0; i < 6; i++) {
+                if (pastedCode[i]) {
+                    newOtp[i] = pastedCode[i];
+                }
+            }
+            setOtp(newOtp);
+
+            // Focus the last filled input or the next empty one
+            const lastIndex = Math.min(pastedCode.length - 1, 5);
+            inputRefs.current[lastIndex]?.focus();
+            return;
+        }
+
+        // Normal input
         newOtp[index] = value;
         setOtp(newOtp);
 
         // Auto-focus next input
-        if (value && index < 3) {
+        if (value && index < 5) {
             inputRefs.current[index + 1]?.focus();
-        }
-        // Auto-verify if all filled (optional, can be removed if user prefers manual button)
-        if (index === 3 && value) {
-            // handleVerify(newOtp.join(''));
         }
     };
 
@@ -39,8 +52,8 @@ export default function OTPVerificationScreen() {
 
     const handleVerify = async () => {
         const otpValue = otp.join('');
-        if (otpValue.length !== 4) {
-            Alert.alert('Error', 'Please enter a valid 4-digit code');
+        if (otpValue.length !== 6) {
+            Alert.alert('Error', 'Please enter a valid 6-digit code');
             return;
         }
 
@@ -50,6 +63,23 @@ export default function OTPVerificationScreen() {
 
             if (mode === 'signup') {
                 response = await authService.verifyRegistration(email, otpValue);
+
+                // 1. Check for token FIRST (Auto-login)
+                if (response?.accessToken) {
+                    await signIn(response.accessToken, response.user || { email, userId: 'temp' });
+                    // No need to alert, root layout handles redirect
+                    return;
+                }
+
+                // 2. If no token, check success flag (Fallback)
+                if (response?.success) {
+                    Alert.alert(
+                        'Success',
+                        'Registration successful! Please sign in.',
+                        [{ text: 'OK', onPress: () => router.replace('/(auth)/sign-in') }]
+                    );
+                    return;
+                }
             } else {
                 response = await authService.verifyLogin(email, otpValue);
             }
@@ -102,9 +132,10 @@ export default function OTPVerificationScreen() {
                                 }
                             }}
                             keyboardType="number-pad"
-                            maxLength={1}
+                            maxLength={index === 0 ? 6 : 1} // allow pasting 6 digits in the first box
                             textAlign="center"
                             selectTextOnFocus
+                            textContentType="oneTimeCode" // Enable iOS AutoFill
                         />
                     ))}
                 </View>
@@ -150,7 +181,7 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        paddingHorizontal: 30,
+        paddingHorizontal: 20,
         alignItems: 'center',
     },
     iconContainer: {
@@ -188,15 +219,15 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         width: '100%',
         marginBottom: 40,
-        paddingHorizontal: 10,
+        paddingHorizontal: 5,
     },
     otpInput: {
-        width: 60,
-        height: 60,
+        width: 45, // Adjusted for 6 digits
+        height: 50,
         borderWidth: 1.5,
         borderColor: '#ccc',
-        borderRadius: 12,
-        fontSize: 24,
+        borderRadius: 8,
+        fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
         backgroundColor: '#fff',

@@ -22,7 +22,7 @@ export const authService = {
 
     verifyRegistration: async (email: string, code: string) => {
         try {
-            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.VERIFY_REGISTER, { email, otp: code });
+            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.VERIFY_REGISTER, { email, otp: String(code) });
             return response.data; // Expected { accessToken, user }
         } catch (error) {
             throw error;
@@ -41,7 +41,7 @@ export const authService = {
 
     verifyLogin: async (email: string, code: string) => {
         try {
-            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN_VERIFY, { email, otp: code });
+            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN_VERIFY, { email, otp: String(code) });
             return response.data; // Expected { accessToken, user }
         } catch (error) {
             throw error;
