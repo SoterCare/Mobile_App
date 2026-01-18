@@ -11,7 +11,7 @@ import { RecentAlerts } from '@/components/dashboard/RecentAlerts';
 
 export default function HomeScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
@@ -31,7 +31,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F7', // Light gray background
+    backgroundColor: '#f2f3f7', // Neumorphic Base
   },
   scrollContent: {
     padding: 20,
