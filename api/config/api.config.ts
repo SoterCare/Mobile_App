@@ -4,7 +4,7 @@
 
 export const API_CONFIG = {
   // Base URL - Update this with your backend API URL
-  BASE_URL: 'http://172.20.10.2:3000',
+  BASE_URL: 'https://unlikely-caryn-sotercare-873e6112.koyeb.app',
 
   // Request timeout (milliseconds)
   TIMEOUT: 10000,
