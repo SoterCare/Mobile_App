@@ -10,7 +10,6 @@ const api = axios.create({
 });
 
 export const authService = {
-    // Sign Up Flow
     sendSignupCode: async (name: string, email: string) => {
         try {
             const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, { name, email });
