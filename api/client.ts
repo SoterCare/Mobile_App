@@ -16,16 +16,26 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
+import * as Crypto from 'expo-crypto';
+
 /**
  * Request Interceptor
- * Automatically adds authentication token to requests
+ * - Automatically adds authentication token to requests
+ * - Adds Idempotency-Key to mutation requests
  */
 apiClient.interceptors.request.use(
   async (config) => {
+    // Add Auth Token
     const token = await AsyncStorage.getItem(TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add Idempotency-Key for mutation requests (POST, PUT, PATCH, DELETE)
+    if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase() || '')) {
+      config.headers['Idempotency-Key'] = Crypto.randomUUID();
+    }
+
     return config;
   },
   (error) => {

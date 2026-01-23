@@ -1,19 +1,11 @@
-import axios from 'axios';
+import apiClient from '@/api/client';
 import { API_CONFIG } from '@/api/config/api.config';
-
-const api = axios.create({
-    baseURL: API_CONFIG.BASE_URL,
-    timeout: API_CONFIG.TIMEOUT,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
 
 export const authService = {
     // Sign Up Flow
     sendSignupCode: async (name: string, email: string) => {
         try {
-            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, { name, email });
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, { name, email });
             return response.data;
         } catch (error) {
             throw error;
@@ -22,7 +14,7 @@ export const authService = {
 
     verifyRegistration: async (email: string, code: string) => {
         try {
-            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.VERIFY_REGISTER, { email, otp: String(code) });
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.VERIFY_REGISTER, { email, otp: String(code) });
             return response.data; // Expected { accessToken, user }
         } catch (error) {
             throw error;
@@ -32,7 +24,7 @@ export const authService = {
     // Sign In Flow
     sendLoginCode: async (email: string) => {
         try {
-            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, { email });
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, { email });
             return response.data;
         } catch (error) {
             throw error;
@@ -41,7 +33,7 @@ export const authService = {
 
     verifyLogin: async (email: string, code: string) => {
         try {
-            const response = await api.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN_VERIFY, { email, otp: String(code) });
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN_VERIFY, { email, otp: String(code) });
             return response.data; // Expected { accessToken, user }
         } catch (error) {
             throw error;
