@@ -24,6 +24,8 @@ export const API_CONFIG = {
     USER: {
       PROFILE: '/user/profile',
       UPDATE: '/user/update',
+      EMAIL_INITIATE: '/user/email/initiate',
+      EMAIL_VERIFY: '/user/email/verify',
     },
   },
 };
