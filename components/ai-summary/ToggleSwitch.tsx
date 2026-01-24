@@ -53,11 +53,11 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
         alignSelf: 'flex-start',
-        minWidth: 200,
+        // minWidth: 200, // Removed to allow natural expansion or let parent control width
     },
     toggleButton: {
         paddingVertical: 10,
-        paddingHorizontal: 30,
+        paddingHorizontal: 24, // Reduced from 30
         borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',

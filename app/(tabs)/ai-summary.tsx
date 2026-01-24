@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, ScrollView, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
