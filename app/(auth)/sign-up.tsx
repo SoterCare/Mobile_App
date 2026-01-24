@@ -4,6 +4,8 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/authService';
 import { Ionicons } from '@expo/vector-icons';
+import { isValidEmail } from "../../utils/validation";
+
 
 export default function SignUpScreen() {
     const router = useRouter();
@@ -12,29 +14,46 @@ export default function SignUpScreen() {
     const [agreed, setAgreed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSignUp = async () => {
-        if (!name || !email) {
-            Alert.alert('Error', 'Please fill in all fields');
-            return;
-        }
-        if (!agreed) {
-            Alert.alert('Error', 'Please accept the Terms of Service and Privacy Policy');
-            return;
-        }
+const handleSignUp = async () => {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
 
-        try {
-            setIsLoading(true);
-            await authService.sendSignupCode(name, email);
-            router.push({
-                pathname: '/(auth)/otp-verification',
-                params: { email, mode: 'signup' }
-            });
-        } catch (error: any) {
-            Alert.alert('Error', error.response?.data?.message || 'Failed to send verification code');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    if (!cleanName || !cleanEmail) {
+        Alert.alert('Error', 'Please fill in all fields');
+        return;
+    }
+
+    // ✅ EMAIL FORMAT VALIDATION 
+    if (!isValidEmail(cleanEmail)) {
+        Alert.alert('Error', 'Please enter a valid email address');
+        return;
+    }
+
+    if (!agreed) {
+        Alert.alert('Error', 'Please accept the Terms of Service and Privacy Policy');
+        return;
+    }
+
+    try {
+        setIsLoading(true);
+
+        // ✅ use cleaned values
+        await authService.sendSignupCode(cleanName, cleanEmail);
+
+        router.push({
+            pathname: '/(auth)/otp-verification',
+            params: { email: cleanEmail, mode: 'signup' }
+        });
+    } catch (error: any) {
+        Alert.alert(
+            'Error',
+            error.response?.data?.message || 'Failed to send verification code'
+        );
+    } finally {
+        setIsLoading(false);
+    }
+};
+
 
     return (
         <SafeAreaView style={styles.container}>
