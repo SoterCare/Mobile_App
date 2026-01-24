@@ -27,6 +27,10 @@ export const API_CONFIG = {
       EMAIL_INITIATE: '/user/email/initiate',
       EMAIL_VERIFY: '/user/email/verify',
     },
+    SUMMARY: {
+      GENERATE: '/summary/generate',
+      HISTORY: '/summary/history',
+    },
   },
 };
 
