@@ -21,11 +21,10 @@ export const API_CONFIG = {
       LOGOUT: '/auth/logout',
       REFRESH: '/auth/refresh',
     },
-    // Add more endpoint groups as needed
-    // USER: {
-    //   PROFILE: '/user/profile',
-    //   UPDATE: '/user/update',
-    // },
+    USER: {
+      PROFILE: '/user/profile',
+      UPDATE: '/user/update',
+    },
   },
 };
 
