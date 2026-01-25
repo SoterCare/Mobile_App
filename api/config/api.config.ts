@@ -31,6 +31,9 @@ export const API_CONFIG = {
       GENERATE: '/summary/generate',
       HISTORY: '/summary/history',
     },
+    LOGS: {
+      SYNC: '/logs/sync',
+    },
   },
 };
 
