@@ -155,21 +155,34 @@ export default function ExportReportScreen() {
             };
 
             const url = API_CONFIG.ENDPOINTS.REPORTS.EXPORT;
+            console.log('BASE_URL:', API_CONFIG.BASE_URL);
             console.log(`Sending Report Request to [${url}]:`, JSON.stringify(payload, null, 2));
 
             const response = await apiClient.post(url, payload);
+            console.log('Report Response:', response);
             console.log('Report Response Status:', response.status);
 
             // Handle response wrapping
-            const data = Array.isArray(response.data) ? response.data : (response.data.data || []);
+            // New format: { meta, report, recommendations }
+            // Legacy format: array of data points
+            const isNewFormat = response.data.meta && response.data.report;
 
-            if (!data || data.length === 0) {
-                Alert.alert('No Data', 'No records found for the selected criteria.');
-                return;
+            if (isNewFormat) {
+                // New AI report format - store the whole response
+                setReportData(response.data);
+                Alert.alert('Report Generated', 'AI analysis complete. Click "Export" to save as PDF.');
+            } else {
+                // Legacy array format
+                const data = Array.isArray(response.data) ? response.data : (response.data.data || []);
+
+                if (!data || data.length === 0) {
+                    Alert.alert('No Data', 'No records found for the selected criteria.');
+                    return;
+                }
+
+                setReportData(data);
+                Alert.alert('Report Generated', 'Data received. Click "Export" to save the file.');
             }
-
-            setReportData(data);
-            Alert.alert('Report Generated', 'Data received. Click "Export" to save the file.');
 
         } catch (error) {
             console.error('Export Error:', error);
@@ -209,40 +222,142 @@ export default function ExportReportScreen() {
         }
     };
 
-    const generateAndSharePDF = async (data: any[]) => {
+    const generateAndSharePDF = async (data: any) => {
+        // Check if data has the new format with meta/report or is legacy array
+        const isNewFormat = data.meta && data.report;
+        const dataPoints = isNewFormat ? [] : data; // Legacy format uses array directly
+
         let headers = "<th>Timestamp</th>";
         if (selectedMetrics.heartRate) headers += "<th>Heart Rate</th>";
         if (selectedMetrics.spo2) headers += "<th>SpO2</th>";
         if (selectedMetrics.temperature) headers += "<th>Temp (°C)</th>";
 
-        let rows = data.map(row => {
-            let r = `<tr><td>${row.timestamp}</td>`;
-            if (selectedMetrics.heartRate) r += `<td>${row.heartRate}</td>`;
-            if (selectedMetrics.spo2) r += `<td>${row.spo2}</td>`;
-            if (selectedMetrics.temperature) r += `<td>${row.temperature}</td>`;
-            r += "</tr>";
-            return r;
-        }).join('');
+        let rows = '';
+        if (!isNewFormat && Array.isArray(dataPoints)) {
+            rows = dataPoints.map(row => {
+                let r = `<tr><td>${row.timestamp}</td>`;
+                if (selectedMetrics.heartRate) r += `<td>${row.heartRate}</td>`;
+                if (selectedMetrics.spo2) r += `<td>${row.spo2}</td>`;
+                if (selectedMetrics.temperature) r += `<td>${row.temperature}</td>`;
+                r += "</tr>";
+                return r;
+            }).join('');
+        }
+
+        // Convert markdown report to HTML (basic conversion)
+        const convertMarkdownToHTML = (markdown: string) => {
+            return markdown
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/^- (.+)$/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+                .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+        };
+
+        const aiReportHTML = isNewFormat && data.report
+            ? `<div class="ai-report">
+                <h2 style="color: #2c5282; border-bottom: 2px solid #2c5282; padding-bottom: 10px; margin-top: 30px;">AI Clinical Analysis</h2>
+                <div class="report-content">${convertMarkdownToHTML(data.report)}</div>
+               </div>`
+            : '';
+
+        const metaSummary = isNewFormat && data.meta
+            ? `<div class="meta-summary">
+                <p><strong>Data Points Analyzed:</strong> ${data.meta.dataPointsAnalyzed}</p>
+                <p><strong>Generated At:</strong> ${new Date(data.meta.generatedAt).toLocaleString()}</p>
+               </div>`
+            : '';
 
         const html = `
             <html>
                 <head>
                     <style>
-                        body { font-family: Helvetica; padding: 20px; }
-                        h1 { color: #333; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f3f7; }
+                        body { 
+                            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                            padding: 30px;
+                            color: #333;
+                            line-height: 1.6;
+                        }
+                        h1 { 
+                            color: #1a365d; 
+                            border-bottom: 3px solid #4299e1;
+                            padding-bottom: 10px;
+                        }
+                        h2 { 
+                            color: #2c5282; 
+                            margin-top: 20px;
+                            border-bottom: 1px solid #cbd5e0;
+                            padding-bottom: 5px;
+                        }
+                        h3 { 
+                            color: #2d3748; 
+                            margin-top: 15px;
+                        }
+                        table { 
+                            width: 100%; 
+                            border-collapse: collapse; 
+                            margin: 20px 0;
+                        }
+                        th, td { 
+                            border: 1px solid #ddd; 
+                            padding: 10px; 
+                            text-align: left; 
+                        }
+                        th { 
+                            background-color: #4299e1; 
+                            color: white;
+                            font-weight: 600;
+                        }
+                        tr:nth-child(even) {
+                            background-color: #f7fafc;
+                        }
+                        .meta-summary {
+                            background-color: #edf2f7;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin: 20px 0;
+                        }
+                        .ai-report {
+                            margin-top: 30px;
+                            padding: 20px;
+                            background-color: #f8fafe;
+                            border-left: 4px solid #4299e1;
+                        }
+                        .report-content p {
+                            margin: 10px 0;
+                        }
+                        .report-content ul {
+                            margin: 10px 0 10px 20px;
+                        }
+                        .report-content li {
+                            margin: 5px 0;
+                        }
+                        strong {
+                            color: #2d3748;
+                        }
                     </style>
                 </head>
                 <body>
-                    <h1>SoterCare Report</h1>
-                    <p>Device: ${selectedDevice}</p>
-                    <p>Date Range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
+                    <h1>SoterCare Medical Report</h1>
+                    <p><strong>Device:</strong> ${selectedDevice}</p>
+                    <p><strong>Date Range:</strong> ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
+                    
+                    ${metaSummary}
+                    
+                    ${!isNewFormat ? `
+                    <h2>Vital Signs Data</h2>
                     <table>
                         <tr>${headers}</tr>
                         ${rows}
                     </table>
+                    ` : ''}
+                    
+                    ${aiReportHTML}
                 </body>
             </html>
         `;

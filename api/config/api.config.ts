@@ -9,7 +9,7 @@ export const API_CONFIG = {
     : 'https://unlikely-caryn-sotercare-873e6112.koyeb.app', // Production
 
   // Request timeout (milliseconds)
-  TIMEOUT: 10000,
+  TIMEOUT: 1000000,
 
   // API Endpoints
   ENDPOINTS: {

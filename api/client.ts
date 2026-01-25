@@ -54,7 +54,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear token and redirect to login
       await AsyncStorage.removeItem(TOKEN_KEY);
-      await AsyncStorage.removeItem('@auth_user');
+      await AsyncStorage.removeItem('user');
       // Navigation will be handled by AuthContext
     }
     return Promise.reject(error);
