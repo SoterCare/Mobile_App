@@ -30,33 +30,29 @@ export const NeumorphicCard: React.FC<NeumorphicCardProps> = ({ children, style,
 
 const styles = StyleSheet.create({
     outerContainer: {
-        // Wrapper
+        // Wrapper, ensure it has dimensions (flex:1 or explicit w/h)
+        // Default to no style, user provides via style prop
     },
     lightShadow: {
-        // CSS: -4px -4px 6px rgba(255, 255, 255, 0.9)
         shadowColor: '#FFFFFF',
         shadowOffset: { width: -4, height: -4 },
-        shadowOpacity: 0.9,
-        shadowRadius: 6,
+        shadowOpacity: 1, // Stronger for visibility
+        shadowRadius: 4,
         backgroundColor: 'transparent',
+        flex: 1, // Ensure it fills the parent
     },
     darkShadow: {
-        // CSS: 3px 3px 6px rgba(0, 0, 0, 0.1)
-        shadowColor: '#000000',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
+        shadowColor: '#AEAEC0', // Better dark shadow color for Neumorphism
+        shadowOffset: { width: 4, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 5,
         backgroundColor: 'transparent',
+        flex: 1, // Ensure it fills the parent
     },
     innerSurface: {
         backgroundColor: '#f2f3f7',
-        borderRadius: 15, // Matches CSS "15px"
-
-        ...Platform.select({
-            android: {
-                elevation: 5,
-                backgroundColor: '#f2f3f7',
-            },
-        }),
+        borderRadius: 20, // Increased to match new standard
+        flex: 1, // Ensure it fills the shadow containers
+        // Ensure inner surface fills the shadow containers
     },
 });

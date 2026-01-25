@@ -33,6 +33,10 @@ export const API_CONFIG = {
     },
     LOGS: {
       SYNC: '/logs/sync',
+      DATES: '/logs/dates',
+    },
+    REPORTS: {
+      EXPORT: '/reports/export',
     },
   },
 };

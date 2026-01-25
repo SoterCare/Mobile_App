@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_CONFIG } from './config/api.config';
 
-const TOKEN_KEY = '@auth_token';
+const TOKEN_KEY = 'accessToken';
 
 /**
  * Axios API Client
