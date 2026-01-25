@@ -3,6 +3,7 @@ import { nightlyLogs } from '../database/schema';
 import apiClient from '@/api/client';
 import { API_CONFIG } from '@/api/config/api.config';
 import { eq } from "drizzle-orm";
+import pako from "pako";
 
 interface SyncResponse {
     success: boolean;
@@ -46,14 +47,29 @@ export const syncService = {
 
             if (unsyncedLogs.length === 0) return;
 
-            const payload = unsyncedLogs.map(log => ({
-                id: log.id,
-                data: JSON.parse(log.data),
-                timestamp: log.createdAt
-            }));
+            const payload = {
+                logs: unsyncedLogs.map(log => ({
+                    id: log.id,
+                    data: JSON.parse(log.data),
+                    timestamp: log.createdAt
+                }))
+            };
+
+            // Compress payload using pako (GZIP)
+            const jsonString = JSON.stringify(payload);
+            const compressedData = pako.gzip(jsonString);
 
             // Send to backend
-            const response = await apiClient.post<SyncResponse>(API_CONFIG.ENDPOINTS.LOGS.SYNC, { logs: payload });
+            const response = await apiClient.post<SyncResponse>(
+                API_CONFIG.ENDPOINTS.LOGS.SYNC,
+                compressedData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json', // Keep as JSON or application/octet-stream? Standard often implies keeping original type + encoding
+                        'Content-Encoding': 'gzip'
+                    }
+                }
+            );
 
             if (response.data.success) {
                 // Mark as synced locally
