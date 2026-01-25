@@ -20,6 +20,7 @@
     },
     "android": {
       "package": "com.sanjula.myapp",
+      "enablePngCrunchInReleaseBuilds": false,
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -70,7 +71,8 @@
           "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to Bluetooth devices"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

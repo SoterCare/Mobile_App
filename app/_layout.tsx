@@ -17,12 +17,19 @@ import { useState } from 'react';
 
 // ... (previous imports)
 
+import { initDatabase } from '@/database/db';
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const [isSplashAnimationFinished, setIsSplashAnimationFinished] = useState(false);
+
+  useEffect(() => {
+    // Initialize Database
+    initDatabase();
+  }, []);
 
   useEffect(() => {
     // Only trigger routing logic if BOTH data loading AND animation are done
