@@ -5,29 +5,30 @@ import sampleData from '../../sampledata.json';
 import { syncService } from '../../services/syncService';
 
 export const VitalsGrid = () => {
-    // Initial State based on first record or defaults
     const [heartRate, setHeartRate] = useState(sampleData.payload.values[0][0]);
     const [spo2, setSpo2] = useState(sampleData.payload.values[0][1]);
-    const [temperature, setTemperature] = useState(98.6);
+    const [temperature, setTemperature] = useState(sampleData.payload.values[0][2]);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
+            // Calculate new values first based on CURRENT state (well, mostly sample data)
+            // Ideally we shouldn't rely on 'prevIndex' for the logic if we can help it, 
+            // but since we need to cycle, we can use the callback pattern just for the index
+            // and do the logging outside.
+
             setCurrentIndex((prevIndex) => {
                 const nextIndex = (prevIndex + 1) % sampleData.payload.values.length;
-                const [newBpm, newSpo2] = sampleData.payload.values[nextIndex];
+                const [newBpm, newSpo2, newTemp] = sampleData.payload.values[nextIndex];
 
-                // Simulate Temperature variation (98.0 - 99.0)
-                // Sine wave simulation for smoother random-like data
-                const time = Date.now() / 1000;
-                const tempVariation = Math.sin(time) * 0.5 + 98.6;
-                const newTemp = Number(tempVariation.toFixed(1));
-
+                // Batch updates
                 setHeartRate(newBpm);
                 setSpo2(newSpo2);
                 setTemperature(newTemp);
 
-                // Log to offline DB
+                // Log to offline DB (Fire and forget, but outside the return)
+                // We do this here to access the calculated values for THIS tick.
+                // Note: calling async function here is non-blocking.
                 syncService.logVitals({
                     heartRate: newBpm,
                     spo2: newSpo2,
@@ -72,7 +73,7 @@ export const VitalsGrid = () => {
                     iconColor="#FFC107"
                     backgroundColor="#FFF8E1"
                     value={String(temperature)}
-                    unit="°F"
+                    unit="°C"
                     label="Temperature"
                     valueColor="#FFC107"
                 />
