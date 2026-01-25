@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { TextInput, TextStyle, StyleSheet, Text } from 'react-native';
+import { Text, TextStyle, StyleSheet } from 'react-native';
 import Animated, {
     useSharedValue,
-    useAnimatedProps,
+    useAnimatedStyle,
     withTiming,
     Easing,
     useDerivedValue,
+    runOnJS,
 } from 'react-native-reanimated';
 
 interface AnimatedCounterProps {
@@ -14,12 +15,13 @@ interface AnimatedCounterProps {
     precision?: number; // 0 for integers, 1 for 98.6, etc.
 }
 
-// Create an animated TextInput to act as our text display
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+// Create animated Text component
+const AnimatedText = Animated.createAnimatedComponent(Text);
 
 export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ value, style, precision = 0 }) => {
     // Shared value for the number
     const sharedValue = useSharedValue(value);
+    const [displayValue, setDisplayValue] = React.useState(value.toFixed(precision));
 
     // Trigger animation when value changes
     useEffect(() => {
@@ -29,25 +31,16 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ value, style, 
         });
     }, [value, sharedValue]);
 
-    // Create animated props for the TextInput
-    const animatedProps = useAnimatedProps(() => {
-        // Format the number based on precision
-        const currentVal = sharedValue.value;
-        const formattedText = currentVal.toFixed(precision);
-
-        return {
-            text: formattedText,
-        } as any; // Cast to any to avoid TS issues with 'text' prop on TextInput (it exists natively)
-    });
+    // Update display value on JS thread
+    useDerivedValue(() => {
+        const formatted = sharedValue.value.toFixed(precision);
+        runOnJS(setDisplayValue)(formatted);
+    }, [precision]);
 
     return (
-        <AnimatedTextInput
-            underlineColorAndroid="transparent"
-            editable={false}
-            defaultValue={String(value)} // Fallback / Initial
-            style={[styles.text, style]}
-            animatedProps={animatedProps}
-        />
+        <Text style={[styles.text, style]}>
+            {displayValue}
+        </Text>
     );
 };
 
