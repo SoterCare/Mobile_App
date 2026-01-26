@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/authService';
 import { Ionicons } from '@expo/vector-icons';
-import { isValidEmail } from "../../utils/validation";
+import { isValidEmail, isValidName } from "../../utils/validation";
 
 
 export default function SignUpScreen() {
@@ -23,7 +23,13 @@ const handleSignUp = async () => {
         return;
     }
 
-    // ✅ EMAIL FORMAT VALIDATION 
+    // Centralized Name Validation
+    if (!isValidName(cleanName)) {
+        Alert.alert('Error', 'Please enter a valid name (at least 4 characters, letters only)');
+        return;
+    }
+
+    // Email Validation
     if (!isValidEmail(cleanEmail)) {
         Alert.alert('Error', 'Please enter a valid email address');
         return;
@@ -37,7 +43,7 @@ const handleSignUp = async () => {
     try {
         setIsLoading(true);
 
-        // ✅ use cleaned values
+        // use cleaned values
         await authService.sendSignupCode(cleanName, cleanEmail);
 
         router.push({
