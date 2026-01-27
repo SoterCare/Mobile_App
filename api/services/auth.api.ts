@@ -20,7 +20,7 @@ export const authApi = {
    * Signup user
    */
   signup: async (credentials: SignupCredentials) => {
-    const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.SIGNUP, credentials);
+    const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, credentials);
     return response.data;
   },
 

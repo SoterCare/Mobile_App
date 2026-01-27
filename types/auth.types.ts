@@ -28,3 +28,7 @@ export interface JWTPayload {
   iat?: number;
   [key: string]: any;
 }
+
+// API layer credential types (used by api/services/auth.api.ts)
+export type LoginCredentials = { email: string; password: string };
+export type SignupCredentials = { name: string; email: string; password: string };
