@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/authService';
 import { Ionicons } from '@expo/vector-icons';
 import { isValidEmail } from "../../utils/validation";
+import * as WebBrowser from 'expo-web-browser';
+import { useGoogleAuth, processGoogleAuthResponse, useFacebookAuth, processFacebookAuthResponse, appleSignIn } from '@/services/socialAuthService';
+
+WebBrowser.maybeCompleteAuthSession();
 
 
 export default function SignUpScreen() {
@@ -14,6 +18,74 @@ export default function SignUpScreen() {
     const [agreed, setAgreed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isSocialLoading, setIsSocialLoading] = useState(false);
+    
+    // Google OAuth hook
+    const { request: googleRequest, response: googleResponse, promptAsync: googlePromptAsync } = useGoogleAuth();
+    
+    // Facebook OAuth hook
+    const { request: facebookRequest, response: facebookResponse, promptAsync: facebookPromptAsync } = useFacebookAuth();
+
+    // Handle Google auth response
+    useEffect(() => {
+        if (googleResponse) {
+            handleGoogleResponse();
+        }
+    }, [googleResponse]);
+    
+    // Handle Facebook auth response
+    useEffect(() => {
+        if (facebookResponse) {
+            handleFacebookResponse();
+        }
+    }, [facebookResponse]);
+
+    const handleGoogleResponse = async () => {
+        try {
+            setIsSocialLoading(true);
+            const result = await processGoogleAuthResponse(googleResponse);
+            
+            if (result.cancelled) {
+                return;
+            }
+            
+            if (!result.success || !result.user) {
+                Alert.alert('Error', result.error || 'Google sign-in failed');
+                return;
+            }
+            
+            // Success - show user info for now
+            Alert.alert('Success', `Signed in as ${result.user.email}`);
+            // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
+        } catch (error: any) {
+            Alert.alert('Error', 'Google sign-in failed');
+        } finally {
+            setIsSocialLoading(false);
+        }
+    };
+    
+    const handleFacebookResponse = async () => {
+        try {
+            setIsSocialLoading(true);
+            const result = await processFacebookAuthResponse(facebookResponse);
+            
+            if (result.cancelled) {
+                return;
+            }
+            
+            if (!result.success || !result.user) {
+                Alert.alert('Error', result.error || 'Facebook sign-in failed');
+                return;
+            }
+            
+            // Success - show user info for now
+            Alert.alert('Success', `Signed in with Facebook as ${result.user.email || result.user.name || 'user'}`);
+            // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
+        } catch (error: any) {
+            Alert.alert('Error', 'Facebook sign-in failed');
+        } finally {
+            setIsSocialLoading(false);
+        }
+    };
 
 const handleSignUp = async () => {
     const cleanName = name.trim();
@@ -56,31 +128,25 @@ const handleSignUp = async () => {
 };
 
 const handleGoogleSignIn = async () => {
-    if (isSocialLoading) return;
+    if (isSocialLoading || !googleRequest) return;
     try {
         setIsSocialLoading(true);
-        await new Promise((res) => setTimeout(res, 400));
-        Alert.alert("Not configured", "Google sign-in is not configured yet. Please use Email OTP for now.");
-        // TODO: Use expo-auth-session / Apple auth / Facebook OAuth to obtain provider token
-        // TODO: Send token to backend, store session in AuthContext, then router.replace("/(tabs)")
+        await googlePromptAsync();
+        // Response is handled in useEffect above
     } catch (error: any) {
-        Alert.alert("Error", "Google sign-in failed");
-    } finally {
+        Alert.alert('Error', 'Failed to start Google sign-in');
         setIsSocialLoading(false);
     }
 };
 
 const handleFacebookSignIn = async () => {
-    if (isSocialLoading) return;
+    if (isSocialLoading || !facebookRequest) return;
     try {
         setIsSocialLoading(true);
-        await new Promise((res) => setTimeout(res, 400));
-        Alert.alert("Not configured", "Facebook sign-in is not configured yet. Please use Email OTP for now.");
-        // TODO: Use expo-auth-session / Apple auth / Facebook OAuth to obtain provider token
-        // TODO: Send token to backend, store session in AuthContext, then router.replace("/(tabs)")
+        await facebookPromptAsync();
+        // Response is handled in useEffect above
     } catch (error: any) {
-        Alert.alert("Error", "Facebook sign-in failed");
-    } finally {
+        Alert.alert('Error', 'Failed to start Facebook sign-in');
         setIsSocialLoading(false);
     }
 };
@@ -89,12 +155,22 @@ const handleAppleSignIn = async () => {
     if (isSocialLoading) return;
     try {
         setIsSocialLoading(true);
-        await new Promise((res) => setTimeout(res, 400));
-        Alert.alert("Not configured", "Apple sign-in is not configured yet. Please use Email OTP for now.");
-        // TODO: Use expo-auth-session / Apple auth / Facebook OAuth to obtain provider token
-        // TODO: Send token to backend, store session in AuthContext, then router.replace("/(tabs)")
+        const result = await appleSignIn();
+        
+        if (result.cancelled) {
+            return;
+        }
+        
+        if (!result.success || !result.user) {
+            Alert.alert('Error', result.error || 'Apple sign-in failed');
+            return;
+        }
+        
+        // Success - show user info for now
+        Alert.alert('Success', `Signed in with Apple as ${result.user.email || result.user.name || 'user'}`);
+        // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
     } catch (error: any) {
-        Alert.alert("Error", "Apple sign-in failed");
+        Alert.alert('Error', 'Apple sign-in failed');
     } finally {
         setIsSocialLoading(false);
     }

@@ -5,11 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "sotercare",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.sotercare.mobileapp",
       "infoPlist": {
         "NSBluetoothAlwaysUsageDescription": "This app needs Bluetooth to connect to health devices",
         "NSBluetoothPeripheralUsageDescription": "This app needs Bluetooth to connect to health devices",
@@ -19,7 +20,7 @@
       }
     },
     "android": {
-      "package": "com.sanjula.myapp",
+      "package": "com.sotercare.mobileapp",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
