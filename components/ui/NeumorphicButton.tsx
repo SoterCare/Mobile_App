@@ -6,9 +6,10 @@ interface NeumorphicButtonProps {
     label?: string;
     onPress: () => void;
     style?: ViewStyle;
+    contentStyle?: ViewStyle; // New prop for inner view styling
     textStyle?: TextStyle;
     icon?: React.ReactNode;
-    variant?: 'primary' | 'dark'; // primary = light (default), dark = dark theme button
+    variant?: 'primary' | 'dark';
 }
 
 /**
@@ -20,6 +21,7 @@ export const NeumorphicButton: React.FC<NeumorphicButtonProps> = ({
     label,
     onPress,
     style,
+    contentStyle,
     textStyle,
     icon,
     variant = 'primary'
@@ -64,6 +66,7 @@ export const NeumorphicButton: React.FC<NeumorphicButtonProps> = ({
                     // When pressed, we simulate the "inset" look by removing outer shadows
                     // and relying on the background/scale. Pure Native "Inset" is hard.
                     pressed && styles.pressedState,
+                    contentStyle, // Apply custom inner styles provided by usage
                     animatedStyle
                 ]}>
                     {icon && <View style={styles.iconContainer}>{icon}</View>}

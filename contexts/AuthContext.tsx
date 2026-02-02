@@ -6,6 +6,7 @@ import {
   User,
   SignupArgs, // Import the new type
 } from '@/types/auth.types';
+import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -28,15 +29,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initializeAuth = async () => {
     try {
       const token = await AsyncStorage.getItem('accessToken');
-      const userJson = await AsyncStorage.getItem('user');
 
-      if (token && userJson) {
-        setAuthState({
-          user: JSON.parse(userJson),
-          token,
-          isLoading: false,
-          isAuthenticated: true,
-        });
+      if (token) {
+        try {
+          // Decode token and check expiration
+          const decoded = jwtDecode<JWTPayload>(token);
+          const currentTime = Date.now() / 1000;
+
+          if (decoded.exp && decoded.exp < currentTime) {
+            // Token expired
+            console.log('Token expired, signing out');
+            await signOut();
+            return;
+          }
+
+          // Construct user from valid token
+          const user: User = {
+            userId: decoded.userId,
+            email: decoded.email,
+            name: decoded.name,
+          };
+
+          setAuthState({
+            user,
+            token,
+            isLoading: false,
+            isAuthenticated: true,
+          });
+        } catch (error) {
+          console.error('Invalid token format:', error);
+          await signOut();
+        }
       } else {
         setAuthState({
           user: null,
@@ -56,13 +79,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signIn = async (token: string, user: User): Promise<void> => {
+  const signIn = async (token: string, user?: User): Promise<void> => {
     try {
       await AsyncStorage.setItem('accessToken', token);
-      await AsyncStorage.setItem('user', JSON.stringify(user));
+
+      let userToSet: User | null = user || null;
+
+      // If user is not provided, try to extract from token
+      if (!userToSet) {
+        try {
+          const decoded = jwtDecode<JWTPayload>(token);
+          userToSet = {
+            userId: decoded.userId,
+            email: decoded.email,
+            name: decoded.name,
+          };
+        } catch (error) {
+          console.warn('Failed to decode token during sign-in:', error);
+        }
+      }
+
+      if (userToSet) {
+        await AsyncStorage.setItem('user', JSON.stringify(userToSet));
+      }
 
       setAuthState({
-        user,
+        user: userToSet,
         token,
         isLoading: false,
         isAuthenticated: true,

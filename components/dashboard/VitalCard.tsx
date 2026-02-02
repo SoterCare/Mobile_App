@@ -12,7 +12,16 @@ interface VitalCardProps {
     valueColor?: string;
 }
 
+import { AnimatedCounter } from '../ui/AnimatedCounter';
+
 export const VitalCard: React.FC<VitalCardProps> = ({ icon, iconColor, backgroundColor, value, unit, label, valueColor }) => {
+    // Check if value is a number (integer or float)
+    const isNumeric = !isNaN(parseFloat(value)) && isFinite(Number(value));
+
+    // Determine precision (0 for integer looking strings, 1 for floats)
+    const hasDecimal = value.includes('.');
+    const precision = hasDecimal ? 1 : 0;
+
     return (
         <View style={styles.vitalCard}>
             <View style={[styles.vitalIconCircle, { backgroundColor }]}>
@@ -20,7 +29,15 @@ export const VitalCard: React.FC<VitalCardProps> = ({ icon, iconColor, backgroun
             </View>
             <View style={styles.vitalInfo}>
                 <View style={styles.valueContainer}>
-                    <Text style={[styles.vitalValue, valueColor ? { color: valueColor } : {}]}>{value}</Text>
+                    {isNumeric ? (
+                        <AnimatedCounter
+                            value={Number(value)}
+                            precision={precision}
+                            style={[styles.vitalValue, valueColor ? { color: valueColor } : {}]}
+                        />
+                    ) : (
+                        <Text style={[styles.vitalValue, valueColor ? { color: valueColor } : {}]}>{value}</Text>
+                    )}
                     <Text style={[styles.vitalUnit, valueColor ? { color: valueColor } : {}]}>{unit}</Text>
                 </View>
                 <Text style={styles.vitalLabel}>{label}</Text>

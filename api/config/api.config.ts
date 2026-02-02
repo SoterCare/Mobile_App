@@ -5,11 +5,11 @@
 export const API_CONFIG = {
   // Base URL - Update this with your backend API URL
   BASE_URL: __DEV__
-    ? 'http://192.168.1.53:3000' // Localhost (Dev)
+    ? 'http://172.20.10.2:3000' // Localhost (Dev)
     : 'https://unlikely-caryn-sotercare-873e6112.koyeb.app', // Production
 
   // Request timeout (milliseconds)
-  TIMEOUT: 10000,
+  TIMEOUT: 1000000,
 
   // API Endpoints
   ENDPOINTS: {
@@ -30,6 +30,13 @@ export const API_CONFIG = {
     SUMMARY: {
       GENERATE: '/summary/generate',
       HISTORY: '/summary/history',
+    },
+    LOGS: {
+      SYNC: '/logs/sync',
+      DATES: '/logs/dates',
+    },
+    REPORTS: {
+      EXPORT: '/reports/export',
     },
   },
 };
