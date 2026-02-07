@@ -18,6 +18,7 @@ import { ActivityEvent } from '../../data/mockVitals';
 interface ActivityTimelineProps {
   events: ActivityEvent[];
   onFilterPress?: () => void;
+  onTrashPress?: () => void;
   style?: ViewStyle;
 }
 
@@ -55,6 +56,7 @@ const ITEM_GAP = 12;
 const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   events,
   onFilterPress,
+  onTrashPress,
   style,
 }) => {
   // Filter to show only movement and fall events, limit to 2  
@@ -76,7 +78,7 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
       <View style={styles.header}>
         <Text style={styles.title}>Activity Timeline</Text>
         <TouchableOpacity
-          onPress={onFilterPress}
+          onPress={onTrashPress}
           style={styles.filterButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >

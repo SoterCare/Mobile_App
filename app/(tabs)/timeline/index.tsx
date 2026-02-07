@@ -15,14 +15,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import {
   SegmentedControl,
   VitalsChartCard,
   ActivityTimeline,
   ActivityStatsCards,
-} from '../../components/timeline';
-import { TimelineColors } from '../../theme/colors';
-import { Shadows } from '../../theme/shadows';
+} from '../../../components/timeline';
+import { TimelineColors } from '../../../theme/colors';
+import { Shadows } from '../../../theme/shadows';
 import {
   getVitalData,
   vitalYAxisConfig,
@@ -32,7 +33,7 @@ import {
   VitalType,
   PeriodType,
   ActivityEvent,
-} from '../../data/mockVitals';
+} from '../../../data/mockVitals';
 
 const BACKGROUND_COLOR = '#F6F6F6';
 
@@ -78,6 +79,8 @@ const CUSTOM_RANGE_OPTIONS = [
 const FILTER_OPTIONS = ['All', 'Movements', 'Falls', 'Urine'];
 
 export default function TimelineScreen() {
+  const router = useRouter();
+
   // State
   const [period, setPeriod] = useState<PeriodType>('day');
   const [vital, setVital] = useState<VitalType>('heart');
@@ -200,6 +203,10 @@ export default function TimelineScreen() {
     setFilterModalVisible(false);
   }, []);
 
+  const handleTrashPress = useCallback(() => {
+    router.push('/(tabs)/timeline/recycle-bin');
+  }, [router]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.mainContent}>
@@ -270,6 +277,7 @@ export default function TimelineScreen() {
               <ActivityTimeline
                 events={filteredEvents}
                 onFilterPress={() => setFilterModalVisible(true)}
+                onTrashPress={handleTrashPress}
                 style={styles.activitySection}
               />
             ) : (
