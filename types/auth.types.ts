@@ -29,3 +29,12 @@ export interface JWTPayload {
   iat?: number;
   [key: string]: any;
 }
+
+export interface LoginCredentials {
+  email: string;
+}
+
+export interface SignupCredentials {
+  name: string;
+  email: string;
+}
