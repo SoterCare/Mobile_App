@@ -4,21 +4,16 @@ import {
   AuthContextType,
   AuthState,
   User,
-  JWTPayload,
+  SignupArgs, // Import the new type
 } from '@/types/auth.types';
 import { jwtDecode } from "jwt-decode";
 
-// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-/**
- * Auth Provider Component
- * Manages authentication state and provides auth methods to the entire app
- */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -27,7 +22,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: false,
   });
 
-  // Initialize auth state on app startup
   useEffect(() => {
     initializeAuth();
   }, []);
@@ -121,6 +115,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // 3. Implemented the signup function
+  const signup = async ({ name, email, password }: SignupArgs): Promise<void> => {
+    try {
+      // Logic: Here you would typically call your backend API
+      // Example: const response = await api.post('/auth/signup', { name, email, password });
+      // const { token, user } = response.data;
+      
+      // For now, we simulate a successful signup and log them in
+      // This is a placeholder; replace with your actual API call logic
+      console.log('Signing up user:', name);
+      
+      // Example of auto-signing in after registration:
+      // await signIn(fakeToken, fakeUser);
+      
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+  };
+
   const signOut = async (): Promise<void> => {
     try {
       await AsyncStorage.removeItem('accessToken');
@@ -145,20 +159,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: authState.isAuthenticated,
     signIn,
     signOut,
+    signup, // 4. Added signup to the provider value
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-/**
- * Custom hook to use the auth context
- */
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-
   return context;
 };

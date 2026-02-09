@@ -12,6 +12,13 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
+// 1. Added this interface for better type safety
+export interface SignupArgs {
+  name: string;
+  email: string;
+  password: string;
+}
+
 export interface AuthContextType {
   user: User | null;
   token: string | null;
@@ -19,6 +26,8 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   signIn: (token: string, user?: User) => Promise<void>;
   signOut: () => Promise<void>;
+  // 2. Added signup to the context type
+  signup: (args: SignupArgs) => Promise<void>;
 }
 
 export interface JWTPayload {
