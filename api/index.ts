@@ -4,7 +4,7 @@
  */
 
 export { default as apiClient } from './client';
-export { authApi } from './services/auth.api';
+
 export { API_CONFIG } from './config/api.config';
 
 // Add more service exports as you create them
