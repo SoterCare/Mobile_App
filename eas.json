@@ -1,6 +1,7 @@
 {
     "cli": {
-        "version": ">= 7.0.0"
+        "version": ">= 12.9.0",
+        "appVersionSource": "remote"
     },
     "build": {
         "development": {
@@ -8,15 +9,12 @@
             "distribution": "internal"
         },
         "preview": {
-            "developmentClient": false,
             "distribution": "internal",
             "android": {
                 "buildType": "apk"
             }
         },
         "production": {
-            "developmentClient": false,
-            "distribution": "store",
             "autoIncrement": true
         }
     },

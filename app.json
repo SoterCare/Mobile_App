@@ -14,9 +14,12 @@
         "NSBluetoothAlwaysUsageDescription": "This app needs Bluetooth to connect to health devices",
         "NSBluetoothPeripheralUsageDescription": "This app needs Bluetooth to connect to health devices",
         "UIBackgroundModes": [
+          "bluetooth-central",
           "bluetooth-central"
-        ]
-      }
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.sanjula.myapp"
     },
     "android": {
       "package": "com.sanjula.myapp",

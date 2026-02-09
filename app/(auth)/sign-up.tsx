@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/authService';
 import { Ionicons } from '@expo/vector-icons';
 import { isValidEmail, isValidName } from "../../utils/validation";
+import * as WebBrowser from 'expo-web-browser';
+import { useGoogleAuth, processGoogleAuthResponse, useFacebookAuth, processFacebookAuthResponse, appleSignIn } from '@/services/socialAuthService';
+
+WebBrowser.maybeCompleteAuthSession();
 
 
 export default function SignUpScreen() {
@@ -13,53 +17,170 @@ export default function SignUpScreen() {
     const [email, setEmail] = useState('');
     const [agreed, setAgreed] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSocialLoading, setIsSocialLoading] = useState(false);
 
-const handleSignUp = async () => {
-    const cleanName = name.trim();
-    const cleanEmail = email.trim();
+    // Google OAuth hook
+    const { request: googleRequest, response: googleResponse, promptAsync: googlePromptAsync } = useGoogleAuth();
 
-    if (!cleanName || !cleanEmail) {
-        Alert.alert('Error', 'Please fill in all fields');
-        return;
-    }
+    // Facebook OAuth hook
+    const { request: facebookRequest, response: facebookResponse, promptAsync: facebookPromptAsync } = useFacebookAuth();
 
-    // Centralized Name Validation
-    if (!isValidName(cleanName)) {
-        Alert.alert('Error', 'Please enter a valid name (at least 4 characters, letters only)');
-        return;
-    }
+    // Handle Google auth response
+    useEffect(() => {
+        if (googleResponse) {
+            handleGoogleResponse();
+        }
+    }, [googleResponse]);
 
-    // Email Validation
-    if (!isValidEmail(cleanEmail)) {
-        Alert.alert('Error', 'Please enter a valid email address');
-        return;
-    }
+    // Handle Facebook auth response
+    useEffect(() => {
+        if (facebookResponse) {
+            handleFacebookResponse();
+        }
+    }, [facebookResponse]);
 
-    if (!agreed) {
-        Alert.alert('Error', 'Please accept the Terms of Service and Privacy Policy');
-        return;
-    }
+    const handleGoogleResponse = async () => {
+        try {
+            setIsSocialLoading(true);
+            const result = await processGoogleAuthResponse(googleResponse);
 
-    try {
-        setIsLoading(true);
+            if (result.cancelled) {
+                return;
+            }
 
-        // use cleaned values
-        await authService.sendSignupCode(cleanName, cleanEmail);
+            if (!result.success || !result.user) {
+                Alert.alert('Error', result.error || 'Google sign-in failed');
+                return;
+            }
 
-        router.push({
-            pathname: '/(auth)/otp-verification',
-            params: { email: cleanEmail, mode: 'signup' }
-        });
-    } catch (error: any) {
-        Alert.alert(
-            'Error',
-            error.response?.data?.message || 'Failed to send verification code'
-        );
-    } finally {
-        setIsLoading(false);
-    }
-};
+            // Success - show user info for now
+            Alert.alert('Success', `Signed in as ${result.user.email}`);
+            // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
+        } catch (error: any) {
+            Alert.alert('Error', 'Google sign-in failed');
+        } finally {
+            setIsSocialLoading(false);
+        }
+    };
 
+    const handleFacebookResponse = async () => {
+        try {
+            setIsSocialLoading(true);
+            const result = await processFacebookAuthResponse(facebookResponse);
+
+            if (result.cancelled) {
+                return;
+            }
+
+            if (!result.success || !result.user) {
+                Alert.alert('Error', result.error || 'Facebook sign-in failed');
+                return;
+            }
+
+            // Success - show user info for now
+            Alert.alert('Success', `Signed in with Facebook as ${result.user.email || result.user.name || 'user'}`);
+            // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
+        } catch (error: any) {
+            Alert.alert('Error', 'Facebook sign-in failed');
+        } finally {
+            setIsSocialLoading(false);
+        }
+    };
+
+    const handleSignUp = async () => {
+        const cleanName = name.trim();
+        const cleanEmail = email.trim();
+
+        if (!cleanName || !cleanEmail) {
+            Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+
+        // Centralized Name Validation
+        if (!isValidName(cleanName)) {
+            Alert.alert('Error', 'Please enter a valid name (at least 4 characters, letters only)');
+            return;
+        }
+
+        // Email Validation
+        if (!isValidEmail(cleanEmail)) {
+            Alert.alert('Error', 'Please enter a valid email address');
+            return;
+        }
+
+        if (!agreed) {
+            Alert.alert('Error', 'Please accept the Terms of Service and Privacy Policy');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+
+            // use cleaned values
+            await authService.sendSignupCode(cleanName, cleanEmail);
+
+            router.push({
+                pathname: '/(auth)/otp-verification',
+                params: { email: cleanEmail, mode: 'signup' }
+            });
+        } catch (error: any) {
+            Alert.alert(
+                'Error',
+                error.response?.data?.message || 'Failed to send verification code'
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGoogleSignIn = async () => {
+        if (isSocialLoading || !googleRequest) return;
+        try {
+            setIsSocialLoading(true);
+            await googlePromptAsync();
+            // Response is handled in useEffect above
+        } catch (error: any) {
+            Alert.alert('Error', 'Failed to start Google sign-in');
+            setIsSocialLoading(false);
+        }
+    };
+
+    const handleFacebookSignIn = async () => {
+        if (isSocialLoading || !facebookRequest) return;
+        try {
+            setIsSocialLoading(true);
+            await facebookPromptAsync();
+            // Response is handled in useEffect above
+        } catch (error: any) {
+            Alert.alert('Error', 'Failed to start Facebook sign-in');
+            setIsSocialLoading(false);
+        }
+    };
+
+    const handleAppleSignIn = async () => {
+        if (isSocialLoading) return;
+        try {
+            setIsSocialLoading(true);
+            const result = await appleSignIn();
+
+            if (result.cancelled) {
+                return;
+            }
+
+            if (!result.success || !result.user) {
+                Alert.alert('Error', result.error || 'Apple sign-in failed');
+                return;
+            }
+
+            // Success - show user info for now
+            Alert.alert('Success', `Signed in with Apple as ${result.user.email || result.user.name || 'user'}`);
+            // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
+        } catch (error: any) {
+            Alert.alert('Error', 'Apple sign-in failed');
+        } finally {
+            setIsSocialLoading(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -98,6 +219,24 @@ const handleSignUp = async () => {
                     >
                         <Text style={styles.buttonText}>{isLoading ? 'Registering...' : 'Register'}</Text>
                     </TouchableOpacity>
+
+                    <View style={styles.dividerContainer}>
+                        <View style={styles.dividerLine} />
+                        <Text style={styles.dividerText}>or sign up with</Text>
+                        <View style={styles.dividerLine} />
+                    </View>
+
+                    <View style={styles.socialContainer}>
+                        <TouchableOpacity style={styles.socialButton} onPress={handleFacebookSignIn} disabled={isSocialLoading}>
+                            <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.socialButton} onPress={handleGoogleSignIn} disabled={isSocialLoading}>
+                            <Ionicons name="logo-google" size={24} color="#DB4437" />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.socialButton} onPress={handleAppleSignIn} disabled={isSocialLoading}>
+                            <Ionicons name="logo-apple" size={24} color="#000" />
+                        </TouchableOpacity>
+                    </View>
 
                     <View style={styles.checkboxContainer}>
                         <TouchableOpacity
@@ -179,6 +318,45 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: '700',
+    },
+    dividerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    dividerLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: '#eee',
+    },
+    dividerText: {
+        marginHorizontal: 15,
+        color: '#999',
+        fontSize: 14,
+    },
+    socialContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 20,
+    },
+    socialButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#eee',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
     },
     checkboxContainer: {
         flexDirection: 'row',
