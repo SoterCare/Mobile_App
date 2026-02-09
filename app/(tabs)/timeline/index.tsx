@@ -187,12 +187,8 @@ export default function TimelineScreen() {
   );
 
   const handleExportReport = useCallback(() => {
-    Alert.alert(
-      'Export Report',
-      `Exporting report with:\n\nPeriod: ${period.toUpperCase()}\nVital: ${vital.toUpperCase()}\nDate: ${dateDisplayText}`,
-      [{ text: 'OK' }]
-    );
-  }, [period, vital, dateDisplayText]);
+    router.push('/export-report');
+  }, [router]);
 
   const handleExpandChart = useCallback(() => {
     setChartExpandedVisible(true);
