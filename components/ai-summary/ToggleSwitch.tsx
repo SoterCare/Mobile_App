@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { TimelineColors } from '@/theme/colors';
+import { Shadows } from '@/theme/shadows';
 
 interface ToggleSwitchProps {
     activeTab: 'today' | 'previous';
@@ -8,7 +10,7 @@ interface ToggleSwitchProps {
 
 export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ activeTab, onToggle }) => {
     return (
-        <View style={styles.toggleContainer}>
+        <View style={[styles.toggleContainer, Shadows.card]}>
             <TouchableOpacity
                 style={[
                     styles.toggleButton,
@@ -43,40 +45,27 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ activeTab, onToggle 
 const styles = StyleSheet.create({
     toggleContainer: {
         flexDirection: 'row',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: TimelineColors.cardBackground,
         borderRadius: 25,
         padding: 4,
-        marginBottom: 30,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
         alignSelf: 'flex-start',
-        // minWidth: 200, // Removed to allow natural expansion or let parent control width
     },
     toggleButton: {
         paddingVertical: 10,
-        paddingHorizontal: 24, // Reduced from 30
+        paddingHorizontal: 24,
         borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
-        flex: 1,
     },
     activeToggleButton: {
-        backgroundColor: '#8FD9E5',
-        shadowColor: '#8FD9E5',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 3,
+        backgroundColor: TimelineColors.primaryCyan,
     },
     toggleText: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '600',
-        color: '#666',
+        color: TimelineColors.textMedium,
     },
     activeToggleText: {
-        color: '#FFFFFF',
+        color: TimelineColors.textWhite,
     },
 });
