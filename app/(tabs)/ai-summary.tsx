@@ -1,63 +1,221 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
 import { summaryService } from '@/services/summaryService';
+import { TimelineColors } from '@/theme/colors';
+import { Shadows } from '@/theme/shadows';
+
+// Mock summary text matching the design
+const MOCK_SUMMARY = `Throughout the day, the user maintained generally stable vital signs, with normal heart rate and temperature ranges.
+
+SPO₂ stayed within healthy levels except for a brief dip in the evening.
+
+The system detected two risky movements, one minor fall, and three urination events.
+
+No major medical emergencies were identified, but a few observations require attention.`;
+
+interface SummaryData {
+    summary: string;
+    fromTime?: string;
+    toTime?: string;
+    date?: string;
+}
 
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
     const [isLoading, setIsLoading] = useState(false);
-    const [summary, setSummary] = useState<string | null>(null);
+    const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    // Format time for display (e.g., "12.00 AM")
+    const formatTime = (date: Date): string => {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+        const displayMinutes = minutes.toString().padStart(2, '0');
+        return `${displayHours.toString().padStart(2, '0')}.${displayMinutes}${ampm}`;
+    };
+
+    // Format date for display (e.g., "07/12/2025")
+    const formatDate = (date: Date): string => {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
+    // Current time string
+    const currentTimeString = useMemo(() => formatTime(new Date()), []);
+
+    const handleTabToggle = (tab: 'today' | 'previous') => {
+        setActiveTab(tab);
+        setSummaryData(null); // Reset summary when switching tabs
+    };
+
+    const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
+        setShowDatePicker(Platform.OS === 'ios');
+        if (date) {
+            setSelectedDate(date);
+            setSummaryData(null); // Reset summary when date changes
+        }
+    };
 
     const handleGenerate = async () => {
         setIsLoading(true);
-        setSummary(null);
         try {
-            const data = await summaryService.generateSummary(activeTab);
-            setSummary(data.content);
+            if (activeTab === 'today') {
+                const data = await summaryService.generateTodaySummary();
+                setSummaryData({
+                    summary: data.summary,
+                    fromTime: data.from,
+                    toTime: data.to,
+                });
+            } else {
+                const data = await summaryService.generatePreviousSummary(selectedDate);
+                setSummaryData({
+                    summary: data.summary,
+                    date: data.date,
+                });
+            }
         } catch (error: any) {
             console.error('Generate summary error:', error);
-            setSummary(`## AI Summary for ${activeTab === 'today' ? 'Today' : 'Previous Period'} \n\nThis is a generated summary of your health and activity data. It covers your heart rate, sleep patterns, and daily steps.\n\n- **Steps**: 8,432\n- **Sleep**: 7h 12m\n- **Heart Rate**: Avg 72 bpm`);
+            // Use mock data on error
+            if (activeTab === 'today') {
+                setSummaryData({
+                    summary: MOCK_SUMMARY,
+                    fromTime: '12.00 AM',
+                    toTime: formatTime(new Date()),
+                });
+            } else {
+                setSummaryData({
+                    summary: MOCK_SUMMARY,
+                    date: formatDate(selectedDate),
+                });
+            }
         } finally {
             setIsLoading(false);
         }
     };
 
+    const renderMetricChip = (icon: React.ReactNode, label: string) => (
+        <View style={styles.metricChip}>
+            {icon}
+            <Text style={styles.metricLabel}>{label}</Text>
+        </View>
+    );
+
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
             <StatusBar style="dark" />
-            <View style={styles.contentContainer}>
+            <ScrollView 
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* Header Row */}
+                <View style={styles.headerRow}>
+                    <Text style={styles.screenTitle}>AI Summary</Text>
+                </View>
 
-                <Text style={styles.screenTitle}>AI Summary</Text>
-
+                {/* Controls Row: Toggle + Logo */}
                 <View style={styles.controlsRow}>
-                    <ToggleSwitch activeTab={activeTab} onToggle={setActiveTab} />
+                    <ToggleSwitch activeTab={activeTab} onToggle={handleTabToggle} />
+                    <Image
+                        source={require('@/assets/images/SoterCare-Primary-logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
                 </View>
 
-                {/* Helper Text */}
-                <Text style={styles.helperText}>
-                    {activeTab === 'today'
-                        ? 'Generating report from 12.00 AM to now.'
-                        : 'View summaries from previous days.'}
-                </Text>
+                {/* Helper Text or Date Picker */}
+                {activeTab === 'today' ? (
+                    <Text style={styles.helperText}>
+                        Generating report from 12.00 AM to now.
+                    </Text>
+                ) : (
+                    <View style={styles.datePickerRow}>
+                        <Text style={styles.selectDateLabel}>Select Date</Text>
+                        <TouchableOpacity
+                            style={styles.datePill}
+                            onPress={() => setShowDatePicker(true)}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={styles.datePillText}>{formatDate(selectedDate)}</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
-                {/* Main Action or Content Area */}
-                <View style={styles.contentArea}>
-                    {summary ? (
-                        <ScrollView style={styles.summaryResult} showsVerticalScrollIndicator={false}>
-                            <Text style={styles.summaryText}>{summary}</Text>
-                        </ScrollView>
-                    ) : null}
-                </View>
+                {/* Date Picker Modal */}
+                {showDatePicker && (
+                    <DateTimePicker
+                        value={selectedDate}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={handleDateChange}
+                        maximumDate={new Date()}
+                    />
+                )}
 
                 {/* Generate Button */}
-                <View style={styles.footer}>
+                <View style={styles.generateButtonContainer}>
                     <GenerateButton onPress={handleGenerate} isLoading={isLoading} />
                 </View>
 
-            </View>
+                {/* Summary Content - Only show after generation */}
+                {summaryData && (
+                    <View style={styles.summarySection}>
+                        {/* Report Header */}
+                        <View style={styles.reportHeader}>
+                            {activeTab === 'today' ? (
+                                <>
+                                    <Text style={styles.reportLabel}>Today's Report from</Text>
+                                    <Text style={styles.reportTime}>
+                                        {summaryData.fromTime} - {summaryData.toTime}
+                                    </Text>
+                                </>
+                            ) : (
+                                <>
+                                    <Text style={styles.reportLabel}>Full Day Report</Text>
+                                    <Text style={styles.reportTime}>{summaryData.date}</Text>
+                                </>
+                            )}
+                        </View>
+
+                        {/* Summary Card */}
+                        <View style={[styles.summaryCard, Shadows.card]}>
+                            <Text style={styles.summaryTitle}>Summary</Text>
+                            <Text style={styles.summaryText}>{summaryData.summary}</Text>
+                        </View>
+
+                        {/* Metric Chips */}
+                        <View style={styles.metricsRow}>
+                            {renderMetricChip(
+                                <FontAwesome5 
+                                    name="thermometer-half" 
+                                    size={18} 
+                                    color="#FF6B6B" 
+                                />,
+                                'Temperature'
+                            )}
+                            {renderMetricChip(
+                                <FontAwesome5 
+                                    name="heartbeat" 
+                                    size={18} 
+                                    color="#FF6B6B" 
+                                />,
+                                'Heart Rate'
+                            )}
+                        </View>
+                    </View>
+                )}
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -65,59 +223,115 @@ export default function AISummaryScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: TimelineColors.background,
     },
-    contentContainer: {
+    scrollView: {
         flex: 1,
+    },
+    scrollContent: {
         paddingHorizontal: 24,
-        paddingTop: 20,
+        paddingTop: 16,
+        paddingBottom: 40,
+    },
+    headerRow: {
+        marginBottom: 16,
     },
     screenTitle: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 20,
+        color: TimelineColors.textDark,
     },
     controlsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 16,
     },
     logo: {
         width: 80,
         height: 60,
-        marginBottom: 10,
     },
     helperText: {
         fontSize: 14,
-        color: '#999',
-        textAlign: 'left',
-        marginBottom: 30,
-        marginLeft: 4,
-    },
-    contentArea: {
-        flex: 1,
+        color: TimelineColors.textLight,
         marginBottom: 20,
     },
-    summaryResult: {
+    datePickerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+        gap: 12,
+    },
+    selectDateLabel: {
+        fontSize: 14,
+        color: TimelineColors.textLight,
+    },
+    datePill: {
+        backgroundColor: TimelineColors.cardBackground,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        ...Shadows.button,
+    },
+    datePillText: {
+        fontSize: 14,
+        color: TimelineColors.textDark,
+        fontWeight: '500',
+    },
+    generateButtonContainer: {
+        marginBottom: 24,
+    },
+    summarySection: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+    },
+    reportHeader: {
+        marginBottom: 16,
+    },
+    reportLabel: {
+        fontSize: 14,
+        color: TimelineColors.textDark,
+        fontWeight: '600',
+        marginBottom: 2,
+    },
+    reportTime: {
+        fontSize: 14,
+        color: TimelineColors.textMedium,
+    },
+    summaryCard: {
+        backgroundColor: TimelineColors.cardBackground,
+        borderRadius: 20,
         padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 1,
+        marginBottom: 20,
+    },
+    summaryTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: TimelineColors.textDark,
+        marginBottom: 16,
     },
     summaryText: {
-        fontSize: 16,
-        color: '#333',
-        lineHeight: 24,
+        fontSize: 14,
+        color: TimelineColors.textMedium,
+        lineHeight: 22,
     },
-    footer: {
-        marginTop: 'auto',
+    metricsRow: {
+        flexDirection: 'row',
+        gap: 12,
         marginBottom: 20,
-    }
+    },
+    metricChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: TimelineColors.cardBackground,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        gap: 8,
+        ...Shadows.button,
+    },
+    metricLabel: {
+        fontSize: 13,
+        color: TimelineColors.textDark,
+        fontWeight: '500',
+    },
 });
