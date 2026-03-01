@@ -63,12 +63,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons size={24} name="person" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          href: null, // Hide explore if we don't need it or delete the file later
-        }}
-      />
     </Tabs>
   );
 }
