@@ -18,6 +18,27 @@ export const summaryService = {
         }
     },
 
+    generateTodaySummary: async () => {
+        try {
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.SUMMARY.GENERATE, { type: 'today' });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    generatePreviousSummary: async (date: Date) => {
+        try {
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.SUMMARY.GENERATE, {
+                type: 'previous',
+                date: date.toISOString().split('T')[0],
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
     getHistory: async () => {
         try {
             const response = await apiClient.get<SummaryResponse[]>(API_CONFIG.ENDPOINTS.SUMMARY.HISTORY);

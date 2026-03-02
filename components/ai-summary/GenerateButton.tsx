@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { TimelineColors } from '@/theme/colors';
 
 interface GenerateButtonProps {
     onPress: () => void;
@@ -15,7 +16,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, isLoadi
             disabled={isLoading}
         >
             {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={TimelineColors.textWhite} />
             ) : (
                 <Text style={styles.generateButtonText}>Generate Summary</Text>
             )}
@@ -25,15 +26,15 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, isLoadi
 
 const styles = StyleSheet.create({
     generateButton: {
-        backgroundColor: '#8FD9E5',
+        backgroundColor: TimelineColors.primaryCyan,
         borderRadius: 25,
         paddingVertical: 16,
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        shadowColor: '#8FD9E5',
+        shadowColor: TimelineColors.primaryCyan,
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
+        shadowOpacity: 0.35,
         shadowRadius: 8,
         elevation: 5,
     },
@@ -41,8 +42,8 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     generateButtonText: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: 'bold',
-        color: '#FFFFFF',
+        color: TimelineColors.textWhite,
     },
 });

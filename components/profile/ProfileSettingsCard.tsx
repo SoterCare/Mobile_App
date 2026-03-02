@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, Switch, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { NeumorphicCard } from '../ui/NeumorphicCard';
 import { useRouter } from 'expo-router'; // Updated for Expo Router
 
@@ -54,8 +55,13 @@ const MenuItem: React.FC<MenuItemProps> = ({
 );
 
 export const ProfileSettingsCard: React.FC = () => {
+    const router = useRouter();
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
     const router = useRouter(); // Initialize the router
+
+    const handleSubscriptionPress = () => {
+        router.push('/subscription/plans');
+    };
 
     return (
         <NeumorphicCard style={styles.cardContainer}>
@@ -71,7 +77,7 @@ export const ProfileSettingsCard: React.FC = () => {
                 <MenuItem
                     icon="cash-outline"
                     label="Subscription"
-                    onPress={() => router.push('/subscription')} // Navigates to app/subscription.tsx
+                    onPress={handleSubscriptionPress}
                 />
                 
                 <MenuItem
