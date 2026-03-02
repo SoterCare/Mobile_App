@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, Switch, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { NeumorphicCard } from '../ui/NeumorphicCard';
-import { useRouter } from 'expo-router'; // Updated for Expo Router
+
 
 interface MenuItemProps {
     icon: keyof typeof Ionicons.glyphMap;
@@ -57,7 +57,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
 export const ProfileSettingsCard: React.FC = () => {
     const router = useRouter();
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const router = useRouter(); // Initialize the router
+    
 
     const handleSubscriptionPress = () => {
         router.push('/subscription/plans');
