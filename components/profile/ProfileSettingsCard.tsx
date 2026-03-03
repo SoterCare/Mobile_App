@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { NeumorphicCard } from '../ui/NeumorphicCard';
 
-
 interface MenuItemProps {
     icon: keyof typeof Ionicons.glyphMap;
     label: string;
@@ -57,11 +56,6 @@ const MenuItem: React.FC<MenuItemProps> = ({
 export const ProfileSettingsCard: React.FC = () => {
     const router = useRouter();
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    
-
-    const handleSubscriptionPress = () => {
-        router.push('/subscription/plans');
-    };
 
     return (
         <NeumorphicCard style={styles.cardContainer}>
@@ -74,21 +68,25 @@ export const ProfileSettingsCard: React.FC = () => {
                     onToggle={setNotificationsEnabled}
                 />
                 
+                {/* FIXED: Lowercase path to match subscription.tsx */}
                 <MenuItem
                     icon="cash-outline"
                     label="Subscription"
-                    onPress={handleSubscriptionPress}
+                    onPress={() => router.push('/subscription')} 
                 />
                 
+                {/* FIXED: Explicit paths to match app/settings folder */}
                 <MenuItem
                     icon="card-outline"
                     label="Payment Method"
+                    onPress={() => router.push('/settings/payment' as any)} 
                 />
                 
                 <MenuItem
                     icon="thermometer-outline"
                     label="Temperature"
                     value="°F"
+                    onPress={() => router.push('/settings/temperature' as any)} 
                 />
                 
                 <MenuItem
@@ -96,6 +94,7 @@ export const ProfileSettingsCard: React.FC = () => {
                     label="Language"
                     value="English"
                     showBorder={false}
+                    onPress={() => router.push('/settings/language' as any)} 
                 />
             </View>
         </NeumorphicCard>
@@ -103,43 +102,13 @@ export const ProfileSettingsCard: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    cardContainer: {
-        marginBottom: 24,
-    },
-    cardContent: {
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-    },
-    menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 16,
-    },
-    menuItemBorder: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    menuItemLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    icon: {
-        marginRight: 12,
-        width: 24,
-    },
-    menuLabel: {
-        fontSize: 16,
-        color: '#333',
-        fontWeight: '600',
-    },
-    menuItemRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    valueText: {
-        fontSize: 14,
-        color: '#999',
-        marginRight: 8,
-    },
+    cardContainer: { marginBottom: 24 },
+    cardContent: { paddingVertical: 8, paddingHorizontal: 16 },
+    menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16 },
+    menuItemBorder: { borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+    menuItemLeft: { flexDirection: 'row', alignItems: 'center' },
+    icon: { marginRight: 12, width: 24 },
+    menuLabel: { fontSize: 16, color: '#333', fontWeight: '600' },
+    menuItemRight: { flexDirection: 'row', alignItems: 'center' },
+    valueText: { fontSize: 14, color: '#999', marginRight: 8 },
 });
