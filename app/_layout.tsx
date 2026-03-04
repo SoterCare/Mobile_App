@@ -7,6 +7,8 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { View, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { reportError } from '@/services/crashReportService';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -77,9 +79,22 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    const ErrorUtilsAny = (globalThis as any).ErrorUtils;
+    if (ErrorUtilsAny?.getGlobalHandler && ErrorUtilsAny?.setGlobalHandler) {
+      const prev = ErrorUtilsAny.getGlobalHandler();
+      ErrorUtilsAny.setGlobalHandler((err: any, isFatal?: boolean) => {
+        reportError(err, { isFatal });
+        if (typeof prev === 'function') prev(err, isFatal);
+      });
+    }
+  }, []);
+
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <ErrorBoundary>
+        <RootLayoutNav />
+      </ErrorBoundary>
     </AuthProvider>
   );
 }
