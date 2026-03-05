@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { cardStore, CardVisual, Card } from './payment';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { cardStore, CardVisual, SL_BANKS } from './payment';
 
 export default function PaymentDetailScreen() {
     const router = useRouter();
@@ -12,50 +12,70 @@ export default function PaymentDetailScreen() {
     if (!card) {
         return (
             <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                        <Ionicons name="chevron-back" size={24} color="#333" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Card Details</Text>
-                    <View style={{ width: 34 }} />
-                </View>
-                <View style={styles.notFound}>
-                    <Text style={styles.notFoundText}>Card not found.</Text>
-                </View>
+                <Stack.Screen options={{
+                    title: '',
+                    headerLeft: () => (
+                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
+                            <Ionicons name="chevron-back" size={24} color="#333" />
+                        </TouchableOpacity>
+                    ),
+                    headerTitle: () => <Text style={styles.headerTitle}>Card Details</Text>,
+                    headerTitleAlign: 'left',
+                    headerRight: () => <View />,
+                    headerShadowVisible: false,
+                    headerStyle: { backgroundColor: '#F8F9FA' },
+                }} />
+                <View style={styles.notFound}><Text style={styles.notFoundText}>Card not found.</Text></View>
             </SafeAreaView>
         );
     }
 
+    const bank = SL_BANKS[card.bank];
+
     const rows = [
         { label: 'Card Number', value: `•••• •••• •••• ${card.last4}` },
-        { label: 'Cardholder', value: card.name },
+        { label: 'Cardholder',  value: card.name },
         { label: 'Expiry Date', value: card.expiry },
-        { label: 'Card Type', value: card.brand === 'visa' ? 'Visa Debit' : 'Mastercard' },
-        { label: 'Added On', value: 'Jan 14, 2025' },
+        { label: 'Bank',        value: bank.name },
+        { label: 'Network',     value: card.brand === 'visa' ? 'Visa' : 'Mastercard' },
+        { label: 'Added On',    value: 'Jan 14, 2025' },
     ];
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
-                    <Ionicons name="chevron-back" size={24} color="#333" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Card Details</Text>
-                <TouchableOpacity
-                    style={styles.headerBtn}
-                    onPress={() => router.push({ pathname: '/settings/payment-edit' as any, params: { cardId: card.id } })}
-                >
-                    <Ionicons name="create-outline" size={22} color="#8FD9E5" />
-                </TouchableOpacity>
-            </View>
+            {/* ── Left-aligned title ── */}
+            <Stack.Screen
+                options={{
+                    title: '',
+                    headerLeft: () => (
+                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
+                            <Ionicons name="chevron-back" size={24} color="#333" />
+                        </TouchableOpacity>
+                    ),
+                    headerTitle: () => <Text style={styles.headerTitle}>Card Details</Text>,
+                    headerTitleAlign: 'left',
+                    headerRight: () => (
+                        <TouchableOpacity style={styles.editIconBtn}
+                            onPress={() => router.push({ pathname: '/settings/payment-edit' as any, params: { cardId: card.id } })}>
+                            <Ionicons name="create-outline" size={22} color="#8FD9E5" />
+                        </TouchableOpacity>
+                    ),
+                    headerShadowVisible: false,
+                    headerStyle: { backgroundColor: '#F8F9FA' },
+                }}
+            />
 
             <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                {/* Card preview */}
                 <View style={styles.previewWrap}>
-                    <View style={[styles.cardBg, { backgroundColor: card.gradient[0] }]}>
-                        <CardVisual card={card} />
+                    <CardVisual card={card} />
+                </View>
+
+                {/* Bank banner */}
+                <View style={[styles.bankBanner, { backgroundColor: bank.bg + '18', borderColor: bank.accent + '55' }]}>
+                    <View style={[styles.bankDot, { backgroundColor: bank.bg }]}>
+                        <Text style={[styles.bankDotText, { color: bank.accent }]}>{bank.logoMark}</Text>
                     </View>
+                    <Text style={[styles.bankBannerText, { color: bank.bg }]}>{bank.name}</Text>
                 </View>
 
                 {/* Info rows */}
@@ -68,7 +88,6 @@ export default function PaymentDetailScreen() {
                     ))}
                 </View>
 
-                {/* Default badge */}
                 {card.isDefault && (
                     <View style={styles.defaultBanner}>
                         <Ionicons name="checkmark-circle" size={16} color="#8FD9E5" />
@@ -76,20 +95,13 @@ export default function PaymentDetailScreen() {
                     </View>
                 )}
 
-                {/* Actions */}
-                <TouchableOpacity
-                    style={styles.editButton}
-                    activeOpacity={0.85}
-                    onPress={() => router.push({ pathname: '/settings/payment-edit' as any, params: { cardId: card.id } })}
-                >
+                <TouchableOpacity style={styles.editButton} activeOpacity={0.85}
+                    onPress={() => router.push({ pathname: '/settings/payment-edit' as any, params: { cardId: card.id } })}>
                     <Text style={styles.editButtonText}>Edit Card</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.removeButton}
-                    activeOpacity={0.85}
-                    onPress={() => router.push({ pathname: '/settings/payment-delete' as any, params: { cardId: card.id } })}
-                >
+                <TouchableOpacity style={styles.removeButton} activeOpacity={0.85}
+                    onPress={() => router.push({ pathname: '/settings/payment-delete' as any, params: { cardId: card.id } })}>
                     <Ionicons name="trash-outline" size={18} color="#FF6B6B" />
                     <Text style={styles.removeButtonText}>Remove Card</Text>
                 </TouchableOpacity>
@@ -100,33 +112,31 @@ export default function PaymentDetailScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 60 },
-    headerBtn: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.04)', alignItems: 'center', justifyContent: 'center' },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: '#333' },
+    headerBackBtn: { marginLeft: 4 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    editIconBtn: { marginRight: 4 },
     content: { padding: 20, paddingBottom: 40 },
-    previewWrap: { alignItems: 'center', marginBottom: 24, marginTop: 4 },
-    cardBg: { borderRadius: 20 },
+    previewWrap: { alignItems: 'center', marginBottom: 18, marginTop: 4 },
+    bankBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14,
+        borderWidth: 1, padding: 12, marginBottom: 16 },
+    bankDot: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+    bankDotText: { fontSize: 10, fontWeight: '900' },
+    bankBannerText: { fontSize: 14, fontWeight: '700' },
     infoCard: { backgroundColor: '#FFF', borderRadius: 18, borderWidth: 1, borderColor: '#F1F3F5', marginBottom: 14, overflow: 'hidden' },
     infoRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 18, paddingVertical: 14 },
     infoRowBorder: { borderBottomWidth: 1, borderBottomColor: '#F1F3F5' },
     infoLabel: { fontSize: 12, color: '#ADB5BD', fontWeight: '600' },
     infoValue: { fontSize: 13, color: '#333', fontWeight: '700' },
-    defaultBanner: {
-        flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16,
+    defaultBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16,
         backgroundColor: 'rgba(143,217,229,0.08)', borderRadius: 12, padding: 12,
-        borderWidth: 1, borderColor: 'rgba(143,217,229,0.2)',
-    },
+        borderWidth: 1, borderColor: 'rgba(143,217,229,0.2)' },
     defaultBannerText: { fontSize: 12, color: '#8FD9E5', fontWeight: '700' },
-    editButton: {
-        backgroundColor: '#8FD9E5', borderRadius: 16, height: 52,
-        alignItems: 'center', justifyContent: 'center', marginBottom: 12,
-    },
+    editButton: { backgroundColor: '#8FD9E5', borderRadius: 16, height: 52,
+        alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
     editButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
-    removeButton: {
-        borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center',
+    removeButton: { borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center',
         borderWidth: 1.5, borderColor: 'rgba(255,107,107,0.25)',
-        backgroundColor: 'rgba(255,107,107,0.05)', flexDirection: 'row', gap: 8,
-    },
+        backgroundColor: 'rgba(255,107,107,0.05)', flexDirection: 'row', gap: 8 },
     removeButtonText: { color: '#FF6B6B', fontSize: 15, fontWeight: '700' },
     notFound: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     notFoundText: { color: '#ADB5BD', fontSize: 15 },
