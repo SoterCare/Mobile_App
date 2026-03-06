@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
-import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
 import { summaryService } from '@/services/summaryService';
 import { TimelineColors } from '@/theme/colors';
@@ -24,17 +23,15 @@ export default function AISummaryScreen() {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    // Format time for display (e.g., "12.00 AM")
     const formatTime = (date: Date): string => {
         const hours = date.getHours();
         const minutes = date.getMinutes();
         const ampm = hours >= 12 ? 'PM' : 'AM';
         const displayHours = hours % 12 === 0 ? 12 : hours % 12;
         const displayMinutes = minutes.toString().padStart(2, '0');
-        return `${displayHours.toString().padStart(2, '0')}.${displayMinutes}${ampm}`;
+        return `${displayHours.toString().padStart(2, '0')}.${displayMinutes} ${ampm}`;
     };
 
-    // Format date for display (e.g., "07/12/2025")
     const formatDate = (date: Date): string => {
         const day = date.getDate().toString().padStart(2, '0');
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -42,19 +39,16 @@ export default function AISummaryScreen() {
         return `${day}/${month}/${year}`;
     };
 
-    // Current time string
-    const currentTimeString = useMemo(() => formatTime(new Date()), []);
-
     const handleTabToggle = (tab: 'today' | 'previous') => {
         setActiveTab(tab);
-        setSummaryData(null); // Reset summary when switching tabs
+        setSummaryData(null);
     };
 
     const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
         setShowDatePicker(Platform.OS === 'ios');
         if (date) {
             setSelectedDate(date);
-            setSummaryData(null); // Reset summary when date changes
+            setSummaryData(null);
         }
     };
 
@@ -63,17 +57,10 @@ export default function AISummaryScreen() {
         try {
             if (activeTab === 'today') {
                 const data = await summaryService.generateTodaySummary();
-                setSummaryData({
-                    summary: data.summary,
-                    fromTime: data.from,
-                    toTime: data.to,
-                });
+                setSummaryData({ summary: data.summary, fromTime: data.from, toTime: data.to });
             } else {
                 const data = await summaryService.generatePreviousSummary(selectedDate);
-                setSummaryData({
-                    summary: data.summary,
-                    date: data.date,
-                });
+                setSummaryData({ summary: data.summary, date: data.date });
             }
         } catch (error: any) {
             console.error('Generate summary error:', error);
@@ -109,40 +96,51 @@ export default function AISummaryScreen() {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header Row */}
+                {/* Header */}
                 <View style={styles.headerRow}>
                     <Text style={styles.screenTitle}>AI Summary</Text>
                 </View>
 
-                {/* Controls Row: Toggle + Logo */}
-                <View style={styles.controlsRow}>
-                    <ToggleSwitch activeTab={activeTab} onToggle={handleTabToggle} />
-                    <Image
-                        source={require('@/assets/images/SoterCare-Primary-logo.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
+                {/* Full-width Toggle */}
+                <View style={styles.toggleContainer}>
+                    <TouchableOpacity
+                        style={[styles.toggleTab, activeTab === 'today' && styles.toggleTabActive]}
+                        onPress={() => handleTabToggle('today')}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={[styles.toggleTabText, activeTab === 'today' && styles.toggleTabTextActive]}>
+                            Today
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.toggleTab, activeTab === 'previous' && styles.toggleTabActive]}
+                        onPress={() => handleTabToggle('previous')}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={[styles.toggleTabText, activeTab === 'previous' && styles.toggleTabTextActive]}>
+                            Previous
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
-                {/* Helper Text or Date Picker */}
-                {activeTab === 'today' ? (
-                    <Text style={styles.helperText}>
-                        Generating report from 12.00 AM to now.
-                    </Text>
-                ) : (
-                    <View style={styles.datePickerRow}>
-                        <Text style={styles.selectDateLabel}>Select Date</Text>
-                        <TouchableOpacity
-                            style={styles.datePill}
-                            onPress={() => setShowDatePicker(true)}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={styles.datePillText}>{formatDate(selectedDate)}</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
+                {/* Info row — fixed height so Generate button stays aligned */}
+                <View style={styles.infoRow}>
+                    {activeTab === 'today' ? (
+                        <Text style={styles.helperText}>Generating report from 12.00 AM to now.</Text>
+                    ) : (
+                        <View style={styles.datePickerRow}>
+                            <Text style={styles.selectDateLabel}>Select Date</Text>
+                            <TouchableOpacity
+                                style={styles.datePill}
+                                onPress={() => setShowDatePicker(true)}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={styles.datePillText}>{formatDate(selectedDate)} {'>'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
 
-                {/* Date Picker Modal */}
                 {showDatePicker && (
                     <DateTimePicker
                         value={selectedDate}
@@ -158,17 +156,14 @@ export default function AISummaryScreen() {
                     <GenerateButton onPress={handleGenerate} isLoading={isLoading} />
                 </View>
 
-                {/* Summary Content - Only show after generation */}
+                {/* Summary Content */}
                 {summaryData && (
                     <View style={styles.summarySection}>
-                        {/* Report Header */}
                         <View style={styles.reportHeader}>
                             {activeTab === 'today' ? (
                                 <>
                                     <Text style={styles.reportLabel}>Today's Report from</Text>
-                                    <Text style={styles.reportTime}>
-                                        {summaryData.fromTime} - {summaryData.toTime}
-                                    </Text>
+                                    <Text style={styles.reportTime}>{summaryData.fromTime} - {summaryData.toTime}</Text>
                                 </>
                             ) : (
                                 <>
@@ -178,30 +173,14 @@ export default function AISummaryScreen() {
                             )}
                         </View>
 
-                        {/* Summary Card */}
                         <View style={[styles.summaryCard, Shadows.card]}>
                             <Text style={styles.summaryTitle}>Summary</Text>
                             <Text style={styles.summaryText}>{summaryData.summary}</Text>
                         </View>
 
-                        {/* Metric Chips */}
                         <View style={styles.metricsRow}>
-                            {renderMetricChip(
-                                <FontAwesome5
-                                    name="thermometer-half"
-                                    size={18}
-                                    color="#FF6B6B"
-                                />,
-                                'Temperature'
-                            )}
-                            {renderMetricChip(
-                                <FontAwesome5
-                                    name="heartbeat"
-                                    size={18}
-                                    color="#FF6B6B"
-                                />,
-                                'Heart Rate'
-                            )}
+                            {renderMetricChip(<FontAwesome5 name="thermometer-half" size={18} color="#FF6B6B" />, 'Temperature')}
+                            {renderMetricChip(<FontAwesome5 name="heartbeat" size={18} color="#FF6B6B" />, 'Heart Rate')}
                         </View>
                     </View>
                 )}
@@ -231,25 +210,49 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: TimelineColors.textDark,
     },
-    controlsRow: {
+
+    // Full-width segmented toggle
+    toggleContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
+        backgroundColor: TimelineColors.cardBackground,
+        borderRadius: 30,
+        padding: 4,
+        marginBottom: 20,
+        ...Shadows.button,
     },
-    logo: {
-        width: 80,
-        height: 60,
+    toggleTab: {
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 26,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    toggleTabActive: {
+        backgroundColor: TimelineColors.primaryCyan,
+    },
+    toggleTabText: {
+        fontSize: 15,
+        fontWeight: '500',
+        color: TimelineColors.textMedium,
+    },
+    toggleTabTextActive: {
+        color: '#FFFFFF',
+        fontWeight: '600',
+    },
+
+    // Fixed-height row keeps Generate button at same vertical position on both tabs
+    infoRow: {
+        height: 36,
+        justifyContent: 'center',
+        marginBottom: 20,
     },
     helperText: {
         fontSize: 14,
         color: TimelineColors.textLight,
-        marginBottom: 20,
     },
     datePickerRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
         gap: 12,
     },
     selectDateLabel: {
@@ -258,8 +261,8 @@ const styles = StyleSheet.create({
     },
     datePill: {
         backgroundColor: TimelineColors.cardBackground,
-        paddingVertical: 8,
-        paddingHorizontal: 16,
+        paddingVertical: 6,
+        paddingHorizontal: 14,
         borderRadius: 20,
         ...Shadows.button,
     },
@@ -268,6 +271,7 @@ const styles = StyleSheet.create({
         color: TimelineColors.textDark,
         fontWeight: '500',
     },
+
     generateButtonContainer: {
         marginBottom: 24,
     },
