@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
-// Adjusted width so the next card is slightly visible, hinting at a scroll
 const CARD_WIDTH = width * 0.82; 
 const CARD_MARGIN = 16;
 
@@ -63,8 +62,8 @@ export default function SubscriptionScreen() {
                             <Ionicons name="chevron-back" size={24} color="#333" />
                         </TouchableOpacity>
                     ),
-                    headerTitle: "Our Plans",
-                    headerTitleStyle: styles.headerTitle,
+                    headerTitle: () => <Text style={styles.headerTitle}>Our Plans</Text>,
+                    headerTitleAlign: 'left',
                     headerShadowVisible: false,
                     headerStyle: { backgroundColor: '#F8F9FA' },
                 }}
@@ -128,7 +127,6 @@ export default function SubscriptionScreen() {
                                 ))}
                             </View>
 
-                            {/* Pushes the button to the bottom to keep the box elongated */}
                             <View style={{ flex: 1 }} />
 
                             <TouchableOpacity style={styles.subscribeButton} activeOpacity={0.8}>
@@ -149,10 +147,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F8F9FA',
     },
-    headerBackBtn: { marginLeft: 10 },
-    headerTitle: { fontSize: 22, fontWeight: '700', color: '#333' },
+    // Spacing matched to Temperature and Language screens
+    headerBackBtn: { marginLeft: 4 }, 
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
 
-    // ── Toggle Styles ──
     toggleContainer: {
         alignItems: 'center',
         paddingVertical: 25,
@@ -191,14 +189,13 @@ const styles = StyleSheet.create({
         color: '#FFF',
     },
 
-    // ── Card Styles (Longer + Shadow) ──
     scrollArea: {
         paddingHorizontal: 20,
-        paddingBottom: 60, // Space for shadow at the bottom
+        paddingBottom: 60,
     },
     card: {
         width: CARD_WIDTH,
-        minHeight: 540, // Keeps the card elongated like the image
+        minHeight: 540,
         backgroundColor: '#FFF',
         borderRadius: 30,
         padding: 30,
