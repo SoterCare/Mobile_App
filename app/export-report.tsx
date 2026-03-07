@@ -22,9 +22,9 @@ export default function ExportReportScreen() {
     const [isSingleDate, setIsSingleDate] = useState(false);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
+    const [hasSelectedDate, setHasSelectedDate] = useState(false);
     const [showPicker, setShowPicker] = useState<'start' | 'end' | null>(null);
 
-    // ✅ Only 2 metrics: Temperature & Activity
     const [selectedMetrics, setSelectedMetrics] = useState({
         temperature: false,
         activity: false,
@@ -36,7 +36,6 @@ export default function ExportReportScreen() {
     const [availableDates, setAvailableDates] = useState<string[]>([]);
     const [isLoadingDates, setIsLoadingDates] = useState(true);
 
-    // Fetch available dates on mount
     React.useEffect(() => {
         const fetchDates = async () => {
             try {
@@ -70,7 +69,6 @@ export default function ExportReportScreen() {
         return `${year}-${month}-${day}`;
     };
 
-    // ✅ Single-step Export (no Generate step)
     const handleExport = async () => {
         try {
             setIsExporting(true);
@@ -107,10 +105,7 @@ export default function ExportReportScreen() {
                 format: exportFormat,
             };
 
-            const url = API_CONFIG.ENDPOINTS.REPORTS.EXPORT;
-            console.log(`Sending Report Request to [${url}]:`, JSON.stringify(payload, null, 2));
-
-            const response = await apiClient.post(url, payload);
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.REPORTS.EXPORT, payload);
             const isNewFormat = response.data.meta && response.data.report;
 
             if (isNewFormat) {
@@ -127,7 +122,6 @@ export default function ExportReportScreen() {
                     await generateAndSharePDF(data);
                 }
             }
-
         } catch (error) {
             console.error('Export Error:', error);
             Alert.alert('Export Failed', 'Failed to export report.');
@@ -224,10 +218,6 @@ export default function ExportReportScreen() {
                         tr:nth-child(even) { background-color: #f7fafc; }
                         .meta-summary { background-color: #edf2f7; padding: 15px; border-radius: 8px; margin: 20px 0; }
                         .ai-report { margin-top: 30px; padding: 20px; background-color: #f8fafe; border-left: 4px solid #4299e1; }
-                        .report-content p { margin: 10px 0; }
-                        .report-content ul { margin: 10px 0 10px 20px; }
-                        .report-content li { margin: 5px 0; }
-                        strong { color: #2d3748; }
                     </style>
                 </head>
                 <body>
@@ -235,9 +225,7 @@ export default function ExportReportScreen() {
                     <p><strong>Device:</strong> ${selectedDevice}</p>
                     <p><strong>Date Range:</strong> ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
                     ${metaSummary}
-                    ${!isNewFormat ? `
-                    <h2>Vital Signs Data</h2>
-                    <table><tr>${headers}</tr>${rows}</table>` : ''}
+                    ${!isNewFormat ? `<table><tr>${headers}</tr>${rows}</table>` : ''}
                     ${aiReportHTML}
                 </body>
             </html>
@@ -260,14 +248,13 @@ export default function ExportReportScreen() {
             />
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
-
                 {/* Select Device */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Select Device</Text>
                     <NeumorphicButton
                         onPress={() => { }}
                         style={styles.dropdownButton}
-                        contentStyle={{ backgroundColor: '#A0E4EB', paddingHorizontal: 16, borderRadius: 20, justifyContent: 'space-between', width: '100%' }}
+                        contentStyle={{ backgroundColor: '#A0E4EB', paddingHorizontal: 25, borderRadius: 20, justifyContent: 'space-between', width: '100%' }}
                         label={selectedDevice}
                         icon={<IconSymbol name="chevron.down" size={20} color="#555" />}
                         variant="primary"
@@ -278,22 +265,36 @@ export default function ExportReportScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Select Date</Text>
                     <View style={styles.dateRow}>
-                        <NeumorphicButton
+                        {/* Start Date Button */}
+                        <TouchableOpacity
                             onPress={() => setShowPicker('start')}
-                            label="Start Date"
+                            activeOpacity={0.8}
                             style={styles.dateButton}
-                            contentStyle={{ backgroundColor: '#FFFFFF', borderRadius: 20, justifyContent: 'space-between', paddingHorizontal: 16 }}
-                            textStyle={styles.dateButtonText}
-                            icon={<IconSymbol name="chevron.right" size={16} color="#bbb" />}
-                        />
-                        <NeumorphicButton
-                            onPress={() => setShowPicker('end')}
-                            label="End Date"
+                        >
+                            <View style={styles.dateButtonContent as any}>
+                                <Text style={!hasSelectedDate ? styles.dateButtonPlaceholder : styles.dateButtonText}>
+                                    {hasSelectedDate
+                                        ? startDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                                        : 'Start Date'}
+                                </Text>
+                                <IconSymbol name="chevron.right" size={18} color="#bbb" style={styles.dateButtonChevron} />
+                            </View>
+                        </TouchableOpacity>
+                        {/* End Date Button */}
+                        <TouchableOpacity
+                            onPress={() => !isSingleDate && setShowPicker('end')}
+                            activeOpacity={isSingleDate ? 1 : 0.8}
                             style={styles.dateButton}
-                            contentStyle={{ backgroundColor: '#FFFFFF', borderRadius: 20, justifyContent: 'space-between', paddingHorizontal: 16 }}
-                            textStyle={styles.dateButtonText}
-                            icon={<IconSymbol name="chevron.right" size={16} color="#bbb" />}
-                        />
+                        >
+                            <View style={(isSingleDate ? styles.dateButtonContentDisabled : styles.dateButtonContent) as any}>
+                                <Text style={isSingleDate ? styles.dateButtonDisabled : (!hasSelectedDate ? styles.dateButtonPlaceholder : styles.dateButtonText)}>
+                                    {hasSelectedDate && !isSingleDate
+                                        ? endDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                                        : 'End Date'}
+                                </Text>
+                                <IconSymbol name="chevron.right" size={18} color={isSingleDate ? '#ddd' : '#bbb'} style={styles.dateButtonChevron} />
+                            </View>
+                        </TouchableOpacity>
                     </View>
 
                     {showPicker && (
@@ -305,58 +306,43 @@ export default function ExportReportScreen() {
                                 onDayPress={(day: any) => {
                                     const date = new Date(day.dateString);
                                     if (availableDates.length > 0 && !availableDates.includes(day.dateString)) return;
-                                    if (isSingleDate) {
+
+                                    setHasSelectedDate(true);
+
+                                    if (showPicker === 'start') {
                                         setStartDate(date);
-                                        setEndDate(date);
+                                        if (isSingleDate || date > endDate) setEndDate(date);
                                     } else {
-                                        if (startDate.getTime() === endDate.getTime()) {
-                                            if (date < startDate) setStartDate(date);
-                                            else setEndDate(date);
-                                        } else {
-                                            setStartDate(date);
-                                            setEndDate(date);
-                                        }
+                                        setEndDate(date);
+                                        if (date < startDate) setStartDate(date);
                                     }
+                                    setShowPicker(null);
                                 }}
                                 markingType={'period'}
                                 markedDates={(() => {
                                     const marks: any = {};
-                                    if (availableDates.length > 0) {
-                                        const startRange = new Date(availableDates[0]);
-                                        const endRange = new Date(availableDates[availableDates.length - 1]);
-                                        for (let d = new Date(startRange); d <= endRange; d.setDate(d.getDate() + 1)) {
-                                            const dateStr = toLocalDateString(d);
-                                            if (!availableDates.includes(dateStr)) {
-                                                marks[dateStr] = { disabled: true, disableTouchEvent: true, color: '#f9f9f9', textColor: '#d0d0d0' };
-                                            }
-                                        }
-                                    }
                                     const sStr = toLocalDateString(startDate);
                                     const eStr = toLocalDateString(endDate);
+
                                     if (isSingleDate) {
-                                        marks[sStr] = { ...marks[sStr], selected: true, color: '#81D4FA', textColor: 'white', startingDay: true, endingDay: true };
+                                        marks[sStr] = { selected: true, color: '#81D4FA', textColor: 'white' };
                                     } else {
-                                        let current = new Date(startDate);
-                                        const end = new Date(endDate);
-                                        while (current <= end) {
-                                            const str = toLocalDateString(current);
-                                            marks[str] = { ...marks[str], selected: true, color: '#81D4FA', textColor: 'white', startingDay: str === sStr, endingDay: str === eStr };
-                                            current.setDate(current.getDate() + 1);
+                                        let curr = new Date(startDate);
+                                        while (curr <= endDate) {
+                                            const str = toLocalDateString(curr);
+                                            marks[str] = {
+                                                selected: true,
+                                                color: '#81D4FA',
+                                                startingDay: str === sStr,
+                                                endingDay: str === eStr
+                                            };
+                                            curr.setDate(curr.getDate() + 1);
                                         }
                                     }
                                     return marks;
                                 })()}
-                                theme={{
-                                    arrowColor: '#81D4FA',
-                                    todayTextColor: '#81D4FA',
-                                    textDayFontWeight: '600',
-                                    textMonthFontWeight: 'bold',
-                                    textDayHeaderFontWeight: 'normal',
-                                }}
+                                theme={{ arrowColor: '#81D4FA', todayTextColor: '#81D4FA' }}
                             />
-                            <TouchableOpacity style={{ alignItems: 'center', padding: 10 }} onPress={() => setShowPicker(null)}>
-                                <Text style={{ color: '#81D4FA', fontWeight: '600' }}>Done</Text>
-                            </TouchableOpacity>
                         </View>
                     )}
 
@@ -368,7 +354,7 @@ export default function ExportReportScreen() {
                     </TouchableOpacity>
                 </View>
 
-                {/* ✅ 2 Metric Cards: Temperature & Activity */}
+                {/* Metrics */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Select Metrics to Export</Text>
                     <View style={styles.metricsRow}>
@@ -411,7 +397,7 @@ export default function ExportReportScreen() {
                     </View>
                 </View>
 
-                {/* ✅ Export button — no Activity Report section */}
+                {/* Export Button */}
                 <View style={styles.footer}>
                     <NeumorphicButton
                         onPress={handleExport}
@@ -421,17 +407,13 @@ export default function ExportReportScreen() {
                         textStyle={styles.exportButtonText}
                         icon={isExporting ? <ActivityIndicator color="#FFF" /> : null}
                     />
-                    <Text style={styles.footerText}>
-                        {`Exporting as a ${exportFormat} document`}
-                    </Text>
+                    <Text style={styles.footerText}>{`Exporting as a ${exportFormat} document`}</Text>
                 </View>
-
             </ScrollView>
         </SafeAreaView>
     );
 }
 
-// Reusable Metric Card
 function MetricCard({ icon, materialIcon, color, label, checked, onPress, iconSize = 30 }: any) {
     return (
         <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.metricCardWrapper}>
@@ -452,149 +434,55 @@ function MetricCard({ icon, materialIcon, color, label, checked, onPress, iconSi
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f2f3f7',
-    },
-    scrollContent: {
-        padding: 30,
-        paddingBottom: 40,
-    },
-    section: {
-        marginBottom: 24,
-    },
-    sectionTitle: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#888',
-        marginBottom: 15,
-    },
-    dropdownButton: {
-        width: 160,
-        borderRadius: 20,
-        paddingHorizontal: 3,
-    },
-    dateRow: {
-        flexDirection: 'row',
-        gap: 20,
-        marginBottom: 12,
-    },
-    dateButton: {
-        flex: 1,
-        borderRadius: 20,
-    },
-    dateButtonText: {
-        fontSize: 14,
-        color: '#555',
-    },
-    singleDateRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    checkbox: {
-        width: 22,
-        height: 22,
-        borderRadius: 5,
-        backgroundColor: '#e0e0e0',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    checkboxChecked: {
-        backgroundColor: '#A0E4EB',
-    },
-    themeCheckboxChecked: {
-        backgroundColor: '#81D4FA',
-    },
-    checkboxLabel: {
-        fontSize: 14,
-        color: '#aaa',
-    },
-
-    // ✅ 2 metric cards side by side, minimized width
-    metricsRow: {
-        flexDirection: 'row',
-        gap: 20,
-        justifyContent: 'center',
-    },
-    metricCardWrapper: {
-        width: 130,
-    },
-    metricCard: {
-        width: '100%',
-        aspectRatio: 0.80,
-    },
-    metricCardContent: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'space-evenly',
-        padding: 5,
+    container: { flex: 1, backgroundColor: '#f2f3f7' },
+    scrollContent: { padding: 30, paddingBottom: 40 },
+    section: { marginBottom: 25 },
+    sectionTitle: { fontSize: 15, fontWeight: '600', color: '#888', marginBottom: 19 },
+    dropdownButton: { width: 160, borderRadius: 20, paddingHorizontal: 3 },
+    dateRow: { flexDirection: 'row', gap: 20, marginBottom: 22 },
+    dateButton: { flex: 1, borderRadius: 20 },
+    dateButtonContent: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-    },
-    iconCircle: {
-        width: 60,
-        height: 60,
-        borderRadius: 31,
+        borderRadius: 20,
+        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
     },
-    metricLabel: {
-        fontSize: 13,
-        color: '#666',
-        textAlign: 'center',
-        fontWeight: '500',
-    },
-
-    // Format Toggle — centered
-    formatToggleContainer: {
-        width: 280,
-        alignSelf: 'center',
-    },
-    formatToggleCard: {
-        borderRadius: 25,
-    },
-    formatToggleContent: {
-        flexDirection: 'row',
-        padding: 4,
-        borderRadius: 25,
-        backgroundColor: '#FFFFFF',
-    },
-    formatOption: {
-        flex: 1,
-        paddingVertical: 10,
-        alignItems: 'center',
+    dateButtonContentDisabled: {
+        backgroundColor: '#f0f0f0',
         borderRadius: 20,
-    },
-    formatOptionActive: {
-        backgroundColor: '#81D4FA',
-    },
-    formatText: {
-        fontWeight: '600',
-        color: '#aaa',
-    },
-    formatTextActive: {
-        color: '#FFFFFF',
-    },
-
-    // Footer
-    footer: {
-        marginTop: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
         alignItems: 'center',
-        gap: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
     },
-    exportButton: {
-        width: '100%',
-        borderRadius: 25,
-        height: 56,
-    },
-    exportButtonText: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-        fontSize: 18,
-    },
-    footerText: {
-        fontSize: 13,
-        color: '#aaa',
-    },
+    dateButtonChevron: { position: 'absolute', right: 14 },
+    dateButtonText: { fontSize: 14, color: '#333', fontWeight: '500' },
+    dateButtonPlaceholder: { color: '#bbb', fontWeight: '400' },
+    dateButtonDisabled: { color: '#ccc', fontWeight: '400' },
+    singleDateRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    checkbox: { width: 22, height: 22, borderRadius: 5, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' },
+    checkboxChecked: { backgroundColor: '#A0E4EB' },
+    themeCheckboxChecked: { backgroundColor: '#81D4FA' },
+    checkboxLabel: { fontSize: 14, color: '#aaa' },
+    metricsRow: { flexDirection: 'row', gap: 20, justifyContent: 'center' },
+    metricCardWrapper: { width: 130 },
+    metricCard: { width: '100%', aspectRatio: 0.80 },
+    metricCardContent: { flex: 1, alignItems: 'center', justifyContent: 'space-evenly', padding: 5, backgroundColor: '#FFFFFF', borderRadius: 16 },
+    iconCircle: { width: 60, height: 60, borderRadius: 31, justifyContent: 'center', alignItems: 'center' },
+    metricLabel: { fontSize: 13, color: '#666', textAlign: 'center', fontWeight: '500' },
+    formatToggleContainer: { width: 280, alignSelf: 'center' },
+    formatToggleCard: { borderRadius: 25 },
+    formatToggleContent: { flexDirection: 'row', padding: 4, borderRadius: 25, backgroundColor: '#FFFFFF' },
+    formatOption: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 20 },
+    formatOptionActive: { backgroundColor: '#81D4FA' },
+    formatText: { fontWeight: '600', color: '#aaa' },
+    formatTextActive: { color: '#FFFFFF' },
+    footer: { marginTop: 10, alignItems: 'center', gap: 12 },
+    exportButton: { width: '100%', borderRadius: 25, height: 56 },
+    exportButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 18 },
+    footerText: { fontSize: 13, color: '#aaa' },
 });
