@@ -56,13 +56,13 @@ export const VitalsGrid = () => {
                 {/* Thermometer icon to match Image 2 */}
                 <VitalCard
                     icon="thermometer-outline"
-                    iconColor="#E8A020"
+                    iconColor="#f8a831"
                     backgroundColor="#FFF3E0"
                     value={skinTemp.toFixed(1)}
                     unit="°C"
                     label="Patient Skin"
                     sublabel={`Room : ${roomTemp} °C`}
-                    valueColor="#E8A020"
+                    valueColor="#fbcb3c"
                 />
                 {/* Water drop icon, teal */}
                 <VitalCard
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '48%',
         alignItems: 'center',
-        minHeight: 80,
+        minHeight: 110,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
     gaitLabel: {
         fontSize: 13,
         fontWeight: '400',
-        color: '#999',
+        color: '#858282',
     },
 });

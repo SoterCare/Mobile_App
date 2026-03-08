@@ -102,17 +102,17 @@ const styles = StyleSheet.create({
     vitalUnit: {
         fontSize: 12,
         fontWeight: '500',
-        color: '#999',
+        color: '#858282',
         marginLeft: 2,
     },
     vitalLabel: {
         fontSize: 12,
-        color: '#888',
+        color: '#858282',
         textAlign: 'left',
     },
     vitalSublabel: {
         fontSize: 12,
-        color: '#888',
+        color: '#858282',
         textAlign: 'left',
         marginTop: 1,
     },
