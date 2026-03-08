@@ -14,12 +14,12 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     movement: {
         icon: 'walk',
         iconColor: '#ffffff',
-        bgColor: '#46ebdd',
+        bgColor: '#40DFDF', // Cyan
     },
     fall: {
         icon: 'warning',
         iconColor: '#ffffff',
-        bgColor: '#fd8d8d',
+        bgColor: '#FF9789', // Light Red Pastel
     },
     urine: {
         icon: 'water',
@@ -38,44 +38,49 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
             onPress={() => setExpanded(!expanded)}
             activeOpacity={0.85}
         >
-            <View style={styles.alertTopRow}>
+            <View style={[styles.cardContent, !expanded && { alignItems: 'center' }]}>
                 {/* Icon */}
                 <View style={[styles.alertIconCircle, { backgroundColor: config.bgColor }]}>
-                    <Ionicons name={config.icon} size={22} color={config.iconColor} />
+                    <Ionicons name={config.icon} size={26} color={config.iconColor} />
                 </View>
 
-                {/* Title */}
-                <Text style={styles.alertText}>{title}</Text>
+                {/* Right Area */}
+                <View style={styles.rightArea}>
+                    {/* Top Row: Title + Timestamp */}
+                    <View style={styles.titleRow}>
+                        <Text style={styles.alertText}>{title}</Text>
+                        <View style={styles.timeAndChevron}>
+                            <Text style={styles.alertTime}>{timestamp}</Text>
+                            {!expanded && (
+                                <Ionicons
+                                    name="chevron-down"
+                                    size={16}
+                                    color="#888"
+                                    style={styles.chevron}
+                                />
+                            )}
+                        </View>
+                    </View>
 
-                {/* Timestamp + chevron */}
-                <View style={styles.rightSection}>
-                    <Text style={styles.alertTime}>{timestamp}</Text>
-                    <Ionicons
-                        name={expanded ? 'chevron-up' : 'chevron-down'}
-                        size={16}
-                        color="#ccc"
-                        style={styles.chevron}
-                    />
+                    {/* Expandable action buttons */}
+                    {expanded && (
+                        <View style={styles.alertActions}>
+                            <TouchableOpacity
+                                style={[styles.actionBtn, styles.actionBtnPrimary]}
+                                onPress={(e) => { e.stopPropagation?.(); }}
+                            >
+                                <Text style={styles.actionBtnTextPrimary}>Attented</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.actionBtn, styles.actionBtnSecondary]}
+                                onPress={(e) => { e.stopPropagation?.(); }}
+                            >
+                                <Text style={styles.actionBtnTextSecondary}>False</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </View>
-
-            {/* Expandable action buttons */}
-            {expanded && (
-                <View style={styles.alertActions}>
-                    <TouchableOpacity
-                        style={[styles.actionBtn, styles.actionBtnPrimary]}
-                        onPress={(e) => { e.stopPropagation?.(); }}
-                    >
-                        <Text style={styles.actionBtnTextPrimary}>Attended</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.actionBtn, styles.actionBtnSecondary]}
-                        onPress={(e) => { e.stopPropagation?.(); }}
-                    >
-                        <Text style={styles.actionBtnTextSecondary}>False</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
         </TouchableOpacity>
     );
 };
@@ -83,70 +88,84 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
 const styles = StyleSheet.create({
     alertCard: {
         backgroundColor: '#fff',
-        borderRadius: 16,
-        paddingVertical: 14,
+        borderRadius: 24,
+        paddingVertical: 18,
         paddingHorizontal: 16,
-        marginBottom: 10,
+        marginBottom: 12,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.04,
-        shadowRadius: 6,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#F0F0F0', // Slight border to match the clean look
     },
-    alertTopRow: {
+    cardContent: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
     alertIconCircle: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 52,
+        height: 52,
+        borderRadius: 26,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 12,
+        marginRight: 16,
         flexShrink: 0,
+    },
+    rightArea: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    titleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
     },
     alertText: {
         flex: 1,
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: '600',
-        color: '#606060',
+        color: '#4A4A4A',
+        marginTop: 2, // Slight adjustment for the larger text
     },
-    rightSection: {
+    timeAndChevron: {
         alignItems: 'flex-end',
+        justifyContent: 'center',
     },
     alertTime: {
-        fontSize: 11,
-        color: '#bbb',
+        fontSize: 12,
+        color: '#8A8A8A',
+        fontWeight: '500',
     },
     chevron: {
-        marginTop: 4,
+        marginTop: 6,
     },
     alertActions: {
         flexDirection: 'row',
-        marginTop: 12,
+        marginTop: 14,
         justifyContent: 'flex-end',
-        gap: 8,
+        gap: 12,
     },
     actionBtn: {
-        paddingVertical: 8,
-        paddingHorizontal: 24,
-        borderRadius: 20,
+        paddingVertical: 10,
+        paddingHorizontal: 28,
+        borderRadius: 24,
     },
     actionBtnPrimary: {
-        backgroundColor: '#4DD0C4',
+        backgroundColor: '#40DFDF',
     },
     actionBtnSecondary: {
-        backgroundColor: '#ECECEC',
+        backgroundColor: '#E0E0E0',
     },
     actionBtnTextPrimary: {
         color: '#fff',
         fontWeight: '600',
-        fontSize: 13,
+        fontSize: 14,
     },
     actionBtnTextSecondary: {
-        color: '#666',
+        color: '#555555',
         fontWeight: '600',
-        fontSize: 13,
+        fontSize: 14,
     },
 });

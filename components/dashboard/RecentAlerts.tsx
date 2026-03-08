@@ -10,17 +10,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { AlertCard } from './AlertCard';
 
-// Height of one collapsed alert card (paddingVertical 14*2 + icon 40 + marginBottom 10)
-const CARD_HEIGHT = 78;
-// Show exactly 2 cards before requiring scroll
-const VISIBLE_CARDS = 2;
-const SCROLL_HEIGHT = CARD_HEIGHT * VISIBLE_CARDS + 10;
+// Height of one expanded alert card is slightly more, so just set a standard max height
+const SCROLL_HEIGHT = 280;
 
 const ALERTS = [
     { id: '1', type: 'movement' as const, title: 'Movement Detected', timestamp: 'now' },
-    { id: '2', type: 'fall' as const,     title: 'Fall Detected',      timestamp: '1m ago' },
-    { id: '3', type: 'urine' as const,    title: 'Urine Detected',     timestamp: '2m ago' },
-    { id: '4', type: 'movement' as const, title: 'Movement Detected',  timestamp: '3m ago' },
+    { id: '2', type: 'fall' as const, title: 'Fall Detected', timestamp: '1m ago' },
+    { id: '3', type: 'urine' as const, title: 'Urine Detected', timestamp: '2m ago' },
+    { id: '4', type: 'movement' as const, title: 'Movement Detected', timestamp: '3m ago' },
 ];
 
 export const RecentAlerts = () => {
@@ -57,25 +54,27 @@ export const RecentAlerts = () => {
 const styles = StyleSheet.create({
     alertsContainer: {
         backgroundColor: '#fff',
-        borderRadius: 28,
+        borderRadius: 24,
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
         padding: 20,
         paddingBottom: 16,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 12,
-        elevation: 6,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.04,
+        shadowRadius: 10,
+        elevation: 3,
     },
     alertsHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 14,
+        marginBottom: 16,
     },
     alertsTitle: {
-        fontSize: 17,
+        fontSize: 18,
         fontWeight: '700',
-        color: '#727070',
+        color: '#4A4A4A',
     },
     viewAllBtn: {
         flexDirection: 'row',
