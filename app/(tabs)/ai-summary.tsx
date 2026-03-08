@@ -165,7 +165,7 @@ export default function AISummaryScreen() {
                         <View style={styles.reportHeader}>
                             {activeTab === 'today' ? (
                                 <>
-                                    <Text style={styles.reportLabel}>Today's Report from</Text>
+                                    <Text style={styles.reportLabel}>Today&apos;s Report from</Text>
                                     <Text style={styles.reportTime}>
                                         {summaryData.fromTime} - {summaryData.toTime}
                                     </Text>
