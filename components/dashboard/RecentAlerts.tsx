@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     alertsTitle: {
         fontSize: 17,
         fontWeight: '700',
-        color: '#1C1C1C',
+        color: '#727070',
     },
     viewAllBtn: {
         flexDirection: 'row',

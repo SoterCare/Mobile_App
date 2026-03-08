@@ -13,18 +13,18 @@ interface AlertCardProps {
 const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; iconColor: string; bgColor: string }> = {
     movement: {
         icon: 'walk',
-        iconColor: '#4DD0C4',
-        bgColor: '#E0F7F5',
+        iconColor: '#ffffff',
+        bgColor: '#46ebdd',
     },
     fall: {
         icon: 'warning',
-        iconColor: '#FF5252',
-        bgColor: '#FFEBEE',
+        iconColor: '#ffffff',
+        bgColor: '#fd8d8d',
     },
     urine: {
         icon: 'water',
-        iconColor: '#FFA726',
-        bgColor: '#FFF3E0',
+        iconColor: '#ffffff',
+        bgColor: '#64d8e8',
     },
 };
 
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 15,
         fontWeight: '600',
-        color: '#2C2C2C',
+        color: '#606060',
     },
     rightSection: {
         alignItems: 'flex-end',
