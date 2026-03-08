@@ -10,7 +10,6 @@ interface ProfileUserCardProps {
 export const ProfileUserCard: React.FC<ProfileUserCardProps> = ({ user }) => {
     const router = useRouter();
 
-    // Get Initials
     const getInitials = (name: string) => {
         return name
             .split(' ')
@@ -20,7 +19,7 @@ export const ProfileUserCard: React.FC<ProfileUserCardProps> = ({ user }) => {
             .substring(0, 2);
     };
 
-    const initials = user?.name ? getInitials(user.name) : 'U';
+    const initials = user?.name ? getInitials(user.name) : 'K';
 
     const handlePress = () => {
         router.push('/user/update');
@@ -31,10 +30,10 @@ export const ProfileUserCard: React.FC<ProfileUserCardProps> = ({ user }) => {
             <View style={styles.cardContainer}>
                 <TouchableOpacity onPress={handlePress} activeOpacity={0.7} style={styles.contentRow}>
                     <View style={styles.infoContainer}>
-                        <Text style={styles.userName}>{user?.name || 'John Doe'}</Text>
-                        <Text style={styles.userEmail}>{user?.email || 'johndoe@gmail.com'}</Text>
+                        <Text style={styles.userName}>{user?.name || 'Komudi'}</Text>
+                        <Text style={styles.userEmail}>{user?.email || 'komudidhara@gmail.com'}</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color="#999" style={styles.chevron} />
+                    <Ionicons name="chevron-forward" size={20} color="#BBB" style={styles.chevron} />
                 </TouchableOpacity>
             </View>
             <View style={styles.avatarContainer}>
@@ -46,21 +45,22 @@ export const ProfileUserCard: React.FC<ProfileUserCardProps> = ({ user }) => {
 
 const styles = StyleSheet.create({
     containerWrapper: {
-        marginBottom: 30,
-        marginTop: 15, // Space for the overlapping avatar
+        marginBottom: 20,
+        marginTop: 30, // More space at the top to accommodate the higher avatar
         position: 'relative',
+        paddingHorizontal: 1, // Fixes slight shadow clipping
     },
     cardContainer: {
         backgroundColor: '#FFFFFF',
         borderRadius: 24,
-        padding: 25,
-        paddingTop: 35, // Push content down to avoid avatar collision
+        paddingHorizontal: 25,
         paddingBottom: 25,
-        elevation: 4,
+        paddingTop: 45, // Pushes content down so it's not under the avatar
+        elevation: 8,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.06,
-        shadowRadius: 10,
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
     },
     contentRow: {
         flexDirection: 'row',
@@ -69,39 +69,39 @@ const styles = StyleSheet.create({
     },
     avatarContainer: {
         position: 'absolute',
-        top: -24,
-        left: 16,
+        top: -32, // Moved further up from -24
+        left: 20,
         width: 64,
         height: 64,
         borderRadius: 32,
         backgroundColor: '#8FD9E5',
         alignItems: 'center',
         justifyContent: 'center',
-        elevation: 6,
+        elevation: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.15,
         shadowRadius: 8,
+        zIndex: 1, // Ensures avatar stays on top
     },
     avatarText: {
         fontSize: 26,
         color: '#FFFFFF',
-        fontWeight: '600',
+        fontWeight: '700',
     },
     infoContainer: {
         flex: 1,
         justifyContent: 'center',
-        marginLeft: 8,
     },
     userName: {
         fontSize: 18,
-        fontWeight: '600',
-        color: '#333333',
-        marginBottom: 6,
+        fontWeight: '700',
+        color: '#5a5858',
+        marginBottom: 4,
     },
     userEmail: {
-        fontSize: 15,
-        color: '#555555',
+        fontSize: 14,
+        color: '#777777',
         fontWeight: '500',
     },
     chevron: {

@@ -28,7 +28,6 @@ const MenuItem: React.FC<MenuItemProps> = ({
     <TouchableOpacity
         style={[styles.menuItem, showBorder && styles.menuItemBorder]}
         onPress={onPress}
-        // Disable the row press if it's a toggle item to prevent accidental navigation
         disabled={hasToggle}
         activeOpacity={0.7}
     >
@@ -42,13 +41,13 @@ const MenuItem: React.FC<MenuItemProps> = ({
                 <Switch
                     value={isToggled}
                     onValueChange={onToggle}
-                    trackColor={{ false: "#767577", true: "#8FD9E5" }}
-                    thumbColor={"#f4f3f4"}
+                    trackColor={{ false: "#D1D1D1", true: "#8FD9E5" }}
+                    thumbColor={"#FFFFFF"}
                 />
             ) : (
                 <>
                     {value && <Text style={styles.valueText}>{value}</Text>}
-                    <Ionicons name="chevron-forward" size={18} color="#A0A0A0" />
+                    <Ionicons name="chevron-forward" size={18} color="#BBB" />
                 </>
             )}
         </View>
@@ -62,43 +61,38 @@ export const ProfileSettingsCard: React.FC = () => {
     return (
         <NeumorphicCard style={styles.cardContainer}>
             <View style={styles.cardContent}>
-                {/* 1. App Notifications - Toggle only */}
                 <MenuItem
                     icon="notifications-outline"
                     label="App Notifications"
                     hasToggle
                     isToggled={notificationsEnabled}
                     onToggle={setNotificationsEnabled}
+                    showBorder={true}
                 />
-
-                {/* 2. Subscription - Points to app/subscription.tsx */}
                 <MenuItem
                     icon="cash-outline"
                     label="Subscription"
                     onPress={() => router.push('/subscription' as any)}
+                    showBorder={true}
                 />
-
-                {/* 3. Payment Method - Points to app/settings/payment.tsx */}
                 <MenuItem
                     icon="card-outline"
                     label="Payment Method"
                     onPress={() => router.push('/settings/payment' as any)}
+                    showBorder={true}
                 />
-
-                {/* 4. Temperature - Points to app/settings/temperature.tsx */}
                 <MenuItem
                     icon="thermometer-outline"
                     label="Temperature"
                     value="°F"
                     onPress={() => router.push('/settings/temperature' as any)}
+                    showBorder={true}
                 />
-
-                {/* 5. Language - Points to app/settings/language.tsx */}
                 <MenuItem
                     icon="globe-outline"
                     label="Language"
                     value="English"
-                    showBorder={false}
+                    showBorder={false} // No border for the last item
                     onPress={() => router.push('/settings/language' as any)}
                 />
             </View>
@@ -110,7 +104,7 @@ const styles = StyleSheet.create({
     cardContainer: {
         marginBottom: 20,
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        borderRadius: 24,
         elevation: 4,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
@@ -118,18 +112,18 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
     },
     cardContent: {
-        paddingVertical: 5,
         paddingHorizontal: 20,
+        paddingVertical: 5,
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 18,
+        paddingVertical: 16,
     },
     menuItemBorder: {
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        borderBottomColor: '#e2e2e2', 
     },
     menuItemLeft: {
         flexDirection: 'row',
@@ -141,7 +135,7 @@ const styles = StyleSheet.create({
     },
     menuLabel: {
         fontSize: 16,
-        color: '#4A4A4A',
+        color: '#444',
         fontWeight: '600',
     },
     menuItemRight: {
@@ -150,7 +144,7 @@ const styles = StyleSheet.create({
     },
     valueText: {
         fontSize: 15,
-        color: '#999999',
+        color: '#AAA',
         marginRight: 8,
         fontWeight: '500',
     },
