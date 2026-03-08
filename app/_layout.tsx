@@ -36,7 +36,7 @@ function RootLayoutNav() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
-    const isRoot = segments.length === 0;
+    const isRoot = (segments as string[]).length === 0;
 
     if (!isAuthenticated && !inAuthGroup) {
       // Not authenticated and not in auth group -> redirect to welcome
