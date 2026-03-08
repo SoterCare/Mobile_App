@@ -1,39 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { VitalCard } from './VitalCard';
 import sampleData from '../../sampledata.json';
 import { syncService } from '../../services/syncService';
 
+// Gait Analysis card — blue-tinted circle with pulse/activity icon, grey N/A text
+const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
+    <View style={styles.gaitCard}>
+        <View style={styles.gaitIconCircle}>
+            <Ionicons name="pulse-outline" size={24} color="#6BA8C4" />
+        </View>
+        <View>
+            <Text style={styles.gaitValue}>{value}</Text>
+            <Text style={styles.gaitLabel}>Gait Analysis</Text>
+        </View>
+    </View>
+);
+
 export const VitalsGrid = () => {
-    const [heartRate, setHeartRate] = useState(sampleData.payload.values[0][0]);
-    const [spo2, setSpo2] = useState(sampleData.payload.values[0][1]);
-    const [temperature, setTemperature] = useState(sampleData.payload.values[0][2]);
+    const [skinTemp, setSkinTemp] = useState<number>(30.4);
+    const [moisture, setMoisture] = useState<number>(0);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
-            // Calculate new values first based on CURRENT state (well, mostly sample data)
-            // Ideally we shouldn't rely on 'prevIndex' for the logic if we can help it, 
-            // but since we need to cycle, we can use the callback pattern just for the index
-            // and do the logging outside.
-
             setCurrentIndex((prevIndex) => {
                 const nextIndex = (prevIndex + 1) % sampleData.payload.values.length;
-                const [newBpm, newSpo2, newTemp] = sampleData.payload.values[nextIndex];
+                const row = sampleData.payload.values[nextIndex];
+                const newTemp = row[2] ?? 30.4;
+                const newMoisture = row[3] ?? 0;
 
-                // Batch updates
-                setHeartRate(newBpm);
-                setSpo2(newSpo2);
-                setTemperature(newTemp);
+                setSkinTemp(newTemp);
+                setMoisture(newMoisture);
 
-                // Log to offline DB (Fire and forget, but outside the return)
-                // We do this here to access the calculated values for THIS tick.
-                // Note: calling async function here is non-blocking.
                 syncService.logVitals({
-                    heartRate: newBpm,
-                    spo2: newSpo2,
                     temperature: newTemp,
-                    timestamp: Date.now()
+                    moisture: newMoisture,
+                    timestamp: Date.now(),
                 });
 
                 return nextIndex;
@@ -43,40 +47,38 @@ export const VitalsGrid = () => {
         return () => clearInterval(intervalId);
     }, []);
 
+    const roomTemp = (skinTemp - 0.5).toFixed(1);
+
     return (
         <View style={styles.gridContainer}>
-            {/* Row 1 */}
+            {/* Row 1: Skin Temp + Moisture */}
             <View style={styles.gridRow}>
+                {/* Thermometer icon to match Image 2 */}
                 <VitalCard
-                    icon="heart"
-                    iconColor="#FF5252"
-                    backgroundColor="#FFEBEE"
-                    value={String(heartRate)}
-                    unit="BPM"
-                    label="Heart Rate"
+                    icon="thermometer-outline"
+                    iconColor="#E8A020"
+                    backgroundColor="#FFF3E0"
+                    value={skinTemp.toFixed(1)}
+                    unit="°C"
+                    label="Patient Skin"
+                    sublabel={`Room : ${roomTemp} °C`}
+                    valueColor="#E8A020"
                 />
+                {/* Water drop icon, teal */}
                 <VitalCard
                     icon="water"
-                    iconColor="#03A9F4"
-                    backgroundColor="#E1F5FE"
-                    value={String(spo2)}
+                    iconColor="#4DD0C4"
+                    backgroundColor="#E4F5F3"
+                    value={String(moisture)}
                     unit="%"
-                    label="SpO2 Level"
-                    valueColor="#03A9F4"
+                    label="Moisture · Dry"
+                    valueColor="#4DD0C4"
                 />
             </View>
 
-            {/* Row 2 */}
+            {/* Row 2: Gait Analysis */}
             <View style={styles.gridRow}>
-                <VitalCard
-                    icon="thermometer"
-                    iconColor="#FFC107"
-                    backgroundColor="#FFF8E1"
-                    value={String(temperature)}
-                    unit="°C"
-                    label="Temperature"
-                    valueColor="#FFC107"
-                />
+                <GaitAnalysisCard value="N/A" />
             </View>
         </View>
     );
@@ -89,6 +91,43 @@ const styles = StyleSheet.create({
     gridRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 16,
+        marginBottom: 14,
+    },
+    gaitCard: {
+        backgroundColor: '#fff',
+        borderRadius: 22,
+        padding: 16,
+        paddingHorizontal: 14,
+        flexDirection: 'row',
+        width: '48%',
+        alignItems: 'center',
+        minHeight: 80,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 10,
+        elevation: 3,
+        gap: 12,
+    },
+    gaitIconCircle: {
+        width: 54,
+        height: 54,
+        borderRadius: 27,
+        // Soft blue-grey background matching Image 2
+        backgroundColor: '#D6E9F4',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+    },
+    gaitValue: {
+        fontSize: 26,
+        fontWeight: 'bold',
+        color: '#b3aeae',
+        lineHeight: 32,
+    },
+    gaitLabel: {
+        fontSize: 13,
+        fontWeight: '400',
+        color: '#999',
     },
 });

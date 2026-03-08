@@ -1,40 +1,63 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+type AlertType = 'movement' | 'fall' | 'urine';
+
 interface AlertCardProps {
-    type: 'movement' | 'fall';
+    type: AlertType;
     title: string;
     timestamp: string;
     showActions?: boolean;
 }
 
-export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp, showActions = false }) => {
-    const isFall = type === 'fall';
-    const iconName = isFall ? 'warning' : 'walk';
-    const iconColor = isFall ? '#FF5252' : '#00BCD4'; // Cyan for movement
-    const bgColor = isFall ? '#FFEBEE' : '#E0F7FA';
+const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; iconColor: string; bgColor: string }> = {
+    movement: {
+        icon: 'walk',
+        iconColor: '#4DD0C4',
+        bgColor: '#E0F7F5',
+    },
+    fall: {
+        icon: 'warning',
+        iconColor: '#FF5252',
+        bgColor: '#FFEBEE',
+    },
+    urine: {
+        icon: 'water',
+        iconColor: '#FFA726',
+        bgColor: '#FFF3E0',
+    },
+};
 
-    // Using simple View instead of NeumorphicCard to match white design
+export const AlertCard: React.FC<AlertCardProps> = ({
+    type,
+    title,
+    timestamp,
+    showActions = false,
+}) => {
+    const config = ALERT_CONFIG[type];
+
     return (
         <View style={styles.alertCard}>
             <View style={styles.alertTopRow}>
-                <View style={[styles.alertIconCircle, { backgroundColor: bgColor }]}>
-                    <Ionicons name={iconName} size={24} color={iconColor} />
+                {/* Icon */}
+                <View style={[styles.alertIconCircle, { backgroundColor: config.bgColor }]}>
+                    <Ionicons name={config.icon} size={22} color={config.iconColor} />
                 </View>
-                <View style={styles.alertContent}>
-                    <Text style={styles.alertText}>{title}</Text>
-                </View>
-                {showActions ? (
+
+                {/* Title */}
+                <Text style={styles.alertText}>{title}</Text>
+
+                {/* Timestamp + chevron */}
+                <View style={styles.rightSection}>
                     <Text style={styles.alertTime}>{timestamp}</Text>
-                ) : (
-                    <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={styles.alertTime}>{timestamp}</Text>
-                        <Ionicons name="chevron-down" size={20} color="#999" />
-                    </View>
-                )}
+                    {!showActions && (
+                        <Ionicons name="chevron-down" size={18} color="#ccc" style={styles.chevron} />
+                    )}
+                </View>
             </View>
 
+            {/* Action buttons */}
             {showActions && (
                 <View style={styles.alertActions}>
                     <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]}>
@@ -53,64 +76,69 @@ const styles = StyleSheet.create({
     alertCard: {
         backgroundColor: '#fff',
         borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        // Shadow
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        marginBottom: 12,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
         elevation: 2,
-        borderWidth: 1,
-        borderColor: '#f0f0f0', // Subtle border
     },
     alertTopRow: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     alertIconCircle: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 38,
+        height: 38,
+        borderRadius: 19,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
-    },
-    alertContent: {
-        flex: 1,
+        flexShrink: 0,
     },
     alertText: {
-        fontSize: 16,
+        flex: 1,
+        fontSize: 15,
         fontWeight: '600',
-        color: '#333',
+        color: '#2C2C2C',
+    },
+    rightSection: {
+        alignItems: 'flex-end',
     },
     alertTime: {
-        fontSize: 12,
-        color: '#999',
+        fontSize: 11,
+        color: '#bbb',
+    },
+    chevron: {
+        marginTop: 4,
     },
     alertActions: {
         flexDirection: 'row',
-        marginTop: 16,
+        marginTop: 12,
         justifyContent: 'flex-end',
-        gap: 10,
+        gap: 8,
     },
     actionBtn: {
-        paddingVertical: 8,
-        paddingHorizontal: 20,
+        paddingVertical: 7,
+        paddingHorizontal: 22,
         borderRadius: 20,
     },
     actionBtnPrimary: {
-        backgroundColor: '#4DD0E1', // Cyan
+        backgroundColor: '#4DD0C4',
     },
     actionBtnSecondary: {
-        backgroundColor: '#E0E0E0',
+        backgroundColor: '#ECECEC',
     },
     actionBtnTextPrimary: {
         color: '#fff',
         fontWeight: '600',
+        fontSize: 13,
     },
     actionBtnTextSecondary: {
         color: '#666',
         fontWeight: '600',
+        fontSize: 13,
     },
 });

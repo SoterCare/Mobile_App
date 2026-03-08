@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { AnimatedCounter } from '../ui/AnimatedCounter';
 
 interface VitalCardProps {
     icon: keyof typeof Ionicons.glyphMap;
@@ -9,23 +10,28 @@ interface VitalCardProps {
     value: string;
     unit: string;
     label: string;
+    sublabel?: string; // e.g. "Room : 30.9 °C" or "Moisture · Dry"
     valueColor?: string;
 }
 
-import { AnimatedCounter } from '../ui/AnimatedCounter';
-
-export const VitalCard: React.FC<VitalCardProps> = ({ icon, iconColor, backgroundColor, value, unit, label, valueColor }) => {
-    // Check if value is a number (integer or float)
+export const VitalCard: React.FC<VitalCardProps> = ({
+    icon,
+    iconColor,
+    backgroundColor,
+    value,
+    unit,
+    label,
+    sublabel,
+    valueColor,
+}) => {
     const isNumeric = !isNaN(parseFloat(value)) && isFinite(Number(value));
-
-    // Determine precision (0 for integer looking strings, 1 for floats)
     const hasDecimal = value.includes('.');
     const precision = hasDecimal ? 1 : 0;
 
     return (
         <View style={styles.vitalCard}>
             <View style={[styles.vitalIconCircle, { backgroundColor }]}>
-                <Ionicons name={icon} size={28} color={iconColor} />
+                <Ionicons name={icon} size={26} color={iconColor} />
             </View>
             <View style={styles.vitalInfo}>
                 <View style={styles.valueContainer}>
@@ -36,11 +42,16 @@ export const VitalCard: React.FC<VitalCardProps> = ({ icon, iconColor, backgroun
                             style={[styles.vitalValue, valueColor ? { color: valueColor } : {}]}
                         />
                     ) : (
-                        <Text style={[styles.vitalValue, valueColor ? { color: valueColor } : {}]}>{value}</Text>
+                        <Text style={[styles.vitalValue, valueColor ? { color: valueColor } : {}]}>
+                            {value}
+                        </Text>
                     )}
-                    <Text style={[styles.vitalUnit, valueColor ? { color: valueColor } : {}]}>{unit}</Text>
+                    <Text style={[styles.vitalUnit, valueColor ? { color: valueColor } : {}]}>
+                        {unit}
+                    </Text>
                 </View>
                 <Text style={styles.vitalLabel}>{label}</Text>
+                {sublabel ? <Text style={styles.vitalSublabel}>{sublabel}</Text> : null}
             </View>
         </View>
     );
@@ -49,15 +60,14 @@ export const VitalCard: React.FC<VitalCardProps> = ({ icon, iconColor, backgroun
 const styles = StyleSheet.create({
     vitalCard: {
         backgroundColor: '#fff',
-        borderRadius: 24,
-        padding: 16,
-        paddingHorizontal: 20,
-        flexDirection: 'row', // Horizontal layout
-        width: '47%',
+        borderRadius: 20,
+        padding: 14,
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        width: '48%',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        height: 120, // Reduced height for horizontal look like mockup
-        // Shadow
+        minHeight: 110,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
@@ -65,14 +75,16 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     vitalIconCircle: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: 46,
+        height: 46,
+        borderRadius: 23,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 12,
+        marginRight: 10,
+        flexShrink: 0,
     },
     vitalInfo: {
+        flex: 1,
         alignItems: 'flex-start',
         justifyContent: 'center',
     },
@@ -84,18 +96,24 @@ const styles = StyleSheet.create({
     vitalValue: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#FF5252',
-        lineHeight: 34,
+        color: '#E8A020',
+        lineHeight: 32,
     },
     vitalUnit: {
-        fontSize: 14,
-        fontWeight: 'normal',
+        fontSize: 12,
+        fontWeight: '500',
         color: '#999',
         marginLeft: 2,
     },
     vitalLabel: {
-        fontSize: 13,
-        color: '#666',
+        fontSize: 12,
+        color: '#888',
         textAlign: 'left',
+    },
+    vitalSublabel: {
+        fontSize: 12,
+        color: '#888',
+        textAlign: 'left',
+        marginTop: 1,
     },
 });

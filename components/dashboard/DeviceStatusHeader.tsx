@@ -9,9 +9,6 @@ export const DeviceStatusHeader = () => {
                 <Text style={styles.statusLabel}>
                     Thigh Band: <Text style={styles.statusOnline}>Online</Text>
                 </Text>
-                <Text style={styles.statusLabel}>
-                    Wrist Band: <Text style={styles.statusOnline}>Online</Text>
-                </Text>
             </View>
             <View style={styles.deviceControl}>
                 <View style={styles.connectionStatus}>
@@ -20,7 +17,7 @@ export const DeviceStatusHeader = () => {
                 </View>
                 <TouchableOpacity style={styles.deviceDropdown}>
                     <Text style={styles.deviceDropdownText}>Device 01</Text>
-                    <Ionicons name="chevron-down" size={16} color="#333" />
+                    <Ionicons name="chevron-down" size={14} color="#333" />
                 </TouchableOpacity>
             </View>
         </View>
@@ -43,46 +40,45 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     statusLabel: {
-        fontSize: 14,
-        color: '#666',
-        fontWeight: '600',
-        marginBottom: 4,
+        fontSize: 15,
+        color: '#888',
+        fontWeight: '500',
     },
     statusOnline: {
-        color: '#4CAF50',
-        fontWeight: 'bold',
+        color: '#4DD0C4',
+        fontWeight: '600',
     },
     deviceControl: {
         alignItems: 'flex-end',
+        gap: 6,
     },
     connectionStatus: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 8,
     },
     onlineDot: {
         width: 6,
         height: 6,
         borderRadius: 3,
-        backgroundColor: '#4CAF50',
-        marginRight: 6,
+        backgroundColor: '#4DD0C4',
+        marginRight: 5,
     },
     connectionText: {
-        fontSize: 12,
-        color: '#666',
+        fontSize: 11,
+        color: '#999',
     },
     deviceDropdown: {
         backgroundColor: '#8FD9E5',
-        paddingVertical: 6,
+        paddingVertical: 5,
         paddingHorizontal: 12,
         borderRadius: 20,
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 4,
     },
     deviceDropdownText: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#333',
         fontWeight: '600',
-        marginRight: 4,
     },
 });
