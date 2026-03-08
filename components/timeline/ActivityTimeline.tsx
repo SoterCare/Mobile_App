@@ -28,15 +28,29 @@ const getIconConfig = (type: ActivityEvent['type']) => {
       return {
         iconName: 'walk' as const,
         iconComponent: MaterialCommunityIcons,
-        backgroundColor: '#4ECDC4',
-        cardBackground: '#D4F5F5',
+        backgroundColor: '#40DFDF', // Cyan
+        cardBackground: '#DDFAFA',
       };
     case 'fall':
       return {
-        iconName: 'alert' as const,
+        iconName: 'warning' as const, // Changed from alert
         iconComponent: Ionicons,
-        backgroundColor: '#F5A9A9',
-        cardBackground: '#FFEEEE',
+        backgroundColor: '#FF9789', // Light Red Pastel
+        cardBackground: '#FDECEB',
+      };
+    case 'connected':
+      return {
+        iconName: 'server' as const,
+        iconComponent: Ionicons,
+        backgroundColor: '#9A9A9A', // Grey
+        cardBackground: '#F0F0F0',
+      };
+    case 'disconnected':
+      return {
+        iconName: 'server' as const,
+        iconComponent: Ionicons,
+        backgroundColor: '#9A9A9A', // Grey
+        cardBackground: '#F0F0F0',
       };
     default:
       return {
@@ -49,9 +63,9 @@ const getIconConfig = (type: ActivityEvent['type']) => {
 };
 
 // Constants for layout - matching reference image exactly
-const ICON_SIZE = 36;
-const CARD_HEIGHT = 48;
-const ITEM_GAP = 12;
+const ICON_SIZE = 40;
+const CARD_HEIGHT = 56;
+const ITEM_GAP = 16;
 
 const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   events,
@@ -59,12 +73,9 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   onTrashPress,
   style,
 }) => {
-  // Filter to show only movement and fall events, limit to 2  
+  // Show all available mock events from the array
   const displayEvents = useMemo(() => {
-    const filteredEvents = events.filter(
-      (event) => event.type === 'movement' || event.type === 'fall'
-    );
-    return filteredEvents.slice(0, 2);
+    return events;
   }, [events]);
 
   // Calculate line height: from center of first icon to center of last icon
@@ -82,10 +93,10 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
           style={styles.filterButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons
-            name="trash-outline"
-            size={18}
-            color="#CCCCCC"
+          <MaterialCommunityIcons
+            name="delete-restore" // Represents deleting history records
+            size={24}
+            color="#666666"
           />
         </TouchableOpacity>
       </View>
@@ -98,9 +109,9 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
             style={[
               styles.verticalLine,
               {
-                height: lineHeight,
+                height: lineHeight + (ICON_SIZE / 2), // Draw past the last icon to mirror image
                 top: CARD_HEIGHT / 2,
-                left: ICON_SIZE / 2 - 1,
+                left: ICON_SIZE / 2 - 2, // 2 is half of the border width of 4
               }
             ]}
           />
@@ -140,15 +151,22 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
               <View style={styles.cardWrapper}>
                 <View
                   style={[
-                    styles.eventCard,
-                    { backgroundColor: config.cardBackground },
+                    styles.eventCardContainer,
+                    { backgroundColor: config.backgroundColor },
                   ]}
                 >
-                  <Text style={styles.eventLabel}>{event.label}</Text>
-                  <Text style={styles.eventTime}>{event.time}</Text>
+                  <View
+                    style={[
+                      styles.eventCardInner,
+                      { backgroundColor: config.cardBackground },
+                    ]}
+                  >
+                    <Text style={styles.eventLabel}>{event.label}</Text>
+                    <Text style={styles.eventTime}>{event.time}</Text>
+                  </View>
                 </View>
 
-                {/* Device info below Fall card */}
+                {/* Device info below card */}
                 {event.deviceInfo && event.deviceInfo.length > 0 && (
                   <View style={styles.deviceInfoContainer}>
                     {event.deviceInfo.map((info: string, i: number) => (
@@ -178,20 +196,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#333333',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#4A4A4A',
   },
   filterButton: {
     padding: 4,
   },
   timeline: {
     position: 'relative',
+    marginTop: 8,
   },
   verticalLine: {
     position: 'absolute',
-    width: 2,
-    backgroundColor: '#E0E0E0',
+    width: 4,
+    backgroundColor: '#CCCCCC',
     zIndex: 0,
   },
   timelineItem: {
@@ -214,24 +233,35 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     flex: 1,
-    marginLeft: 10,
+    marginLeft: 16,
   },
-  eventCard: {
+  eventCardContainer: {
+    borderRadius: 24, // Increased curve
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    overflow: 'hidden',
+  },
+  eventCardInner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     height: CARD_HEIGHT,
     paddingHorizontal: 16,
-    borderRadius: 24,
+    marginLeft: 6, // Thickness of the left color border
+    borderTopLeftRadius: 24,
+    borderBottomLeftRadius: 24,
   },
   eventLabel: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#333333',
   },
   eventTime: {
     fontSize: 12,
-    color: '#999999',
+    color: '#666666',
   },
   deviceInfoContainer: {
     marginTop: 8,
@@ -239,10 +269,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   deviceInfoText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#999999',
-    marginBottom: 2,
-    fontWeight: '400',
+    marginBottom: 4,
+    fontWeight: '500',
   },
 });
 

@@ -10,7 +10,7 @@ export interface VitalDataPoint {
 
 export interface ActivityEvent {
   id: string;
-  type: 'movement' | 'fall' | 'urine';
+  type: 'movement' | 'fall' | 'connected' | 'disconnected';
   label: string;
   time: string;
   deviceInfo?: string[];
@@ -137,15 +137,16 @@ export const activityEventsDay: ActivityEvent[] = [
   },
   {
     id: '3',
-    type: 'movement',
-    label: 'Movement Detected',
-    time: '18:22 PM',
+    type: 'connected',
+    label: 'Edge Unit Connected',
+    time: '19:15 PM',
+    deviceInfo: ['Wrist band offline - 19:14 PM', 'Thigh band offline - 19:14 PM'],
   },
   {
     id: '4',
-    type: 'urine',
-    label: 'Urine Detected',
-    time: '15:10 PM',
+    type: 'disconnected',
+    label: 'Edge Unit Disconnected',
+    time: '19:14 PM',
   },
 ];
 

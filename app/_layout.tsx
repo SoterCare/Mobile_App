@@ -8,9 +8,13 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { VitalsProvider } from '@/contexts/VitalsContext';
 import { View, ActivityIndicator, StyleSheet, Image } from 'react-native';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { reportError } from '@/services/crashReportService';
+import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
+import { initDatabase } from '@/database/db';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  initialRouteName: '(tabs)',
 };
 
 import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
@@ -39,43 +43,51 @@ function RootLayoutNav() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const isRoot = (segments as string[]).length === 0;
 
     if (!isAuthenticated && !inAuthGroup) {
+      // Not authenticated and not in auth group -> redirect to welcome
       router.replace('/(auth)/welcome');
-    } else if (isAuthenticated && inAuthGroup) {
+    } else if (isAuthenticated && (inAuthGroup || isRoot)) {
+      // Authenticated but trying to access auth screens or root -> redirect to tabs
       router.replace('/(tabs)');
     }
   }, [isAuthenticated, segments, isLoading, router]);
-
-  // Combined Loading State
-  // We show SplashScreen if:
-  // 1. Data is Loading (isLoading = true)
-  // OR
-  // 2. Animation hasn't finished (isSplashAnimationFinished = false)
-
-  if (isLoading || !isSplashAnimationFinished) {
-    // If data is loaded but animation isn't done, we still show the Splash.
-    // We pass onFinish to update state.
-    // NOTE: We wrap this to ensure it sits ON TOP of everything if we mount the rest of the app underneath?
-    // Actually, standard practice: Return Splash.
-    return (
-      <CustomSplashScreen onFinish={() => setIsSplashAnimationFinished(true)} />
-    );
-  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="subscription" />
+        <Stack.Screen name="export-report" />
+        <Stack.Screen name="settings/payment" />
+        <Stack.Screen name="settings/temperature" />
+        <Stack.Screen name="settings/language" />
+        <Stack.Screen name="settings/about" />
+        <Stack.Screen name="settings/help" />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
+      {(isLoading || !isSplashAnimationFinished) && (
+        <CustomSplashScreen onFinish={() => setIsSplashAnimationFinished(true)} />
+      )}
     </ThemeProvider>
   );
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    const ErrorUtilsAny = (globalThis as any).ErrorUtils;
+    if (ErrorUtilsAny?.getGlobalHandler && ErrorUtilsAny?.setGlobalHandler) {
+      const prev = ErrorUtilsAny.getGlobalHandler();
+      ErrorUtilsAny.setGlobalHandler((err: any, isFatal?: boolean) => {
+        reportError(err, { isFatal });
+        if (typeof prev === 'function') prev(err, isFatal);
+      });
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <VitalsProvider>

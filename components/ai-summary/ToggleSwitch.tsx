@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { TimelineColors } from '@/theme/colors';
+import { Shadows } from '@/theme/shadows';
 
 interface ToggleSwitchProps {
     activeTab: 'today' | 'previous';
@@ -8,7 +10,7 @@ interface ToggleSwitchProps {
 
 export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ activeTab, onToggle }) => {
     return (
-        <View style={styles.toggleContainer}>
+        <View style={[styles.toggleContainer, Shadows.card]}>
             <TouchableOpacity
                 style={[
                     styles.toggleButton,
@@ -44,37 +46,30 @@ const styles = StyleSheet.create({
     toggleContainer: {
         flexDirection: 'row',
         backgroundColor: '#FFFFFF',
-        borderRadius: 25,
+        borderRadius: 30,
         padding: 4,
-        marginBottom: 30,
+        width: '100%',
+        ...Shadows.card,
+        elevation: 4, // explicit elevation for android
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-        alignSelf: 'flex-start',
-        // minWidth: 200, // Removed to allow natural expansion or let parent control width
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
     },
     toggleButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 24, // Reduced from 30
-        borderRadius: 20,
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 26,
         alignItems: 'center',
         justifyContent: 'center',
-        flex: 1,
     },
     activeToggleButton: {
-        backgroundColor: '#8FD9E5',
-        shadowColor: '#8FD9E5',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 3,
+        backgroundColor: '#8FD9E5', // the cyan color mapped exactly
     },
     toggleText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#666',
+        color: '#333333',
     },
     activeToggleText: {
         color: '#FFFFFF',

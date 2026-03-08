@@ -7,7 +7,13 @@ import {
   SignupArgs, // Import the new type
   JWTPayload,
 } from '@/types/auth.types';
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+
+interface JWTPayload extends JwtPayload {
+  userId: string;
+  email: string;
+  name: string;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -122,14 +128,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Logic: Here you would typically call your backend API
       // Example: const response = await api.post('/auth/signup', { name, email, password });
       // const { token, user } = response.data;
-      
+
       // For now, we simulate a successful signup and log them in
       // This is a placeholder; replace with your actual API call logic
       console.log('Signing up user:', name);
-      
+
       // Example of auto-signing in after registration:
       // await signIn(fakeToken, fakeUser);
-      
+
     } catch (error) {
       console.error('Signup error:', error);
       throw error;
