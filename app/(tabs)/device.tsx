@@ -21,64 +21,8 @@ interface BluetoothDevice {
     rssi: number;
 }
 
-// Safe initialization of BleManager
-let manager: BleManager;
-try {
-    manager = new BleManager();
-} catch (error) {
-    console.warn('Failed to initialize BleManager. Running in mock mode.', error);
-    // Mock manager functionality
-    manager = {
-        onStateChange: (listener: (state: State) => void) => {
-            // Mock state change after a short delay
-            setTimeout(() => listener(State.PoweredOn), 100);
-            return { remove: () => { } };
-        },
-        startDeviceScan: (uuids: any, options: any, listener: (error: any, device: any) => void) => {
-            console.log('Mock scanning started');
-            // Simulate finding devices
-            setTimeout(() => {
-                listener(null, {
-                    id: 'mock-1',
-                    name: 'Mock Device 1',
-                    rssi: -60,
-                    services: () => Promise.resolve([]),
-                    connectToDevice: () => Promise.resolve({
-                        name: 'Mock Device 1',
-                        discoverAllServicesAndCharacteristics: () => Promise.resolve(),
-                        services: () => Promise.resolve([])
-                    })
-                });
-            }, 1000);
-            setTimeout(() => {
-                listener(null, {
-                    id: 'mock-2',
-                    name: 'SoterCare Band',
-                    rssi: -45,
-                    services: () => Promise.resolve([]),
-                    connectToDevice: () => Promise.resolve({
-                        name: 'SoterCare Band',
-                        discoverAllServicesAndCharacteristics: () => Promise.resolve(),
-                        services: () => Promise.resolve([])
-                    })
-                });
-            }, 2000);
-        },
-        stopDeviceScan: () => {
-            console.log('Mock scanning stopped');
-        },
-        connectToDevice: (deviceId: string) => {
-            return Promise.resolve({
-                name: 'Mock Device',
-                discoverAllServicesAndCharacteristics: () => Promise.resolve(),
-                services: () => Promise.resolve([])
-            });
-        },
-        cancelDeviceConnection: (deviceId: string) => {
-            return Promise.resolve({ id: deviceId });
-        }
-    } as unknown as BleManager;
-}
+// Initialize BleManager
+const manager = new BleManager();
 
 export default function DeviceScreen() {
     const [isScanning, setIsScanning] = useState(false);
