@@ -15,6 +15,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     AUTH: {
       LOGIN: '/auth/login',
+      SOCIAL_LOGIN: '/auth/social-login',
       LOGIN_VERIFY: '/auth/login-verify',
       REGISTER: '/auth/register',
       VERIFY_REGISTER: '/auth/verify',

@@ -39,4 +39,16 @@ export const authService = {
             throw error;
         }
     },
+
+    socialLogin: async (providerToken: string, userDetails: any) => {
+        try {
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.SOCIAL_LOGIN, {
+                providerToken,
+                ...userDetails
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
 };
