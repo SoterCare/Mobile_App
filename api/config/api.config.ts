@@ -38,6 +38,10 @@ export const API_CONFIG = {
     REPORTS: {
       EXPORT: '/reports/export',
     },
+    TIMELINE: {
+      DISMISSED: '/timeline/dismissed',
+      RESTORE: '/timeline/restore',
+    },
   },
 };
 
