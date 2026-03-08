@@ -5,7 +5,7 @@
 export const API_CONFIG = {
   // Base URL - Update this with your backend API URL
   BASE_URL: __DEV__
-    ? 'http://192.168.144.170:3000' // Localhost (Dev) - If logic fails, use: 'https://backend.sotercare.com/'
+    ? 'http://192.168.35.170:3000' // Localhost (Dev) - If logic fails, use: 'https://backend.sotercare.com/'
     : 'https://unlikely-caryn-sotercare-873e6112.koyeb.app', // Production
 
   // Request timeout (milliseconds)
