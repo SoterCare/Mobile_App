@@ -67,12 +67,12 @@ export const VitalsGrid = () => {
                 {/* Water drop icon, teal */}
                 <VitalCard
                     icon="water"
-                    iconColor="#4DD0C4"
-                    backgroundColor="#E4F5F3"
+                    iconColor="#5bcfde"
+                    backgroundColor="#daf9fb"
                     value={String(moisture)}
                     unit="%"
                     label="Moisture · Dry"
-                    valueColor="#4DD0C4"
+                    valueColor="#5bcfde"
                 />
             </View>
 
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
         height: 54,
         borderRadius: 27,
         // Soft blue-grey background matching Image 2
-        backgroundColor: '#D6E9F4',
+        backgroundColor: '#d9ecf6',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,

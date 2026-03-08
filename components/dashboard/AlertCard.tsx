@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,7 +8,6 @@ interface AlertCardProps {
     type: AlertType;
     title: string;
     timestamp: string;
-    showActions?: boolean;
 }
 
 const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; iconColor: string; bgColor: string }> = {
@@ -29,16 +28,16 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     },
 };
 
-export const AlertCard: React.FC<AlertCardProps> = ({
-    type,
-    title,
-    timestamp,
-    showActions = false,
-}) => {
+export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) => {
+    const [expanded, setExpanded] = useState(false);
     const config = ALERT_CONFIG[type];
 
     return (
-        <View style={styles.alertCard}>
+        <TouchableOpacity
+            style={styles.alertCard}
+            onPress={() => setExpanded(!expanded)}
+            activeOpacity={0.85}
+        >
             <View style={styles.alertTopRow}>
                 {/* Icon */}
                 <View style={[styles.alertIconCircle, { backgroundColor: config.bgColor }]}>
@@ -51,24 +50,33 @@ export const AlertCard: React.FC<AlertCardProps> = ({
                 {/* Timestamp + chevron */}
                 <View style={styles.rightSection}>
                     <Text style={styles.alertTime}>{timestamp}</Text>
-                    {!showActions && (
-                        <Ionicons name="chevron-down" size={18} color="#ccc" style={styles.chevron} />
-                    )}
+                    <Ionicons
+                        name={expanded ? 'chevron-up' : 'chevron-down'}
+                        size={16}
+                        color="#ccc"
+                        style={styles.chevron}
+                    />
                 </View>
             </View>
 
-            {/* Action buttons */}
-            {showActions && (
+            {/* Expandable action buttons */}
+            {expanded && (
                 <View style={styles.alertActions}>
-                    <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]}>
+                    <TouchableOpacity
+                        style={[styles.actionBtn, styles.actionBtnPrimary]}
+                        onPress={(e) => { e.stopPropagation?.(); }}
+                    >
                         <Text style={styles.actionBtnTextPrimary}>Attended</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.actionBtn, styles.actionBtnSecondary]}>
+                    <TouchableOpacity
+                        style={[styles.actionBtn, styles.actionBtnSecondary]}
+                        onPress={(e) => { e.stopPropagation?.(); }}
+                    >
                         <Text style={styles.actionBtnTextSecondary}>False</Text>
                     </TouchableOpacity>
                 </View>
             )}
-        </View>
+        </TouchableOpacity>
     );
 };
 
@@ -78,7 +86,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         paddingVertical: 14,
         paddingHorizontal: 16,
-        marginBottom: 12,
+        marginBottom: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.04,
@@ -90,9 +98,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     alertIconCircle: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -121,8 +129,8 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     actionBtn: {
-        paddingVertical: 7,
-        paddingHorizontal: 22,
+        paddingVertical: 8,
+        paddingHorizontal: 24,
         borderRadius: 20,
     },
     actionBtnPrimary: {
