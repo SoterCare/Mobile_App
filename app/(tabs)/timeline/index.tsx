@@ -12,6 +12,7 @@ import {
   Modal,
   Alert,
   Pressable,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,10 +45,8 @@ const PERIOD_OPTIONS = [
   { key: 'custom', label: 'Custom' },
 ];
 
-// Vital type options for segmented control
+// Vital type options for segmented control (removed from UI, defaulting to temp)
 const VITAL_OPTIONS = [
-  { key: 'heart', label: 'Heart rate' },
-  { key: 'spo2', label: 'Blood O₂' },
   { key: 'temp', label: 'Temperature' },
 ];
 
@@ -81,9 +80,8 @@ const FILTER_OPTIONS = ['All', 'Movements', 'Falls', 'Urine'];
 export default function TimelineScreen() {
   const router = useRouter();
 
-  // State
   const [period, setPeriod] = useState<PeriodType>('day');
-  const [vital, setVital] = useState<VitalType>('heart');
+  const [vital, setVital] = useState<VitalType>('temp'); // Defaulting to temp
   const [selectedDay, setSelectedDay] = useState('2025/11/01');
   const [selectedMonth, setSelectedMonth] = useState('2025/11');
   const [selectedRange, setSelectedRange] = useState('2025/11/01 - 2025/11/07');
@@ -136,7 +134,6 @@ export default function TimelineScreen() {
     const filterMap: Record<string, ActivityEvent['type']> = {
       Movements: 'movement',
       Falls: 'fall',
-      Urine: 'urine',
     };
     const filterType = filterMap[activeFilter];
     return activityEventsDay.filter((event) => event.type === filterType);
@@ -205,87 +202,85 @@ export default function TimelineScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <View style={styles.mainContent}>
-        {/* Header Row */}
-        <View style={styles.headerRow}>
-          <Text style={styles.headerTitle}>Vitals Statistics</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.mainContent}>
+          {/* Top Header - Export Button */}
+          <View style={styles.topHeader}>
+            <TouchableOpacity
+              style={[styles.exportButton]}
+              onPress={handleExportReport}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.exportButtonText}>Export Report</Text>
+              <Ionicons
+                name="chevron-forward"
+                size={14}
+                color={TimelineColors.textMedium}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Dashboard Title */}
+          <Text style={styles.headerTitle}>Temperature Statistics</Text>
+
+          {/* Period Segmented Control */}
+          <SegmentedControl
+            options={PERIOD_OPTIONS}
+            activeKey={period}
+            onChange={handlePeriodChange}
+            variant="pillButtons"
+            style={styles.periodControl}
+          />
+
+          {/* Date Selector */}
           <TouchableOpacity
-            style={[styles.exportButton, Shadows.button]}
-            onPress={handleExportReport}
+            style={styles.dateSelector}
+            onPress={() => setDatePickerVisible(true)}
             activeOpacity={0.7}
           >
-            <Text style={styles.exportButtonText}>Export Report</Text>
+            <Text style={styles.dateSelectorText}>{dateDisplayText}</Text>
             <Ionicons
-              name="chevron-forward"
-              size={14}
-              color={TimelineColors.textMedium}
+              name="caret-down"
+              size={16}
+              color={"#666"}
             />
           </TouchableOpacity>
-        </View>
 
-        {/* Period Segmented Control */}
-        <SegmentedControl
-          options={PERIOD_OPTIONS}
-          activeKey={period}
-          onChange={handlePeriodChange}
-          variant="pillButtons"
-          style={styles.periodControl}
-        />
+          {/* Flex container for bottom alignment */}
+          <View style={styles.flexContainer}>
+            {/* Chart Card */}
+            <VitalsChartCard
+              data={chartData}
+              yAxisLabel={yAxisConfig.label}
+              minValue={yAxisConfig.minValue}
+              maxValue={yAxisConfig.maxValue}
+              onExpand={handleExpandChart}
+              style={styles.chartCard}
+            />
 
-        {/* Date Selector */}
-        <TouchableOpacity
-          style={styles.dateSelector}
-          onPress={() => setDatePickerVisible(true)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.dateSelectorText}>{dateDisplayText}</Text>
-          <Ionicons
-            name="caret-down"
-            size={12}
-            color={TimelineColors.textMedium}
-          />
-        </TouchableOpacity>
-
-        {/* Vital Segmented Control */}
-        <SegmentedControl
-          options={VITAL_OPTIONS}
-          activeKey={vital}
-          onChange={handleVitalChange}
-          variant="capsuleTabs"
-          style={styles.vitalControl}
-        />
-
-        {/* Flex container for bottom alignment */}
-        <View style={styles.flexContainer}>
-          {/* Chart Card */}
-          <VitalsChartCard
-            data={chartData}
-            yAxisLabel={yAxisConfig.label}
-            minValue={yAxisConfig.minValue}
-            maxValue={yAxisConfig.maxValue}
-            onExpand={handleExpandChart}
-            style={styles.chartCard}
-          />
-
-          {/* Activity Section (varies by period) */}
-          <View style={styles.bottomSection}>
-            {period === 'day' ? (
-              <ActivityTimeline
-                events={filteredEvents}
-                onFilterPress={() => setFilterModalVisible(true)}
-                onTrashPress={handleTrashPress}
-                style={styles.activitySection}
-              />
-            ) : (
-              <ActivityStatsCards
-                stats={activityStats}
-                title={activityTitle}
-                style={styles.activitySection}
-              />
-            )}
+            {/* Activity Section (varies by period) */}
+            <View style={[styles.bottomSection, { marginTop: 12 }]}>
+              {period === 'day' ? (
+                <ActivityTimeline
+                  events={filteredEvents}
+                  onFilterPress={() => setFilterModalVisible(true)}
+                  onTrashPress={handleTrashPress}
+                  style={styles.activitySection}
+                />
+              ) : (
+                <ActivityStatsCards
+                  stats={activityStats}
+                  title={activityTitle}
+                  style={styles.activitySection}
+                />
+              )}
+            </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
 
       {/* Date Picker Modal */}
       <Modal
@@ -407,13 +402,15 @@ export default function TimelineScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BACKGROUND_COLOR,
+    backgroundColor: '#F7F7F7',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 110, // Original padding for tab bar safety
   },
   mainContent: {
-    flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 110, // Original padding for tab bar safety
+    paddingTop: 16,
   },
   flexContainer: {
     flex: 1,
@@ -423,37 +420,41 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     paddingBottom: 16, // Extra padding as requested
   },
-  // Header
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1A1A1A',
+  // Top Header
+  topHeader: {
+    alignItems: 'flex-end',
+    marginBottom: 16,
   },
   exportButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#E8E8E8',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    gap: 2,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
   exportButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
-    color: '#666666',
+    color: '#333',
+  },
+  // Dashboard Title
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#4A4A4A',
+    marginBottom: 20,
+    marginLeft: 4,
   },
   // Period control
   periodControl: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   // Date selector
   dateSelector: {
@@ -461,17 +462,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginBottom: 20,
+    marginBottom: 4,
   },
   dateSelectorText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333333',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#4A4A4A',
   },
   // Vital control
   vitalControl: {
-    marginBottom: 8,
-    marginHorizontal: 0,
+    display: 'none',
   },
   // Chart card
   chartCard: {
