@@ -28,3 +28,16 @@ export const initDatabase = async () => {
         console.error("Failed to initialize database:", error);
     }
 };
+
+export const insertLog = async (data: any) => {
+    try {
+        const timestamp = Date.now();
+        await expoDb.runAsync(
+            `INSERT INTO nightly_logs (data, synced, created_at) VALUES (?, ?, ?)`,
+            [JSON.stringify(data), 0, timestamp]
+        );
+        console.log("Log saved locally");
+    } catch (error) {
+        console.error("Failed to save log:", error);
+    }
+};
