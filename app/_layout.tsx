@@ -17,12 +17,6 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
-import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
-
-// ... (previous imports)
-
-import { initDatabase } from '@/database/db';
-
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { isAuthenticated, isLoading } = useAuth();
