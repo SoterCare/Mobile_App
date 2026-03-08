@@ -1,7 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -9,17 +9,12 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { View, ActivityIndicator, StyleSheet, Image } from 'react-native';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { reportError } from '@/services/crashReportService';
+import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
+import { initDatabase } from '@/database/db';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  initialRouteName: '(tabs)',
 };
-
-import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
-import { useState } from 'react';
-
-// ... (previous imports)
-
-import { initDatabase } from '@/database/db';
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -41,29 +36,16 @@ function RootLayoutNav() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const isRoot = segments.length === 0;
 
     if (!isAuthenticated && !inAuthGroup) {
+      // Not authenticated and not in auth group -> redirect to welcome
       router.replace('/(auth)/welcome');
-    } else if (isAuthenticated && inAuthGroup) {
+    } else if (isAuthenticated && (inAuthGroup || isRoot)) {
+      // Authenticated but trying to access auth screens or root -> redirect to tabs
       router.replace('/(tabs)');
     }
   }, [isAuthenticated, segments, isLoading, router]);
-
-  // Combined Loading State
-  // We show SplashScreen if:
-  // 1. Data is Loading (isLoading = true)
-  // OR
-  // 2. Animation hasn't finished (isSplashAnimationFinished = false)
-
-  if (isLoading || !isSplashAnimationFinished) {
-    // If data is loaded but animation isn't done, we still show the Splash.
-    // We pass onFinish to update state.
-    // NOTE: We wrap this to ensure it sits ON TOP of everything if we mount the rest of the app underneath?
-    // Actually, standard practice: Return Splash.
-    return (
-      <CustomSplashScreen onFinish={() => setIsSplashAnimationFinished(true)} />
-    );
-  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -77,6 +59,9 @@ function RootLayoutNav() {
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
+      {(isLoading || !isSplashAnimationFinished) && (
+        <CustomSplashScreen onFinish={() => setIsSplashAnimationFinished(true)} />
+      )}
     </ThemeProvider>
   );
 }

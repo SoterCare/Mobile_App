@@ -26,6 +26,8 @@ export default function ExportReportScreen() {
     const [showPicker, setShowPicker] = useState<'start' | 'end' | null>(null);
 
     const [selectedMetrics, setSelectedMetrics] = useState({
+        heartRate: false,
+        spo2: false,
         temperature: false,
         activity: false,
     });
@@ -73,7 +75,7 @@ export default function ExportReportScreen() {
         try {
             setIsExporting(true);
 
-            if (!selectedMetrics.temperature && !selectedMetrics.activity) {
+            if (!selectedMetrics.temperature && !selectedMetrics.activity && !selectedMetrics.heartRate && !selectedMetrics.spo2) {
                 Alert.alert('Selection Error', 'Please select at least one metric to export.');
                 return;
             }
@@ -251,14 +253,13 @@ export default function ExportReportScreen() {
                 {/* Select Device */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Select Device</Text>
-                    <NeumorphicButton
-                        onPress={() => { }}
-                        style={styles.dropdownButton}
-                        contentStyle={{ backgroundColor: '#A0E4EB', paddingHorizontal: 25, borderRadius: 20, justifyContent: 'space-between', width: '100%' }}
-                        label={selectedDevice}
-                        icon={<IconSymbol name="chevron.down" size={20} color="#555" />}
-                        variant="primary"
-                    />
+                    <TouchableOpacity
+                        style={styles.dropdownButtonBox}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.dropdownButtonText}>{selectedDevice}</Text>
+                        <IconSymbol name="chevron.down" size={20} color="#333" />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Select Date */}
@@ -359,19 +360,28 @@ export default function ExportReportScreen() {
                     <Text style={styles.sectionTitle}>Select Metrics to Export</Text>
                     <View style={styles.metricsRow}>
                         <MetricCard
+                            icon="heart.fill"
+                            color="#FF8A8A"
+                            bgColor="#FFEBEB"
+                            label="Heart Rate"
+                            checked={selectedMetrics.heartRate}
+                            onPress={() => toggleMetric('heartRate')}
+                        />
+                        <MetricCard
+                            icon="drop.fill"
+                            color="#8FD9E5"
+                            bgColor="#E6F7FA"
+                            label="SpO2 Level"
+                            checked={selectedMetrics.spo2}
+                            onPress={() => toggleMetric('spo2')}
+                        />
+                        <MetricCard
                             icon="thermometer"
-                            color="#ffb74d"
+                            color="#FFB966"
+                            bgColor="#FFF5E6"
                             label="Temperature"
                             checked={selectedMetrics.temperature}
                             onPress={() => toggleMetric('temperature')}
-                        />
-                        <MetricCard
-                            materialIcon="walk"
-                            color="#4DD0E1"
-                            label="Activity"
-                            checked={selectedMetrics.activity}
-                            onPress={() => toggleMetric('activity')}
-                            iconSize={34}
                         />
                     </View>
                 </View>
@@ -380,7 +390,7 @@ export default function ExportReportScreen() {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Export Format</Text>
                     <View style={styles.formatToggleContainer}>
-                        <NeumorphicCard style={styles.formatToggleCard} contentContainerStyle={styles.formatToggleContent}>
+                        <View style={styles.formatToggleContent}>
                             <TouchableOpacity
                                 style={[styles.formatOption, exportFormat === 'CSV' && styles.formatOptionActive]}
                                 onPress={() => setExportFormat('CSV')}
@@ -393,20 +403,35 @@ export default function ExportReportScreen() {
                             >
                                 <Text style={[styles.formatText, exportFormat === 'PDF' && styles.formatTextActive]}>PDF</Text>
                             </TouchableOpacity>
-                        </NeumorphicCard>
+                        </View>
                     </View>
+                </View>
+
+                {/* Activity Report */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Activity Report</Text>
+                    <TouchableOpacity style={styles.activityReportRow} onPress={() => toggleMetric('activity')} activeOpacity={0.8}>
+                        <View style={[styles.checkbox, selectedMetrics.activity && styles.checkboxChecked]}>
+                            {selectedMetrics.activity && <IconSymbol name="checkmark" size={12} color="#FFF" />}
+                        </View>
+                        <Text style={styles.activityReportText}>Include Activity Report</Text>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Export Button */}
                 <View style={styles.footer}>
-                    <NeumorphicButton
+                    <TouchableOpacity
+                        style={[styles.exportButton, isExporting && { opacity: 0.7 }]}
+                        activeOpacity={0.8}
                         onPress={handleExport}
-                        label={isExporting ? "Exporting..." : "Export"}
-                        style={styles.exportButton}
-                        contentStyle={{ backgroundColor: '#81D4FA', borderRadius: 25, height: 56, justifyContent: 'center' }}
-                        textStyle={styles.exportButtonText}
-                        icon={isExporting ? <ActivityIndicator color="#FFF" /> : null}
-                    />
+                        disabled={isExporting}
+                    >
+                        {isExporting ? (
+                            <ActivityIndicator color="#FFFFFF" />
+                        ) : (
+                            <Text style={styles.exportButtonText}>Export</Text>
+                        )}
+                    </TouchableOpacity>
                     <Text style={styles.footerText}>{`Exporting as a ${exportFormat} document`}</Text>
                 </View>
             </ScrollView>
@@ -414,21 +439,18 @@ export default function ExportReportScreen() {
     );
 }
 
-function MetricCard({ icon, materialIcon, color, label, checked, onPress, iconSize = 30 }: any) {
+function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 30 }: any) {
     return (
         <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.metricCardWrapper}>
-            <NeumorphicCard style={styles.metricCard} contentContainerStyle={styles.metricCardContent}>
-                <View style={[styles.iconCircle, { backgroundColor: color + '30' }]}>
-                    {materialIcon
-                        ? <MaterialCommunityIcons name={materialIcon} size={iconSize} color={color} />
-                        : <IconSymbol name={icon} size={iconSize} color={color} />
-                    }
+            <View style={styles.metricCardContent}>
+                <View style={[styles.iconCircle, { backgroundColor: bgColor }]}>
+                    <IconSymbol name={icon} size={iconSize} color={color} />
                 </View>
                 <Text style={styles.metricLabel}>{label}</Text>
-                <View style={[styles.checkbox, checked && styles.themeCheckboxChecked]}>
-                    {checked && <IconSymbol name="checkmark" size={14} color="#FFF" />}
+                <View style={[styles.checkbox, checked && styles.metricCheckboxChecked]}>
+                    {checked && <IconSymbol name="checkmark" size={12} color="#FFF" />}
                 </View>
-            </NeumorphicCard>
+            </View>
         </TouchableOpacity>
     );
 }
@@ -437,52 +459,111 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f2f3f7' },
     scrollContent: { padding: 30, paddingBottom: 40 },
     section: { marginBottom: 25 },
-    sectionTitle: { fontSize: 15, fontWeight: '600', color: '#888', marginBottom: 19 },
-    dropdownButton: { width: 160, borderRadius: 20, paddingHorizontal: 3 },
-    dateRow: { flexDirection: 'row', gap: 20, marginBottom: 22 },
-    dateButton: { flex: 1, borderRadius: 20 },
+    sectionTitle: { fontSize: 16, fontWeight: '600', color: '#B0B0B0', marginBottom: 16 },
+    dropdownButtonBox: {
+        backgroundColor: '#A0E4EB',
+        borderRadius: 24,
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: 170,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+    },
+    dropdownButtonText: { fontSize: 16, color: '#333333', fontWeight: '500' },
+    dateRow: { flexDirection: 'row', gap: 16, marginBottom: 16 },
+    dateButton: { flex: 1 },
     dateButtonContent: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        borderRadius: 24,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 14,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
     },
     dateButtonContentDisabled: {
-        backgroundColor: '#f0f0f0',
-        borderRadius: 20,
+        backgroundColor: '#FCFCFC',
+        borderRadius: 24,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 14,
     },
-    dateButtonChevron: { position: 'absolute', right: 14 },
-    dateButtonText: { fontSize: 14, color: '#333', fontWeight: '500' },
-    dateButtonPlaceholder: { color: '#bbb', fontWeight: '400' },
-    dateButtonDisabled: { color: '#ccc', fontWeight: '400' },
+    dateButtonChevron: { position: 'absolute', right: 16 },
+    dateButtonText: { fontSize: 15, color: '#333333', fontWeight: '500' },
+    dateButtonPlaceholder: { fontSize: 15, color: '#333333', fontWeight: '500' },
+    dateButtonDisabled: { fontSize: 15, color: '#C0C0C0', fontWeight: '500' },
     singleDateRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    checkbox: { width: 22, height: 22, borderRadius: 5, backgroundColor: '#e0e0e0', justifyContent: 'center', alignItems: 'center' },
-    checkboxChecked: { backgroundColor: '#A0E4EB' },
-    themeCheckboxChecked: { backgroundColor: '#81D4FA' },
-    checkboxLabel: { fontSize: 14, color: '#aaa' },
-    metricsRow: { flexDirection: 'row', gap: 20, justifyContent: 'center' },
-    metricCardWrapper: { width: 130 },
-    metricCard: { width: '100%', aspectRatio: 0.80 },
-    metricCardContent: { flex: 1, alignItems: 'center', justifyContent: 'space-evenly', padding: 5, backgroundColor: '#FFFFFF', borderRadius: 16 },
-    iconCircle: { width: 60, height: 60, borderRadius: 31, justifyContent: 'center', alignItems: 'center' },
-    metricLabel: { fontSize: 13, color: '#666', textAlign: 'center', fontWeight: '500' },
-    formatToggleContainer: { width: 280, alignSelf: 'center' },
-    formatToggleCard: { borderRadius: 25 },
-    formatToggleContent: { flexDirection: 'row', padding: 4, borderRadius: 25, backgroundColor: '#FFFFFF' },
-    formatOption: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 20 },
-    formatOptionActive: { backgroundColor: '#81D4FA' },
-    formatText: { fontWeight: '600', color: '#aaa' },
+    checkbox: { width: 22, height: 22, borderRadius: 6, backgroundColor: '#D9D9D9', justifyContent: 'center', alignItems: 'center' },
+    checkboxChecked: { backgroundColor: '#8FD9E5' },
+    metricCheckboxChecked: { backgroundColor: '#8FD9E5' },
+    checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
+
+    metricsRow: { flexDirection: 'row', gap: 16, justifyContent: 'space-between' },
+    metricCardWrapper: { flex: 1 },
+    metricCardContent: {
+        alignItems: 'center',
+        justifyContent: 'space-evenly',
+        paddingVertical: 20,
+        paddingHorizontal: 5,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        height: 140,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+    },
+    iconCircle: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+    metricLabel: { fontSize: 13, color: '#888888', textAlign: 'center', fontWeight: '500', marginBottom: 10 },
+
+    formatToggleContainer: { width: '100%', marginBottom: 10 },
+    formatToggleContent: {
+        flexDirection: 'row',
+        padding: 4,
+        borderRadius: 30,
+        backgroundColor: '#FFFFFF',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+    },
+    formatOption: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 26 },
+    formatOptionActive: { backgroundColor: '#8FD9E5' },
+    formatText: { fontSize: 16, fontWeight: '600', color: '#333333' },
     formatTextActive: { color: '#FFFFFF' },
+
+    activityReportRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
+    activityReportText: { fontSize: 16, fontWeight: '600', color: '#555555' },
+
     footer: { marginTop: 10, alignItems: 'center', gap: 12 },
-    exportButton: { width: '100%', borderRadius: 25, height: 56 },
+    exportButton: {
+        width: '100%',
+        backgroundColor: '#8FD9E5',
+        borderRadius: 30,
+        paddingVertical: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+    },
     exportButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 18 },
-    footerText: { fontSize: 13, color: '#aaa' },
+    footerText: { fontSize: 14, color: '#888888', fontWeight: '500' },
 });

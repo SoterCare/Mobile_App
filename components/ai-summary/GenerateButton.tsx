@@ -26,24 +26,24 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, isLoadi
 
 const styles = StyleSheet.create({
     generateButton: {
-        backgroundColor: TimelineColors.primaryCyan,
-        borderRadius: 25,
-        paddingVertical: 16,
+        backgroundColor: '#8FD9E5',
+        borderRadius: 30,
+        paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        shadowColor: TimelineColors.primaryCyan,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-        elevation: 5,
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        elevation: 6,
     },
     disabledButton: {
         opacity: 0.7,
     },
     generateButtonText: {
-        fontSize: 17,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: TimelineColors.textWhite,
+        color: '#FFFFFF',
     },
 });

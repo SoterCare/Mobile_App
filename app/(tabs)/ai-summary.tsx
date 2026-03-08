@@ -114,14 +114,9 @@ export default function AISummaryScreen() {
                     <Text style={styles.screenTitle}>AI Summary</Text>
                 </View>
 
-                {/* Controls Row: Toggle + Logo */}
+                {/* Controls Row: Toggle Container */}
                 <View style={styles.controlsRow}>
                     <ToggleSwitch activeTab={activeTab} onToggle={handleTabToggle} />
-                    <Image
-                        source={require('@/assets/images/SoterCare-Primary-logo.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
                 </View>
 
                 {/* Helper Text or Date Picker */}
@@ -187,19 +182,15 @@ export default function AISummaryScreen() {
                         {/* Metric Chips */}
                         <View style={styles.metricsRow}>
                             {renderMetricChip(
-                                <FontAwesome5
-                                    name="thermometer-half"
-                                    size={18}
-                                    color="#FF6B6B"
-                                />,
+                                <View style={[styles.iconWrapper, { backgroundColor: '#FFF5E6' }]}>
+                                    <FontAwesome5 name="thermometer-half" size={18} color="#FFA500" />
+                                </View>,
                                 'Temperature'
                             )}
                             {renderMetricChip(
-                                <FontAwesome5
-                                    name="heartbeat"
-                                    size={18}
-                                    color="#FF6B6B"
-                                />,
+                                <View style={[styles.iconWrapper, { backgroundColor: '#FFEBEB' }]}>
+                                    <FontAwesome5 name="heartbeat" size={18} color="#FF6B6B" />
+                                </View>,
                                 'Heart Rate'
                             )}
                         </View>
@@ -227,45 +218,45 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     screenTitle: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: TimelineColors.textDark,
+        color: '#333333',
     },
     controlsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        marginBottom: 24,
+        width: '100%',
         alignItems: 'center',
-        marginBottom: 16,
-    },
-    logo: {
-        width: 80,
-        height: 60,
     },
     helperText: {
-        fontSize: 14,
-        color: TimelineColors.textLight,
-        marginBottom: 20,
+        fontSize: 15,
+        color: '#888888',
+        marginBottom: 24,
     },
     datePickerRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
-        gap: 12,
+        marginBottom: 24,
+        gap: 16,
     },
     selectDateLabel: {
-        fontSize: 14,
-        color: TimelineColors.textLight,
+        fontSize: 15,
+        color: '#888888',
+        fontWeight: '500',
     },
     datePill: {
-        backgroundColor: TimelineColors.cardBackground,
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-        ...Shadows.button,
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 24,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
     },
     datePillText: {
-        fontSize: 14,
-        color: TimelineColors.textDark,
+        fontSize: 15,
+        color: '#333333',
         fontWeight: '500',
     },
     generateButtonContainer: {
@@ -275,53 +266,72 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     reportHeader: {
-        marginBottom: 16,
-    },
-    reportLabel: {
-        fontSize: 14,
-        color: TimelineColors.textDark,
-        fontWeight: '600',
-        marginBottom: 2,
-    },
-    reportTime: {
-        fontSize: 14,
-        color: TimelineColors.textMedium,
-    },
-    summaryCard: {
-        backgroundColor: TimelineColors.cardBackground,
-        borderRadius: 20,
-        padding: 20,
         marginBottom: 20,
     },
-    summaryTitle: {
-        fontSize: 18,
+    reportLabel: {
+        fontSize: 15,
+        color: '#888888',
         fontWeight: 'bold',
-        color: TimelineColors.textDark,
+        marginBottom: 4,
+    },
+    reportTime: {
+        fontSize: 15,
+        color: '#888888',
+        fontWeight: 'bold',
+    },
+    summaryCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        padding: 24,
+        marginBottom: 24,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+    },
+    summaryTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333333',
         marginBottom: 16,
     },
     summaryText: {
-        fontSize: 14,
-        color: TimelineColors.textMedium,
-        lineHeight: 22,
+        fontSize: 16,
+        color: '#777777',
+        lineHeight: 24,
     },
     metricsRow: {
         flexDirection: 'row',
-        gap: 12,
-        marginBottom: 20,
+        gap: 16,
+        marginBottom: 24,
     },
     metricChip: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: TimelineColors.cardBackground,
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+        justifyContent: 'flex-start',
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 14,
+        paddingHorizontal: 12,
         borderRadius: 20,
-        gap: 8,
-        ...Shadows.button,
+        gap: 10,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+    },
+    iconWrapper: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     metricLabel: {
-        fontSize: 13,
-        color: TimelineColors.textDark,
-        fontWeight: '500',
+        fontSize: 15,
+        color: '#333333',
+        fontWeight: '600',
     },
 });

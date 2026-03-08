@@ -45,27 +45,33 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ activeTab, onToggle 
 const styles = StyleSheet.create({
     toggleContainer: {
         flexDirection: 'row',
-        backgroundColor: TimelineColors.cardBackground,
-        borderRadius: 25,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 30,
         padding: 4,
-        alignSelf: 'flex-start',
+        width: '100%',
+        ...Shadows.card,
+        elevation: 4, // explicit elevation for android
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
     },
     toggleButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 24,
-        borderRadius: 20,
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 26,
         alignItems: 'center',
         justifyContent: 'center',
     },
     activeToggleButton: {
-        backgroundColor: TimelineColors.primaryCyan,
+        backgroundColor: '#8FD9E5', // the cyan color mapped exactly
     },
     toggleText: {
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: '600',
-        color: TimelineColors.textMedium,
+        color: '#333333',
     },
     activeToggleText: {
-        color: TimelineColors.textWhite,
+        color: '#FFFFFF',
     },
 });
