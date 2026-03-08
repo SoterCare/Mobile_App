@@ -47,6 +47,18 @@ export default function AISummaryScreen() {
         }
     }, [activeTab]);
 
+    // Auto-reset loading state if it gets stuck
+    useEffect(() => {
+        if (isLoading) {
+            const timeout = setTimeout(() => {
+                console.warn('Loading state auto-reset after 30 seconds');
+                setIsLoading(false);
+            }, 30000); // 30 second auto-reset
+
+            return () => clearTimeout(timeout);
+        }
+    }, [isLoading]);
+
     const fetchHistory = async () => {
         setIsLoading(true);
         try {
@@ -64,24 +76,46 @@ export default function AISummaryScreen() {
     };
 
     const handleGenerate = async () => {
+        if (isLoading) return; // Prevent multiple clicks
+        
         setIsLoading(true);
+        console.log('Starting summary generation...'); // Debug log
+        
         try {
+            let data;
+            
+            // Add timeout to prevent hanging
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timeout')), 15000) // 15 second timeout
+            );
+            
             if (activeTab === 'today') {
-                const data = await summaryService.generateTodaySummary();
+                console.log('Generating today summary...'); // Debug log
+                data = await Promise.race([
+                    summaryService.generateTodaySummary(),
+                    timeoutPromise
+                ]);
                 setSummaryData({
-                    summary: data.summary,
-                    fromTime: data.from,
-                    toTime: data.to,
+                    summary: data.summary || 'No summary available',
+                    fromTime: data.from || '12.00 AM',
+                    toTime: data.to || formatTime(new Date()),
                 });
             } else {
-                const data = await summaryService.generatePreviousSummary(selectedDate);
+                console.log('Generating previous summary for:', selectedDate); // Debug log
+                data = await Promise.race([
+                    summaryService.generatePreviousSummary(selectedDate),
+                    timeoutPromise
+                ]);
                 setSummaryData({
-                    summary: data.summary,
-                    date: data.date,
+                    summary: data.summary || 'No summary available',
+                    date: data.date || formatDate(selectedDate),
                 });
             }
+            console.log('Summary generated successfully'); // Debug log
         } catch (error: any) {
             console.error('Generate summary error:', error);
+            
+            // Set fallback data
             if (activeTab === 'today') {
                 setSummaryData({
                     summary: 'Unable to generate summary. Please try again later.',
@@ -95,6 +129,7 @@ export default function AISummaryScreen() {
                 });
             }
         } finally {
+            console.log('Resetting loading state'); // Debug log
             setIsLoading(false);
         }
     };
@@ -167,6 +202,18 @@ export default function AISummaryScreen() {
                 {/* Generate Button */}
                 <View style={styles.generateButtonContainer}>
                     <GenerateButton onPress={handleGenerate} isLoading={isLoading} />
+                    {/* Debug info and manual reset */}
+                    {isLoading && (
+                        <TouchableOpacity 
+                            style={styles.resetButton}
+                            onPress={() => {
+                                console.log('Manual reset triggered');
+                                setIsLoading(false);
+                            }}
+                        >
+                            <Text style={styles.resetButtonText}>Force Stop Loading</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* Summary Content - Only show after generation */}
@@ -299,6 +346,18 @@ const styles = StyleSheet.create({
     },
     generateButtonContainer: {
         marginBottom: 24,
+    },
+    resetButton: {
+        marginTop: 12,
+        padding: 8,
+        alignItems: 'center',
+        backgroundColor: '#FF6B6B',
+        borderRadius: 8,
+    },
+    resetButtonText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '500',
     },
     summarySection: {
         flex: 1,
