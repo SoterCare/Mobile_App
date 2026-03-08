@@ -2,50 +2,81 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+type AlertType = 'movement' | 'fall' | 'urine';
+
 interface AlertCardProps {
-    type: 'movement' | 'fall';
+    type: AlertType;
     title: string;
     timestamp: string;
-    showActions?: boolean;
 }
 
-export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp, showActions = false }) => {
-    const isFall = type === 'fall';
-    const iconName = isFall ? 'warning' : 'walk';
-    const iconColor = isFall ? '#FF5252' : '#00BCD4'; // Cyan for movement
-    const bgColor = isFall ? '#FFEBEE' : '#E0F7FA';
+const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; iconColor: string; bgColor: string }> = {
+    movement: {
+        icon: 'walk',
+        iconColor: '#ffffff',
+        bgColor: '#46ebdd',
+    },
+    fall: {
+        icon: 'warning',
+        iconColor: '#ffffff',
+        bgColor: '#fd8d8d',
+    },
+    urine: {
+        icon: 'water',
+        iconColor: '#ffffff',
+        bgColor: '#64d8e8',
+    },
+};
 
-    // Using simple View instead of NeumorphicCard to match white design
+export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) => {
+    const [expanded, setExpanded] = useState(false);
+    const config = ALERT_CONFIG[type];
+
     return (
-        <View style={styles.alertCard}>
+        <TouchableOpacity
+            style={styles.alertCard}
+            onPress={() => setExpanded(!expanded)}
+            activeOpacity={0.85}
+        >
             <View style={styles.alertTopRow}>
-                <View style={[styles.alertIconCircle, { backgroundColor: bgColor }]}>
-                    <Ionicons name={iconName} size={24} color={iconColor} />
+                {/* Icon */}
+                <View style={[styles.alertIconCircle, { backgroundColor: config.bgColor }]}>
+                    <Ionicons name={config.icon} size={22} color={config.iconColor} />
                 </View>
-                <View style={styles.alertContent}>
-                    <Text style={styles.alertText}>{title}</Text>
-                </View>
-                {showActions ? (
+
+                {/* Title */}
+                <Text style={styles.alertText}>{title}</Text>
+
+                {/* Timestamp + chevron */}
+                <View style={styles.rightSection}>
                     <Text style={styles.alertTime}>{timestamp}</Text>
-                ) : (
-                    <View style={{ alignItems: 'flex-end' }}>
-                        <Text style={styles.alertTime}>{timestamp}</Text>
-                        <Ionicons name="chevron-down" size={20} color="#999" />
-                    </View>
-                )}
+                    <Ionicons
+                        name={expanded ? 'chevron-up' : 'chevron-down'}
+                        size={16}
+                        color="#ccc"
+                        style={styles.chevron}
+                    />
+                </View>
             </View>
 
-            {showActions && (
+            {/* Expandable action buttons */}
+            {expanded && (
                 <View style={styles.alertActions}>
-                    <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]}>
+                    <TouchableOpacity
+                        style={[styles.actionBtn, styles.actionBtnPrimary]}
+                        onPress={(e) => { e.stopPropagation?.(); }}
+                    >
                         <Text style={styles.actionBtnTextPrimary}>Attended</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.actionBtn, styles.actionBtnSecondary]}>
+                    <TouchableOpacity
+                        style={[styles.actionBtn, styles.actionBtnSecondary]}
+                        onPress={(e) => { e.stopPropagation?.(); }}
+                    >
                         <Text style={styles.actionBtnTextSecondary}>False</Text>
                     </TouchableOpacity>
                 </View>
             )}
-        </View>
+        </TouchableOpacity>
     );
 };
 
@@ -53,16 +84,14 @@ const styles = StyleSheet.create({
     alertCard: {
         backgroundColor: '#fff',
         borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        // Shadow
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        marginBottom: 10,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
         elevation: 2,
-        borderWidth: 1,
-        borderColor: '#f0f0f0', // Subtle border
     },
     alertTopRow: {
         flexDirection: 'row',
@@ -75,42 +104,49 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
-    },
-    alertContent: {
-        flex: 1,
+        flexShrink: 0,
     },
     alertText: {
-        fontSize: 16,
+        flex: 1,
+        fontSize: 15,
         fontWeight: '600',
-        color: '#333',
+        color: '#606060',
+    },
+    rightSection: {
+        alignItems: 'flex-end',
     },
     alertTime: {
-        fontSize: 12,
-        color: '#999',
+        fontSize: 11,
+        color: '#bbb',
+    },
+    chevron: {
+        marginTop: 4,
     },
     alertActions: {
         flexDirection: 'row',
-        marginTop: 16,
+        marginTop: 12,
         justifyContent: 'flex-end',
-        gap: 10,
+        gap: 8,
     },
     actionBtn: {
         paddingVertical: 8,
-        paddingHorizontal: 20,
+        paddingHorizontal: 24,
         borderRadius: 20,
     },
     actionBtnPrimary: {
-        backgroundColor: '#4DD0E1', // Cyan
+        backgroundColor: '#4DD0C4',
     },
     actionBtnSecondary: {
-        backgroundColor: '#E0E0E0',
+        backgroundColor: '#ECECEC',
     },
     actionBtnTextPrimary: {
         color: '#fff',
         fontWeight: '600',
+        fontSize: 13,
     },
     actionBtnTextSecondary: {
         color: '#666',
         fontWeight: '600',
+        fontSize: 13,
     },
 });
