@@ -1,60 +1,42 @@
-import React, { useState, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, Image, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
-import { summaryService } from '@/services/summaryService';
-import { TimelineColors } from '@/theme/colors';
-import { Shadows } from '@/theme/shadows';
-
-interface SummaryData {
-    summary: string;
-    fromTime?: string;
-    toTime?: string;
-    date?: string;
-}
+import { summaryService, SummaryResponse } from '@/services/summaryService';
 
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
     const [isLoading, setIsLoading] = useState(false);
-    const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [summary, setSummary] = useState<string | null>(null);
+    const [historyList, setHistoryList] = useState<SummaryResponse[]>([]);
+    const [selectedHistoryItem, setSelectedHistoryItem] = useState<SummaryResponse | null>(null);
 
-    // Format time for display (e.g., "12.00 AM")
-    const formatTime = (date: Date): string => {
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-        const displayMinutes = minutes.toString().padStart(2, '0');
-        return `${displayHours.toString().padStart(2, '0')}.${displayMinutes}${ampm}`;
-    };
+    useEffect(() => {
+        if (activeTab === 'previous') {
+            fetchHistory();
+        } else {
+            setSummary(null);
+            setSelectedHistoryItem(null);
+        }
+    }, [activeTab]);
 
-    // Format date for display (e.g., "07/12/2025")
-    const formatDate = (date: Date): string => {
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
-    // Current time string
-    const currentTimeString = useMemo(() => formatTime(new Date()), []);
-
-    const handleTabToggle = (tab: 'today' | 'previous') => {
-        setActiveTab(tab);
-        setSummaryData(null); // Reset summary when switching tabs
-    };
-
-    const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
-        setShowDatePicker(Platform.OS === 'ios');
-        if (date) {
-            setSelectedDate(date);
-            setSummaryData(null); // Reset summary when date changes
+    const fetchHistory = async () => {
+        setIsLoading(true);
+        try {
+            const data = await summaryService.getHistory();
+            setHistoryList(data);
+            if (data.length > 0) {
+                setSelectedHistoryItem(data[0]);
+            }
+        } catch (error: any) {
+            console.error('Fetch history error:', error);
+            setHistoryList([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -94,11 +76,22 @@ export default function AISummaryScreen() {
         }
     };
 
-    const renderMetricChip = (icon: React.ReactNode, label: string) => (
-        <View style={styles.metricChip}>
-            {icon}
-            <Text style={styles.metricLabel}>{label}</Text>
-        </View>
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const renderHistoryItem = ({ item }: { item: SummaryResponse }) => (
+        <TouchableOpacity
+            style={[
+                styles.historyCard,
+                selectedHistoryItem?.id === item.id && styles.historyCardActive
+            ]}
+            onPress={() => setSelectedHistoryItem(item)}
+        >
+            <Text style={styles.historyDate}>{formatDate(item.createdAt)}</Text>
+            <Text style={styles.historyType}>{item.type}</Text>
+        </TouchableOpacity>
     );
 
     return (
