@@ -17,8 +17,10 @@ import { API_CONFIG } from '@/api/config/api.config';
 export default function ExportReportScreen() {
     const router = useRouter();
 
-    // Form State
     const [selectedDevice, setSelectedDevice] = useState('Device 01');
+    const [showDeviceDropdown, setShowDeviceDropdown] = useState(false);
+    const devices = ['Device 01', 'Device 02'];
+
     const [isSingleDate, setIsSingleDate] = useState(false);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
@@ -247,24 +249,63 @@ export default function ExportReportScreen() {
                 }}
             />
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
+
                 {/* Select Device */}
-                <View style={styles.section}>
+                <View style={[styles.section, { zIndex: 10 }]}>
                     <Text style={styles.sectionTitle}>Select Device</Text>
-                    <TouchableOpacity
-                        style={styles.dropdownButtonBox}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={styles.dropdownButtonText}>{selectedDevice}</Text>
-                        <IconSymbol name="chevron.down" size={20} color="#333" />
-                    </TouchableOpacity>
+                    <View>
+                        <TouchableOpacity
+                            style={styles.dropdownButtonBox}
+                            activeOpacity={0.8}
+                            onPress={() => setShowDeviceDropdown(prev => !prev)}
+                        >
+                            <Text style={styles.dropdownButtonText}>{selectedDevice}</Text>
+                            <IconSymbol
+                                name={showDeviceDropdown ? 'chevron.up' : 'chevron.down'}
+                                size={20}
+                                color="#333"
+                            />
+                        </TouchableOpacity>
+
+                        {showDeviceDropdown && (
+                            <View style={styles.dropdownMenu}>
+                                {devices.map((device, index) => (
+                                    <TouchableOpacity
+                                        key={device}
+                                        style={[
+                                            styles.dropdownItem,
+                                            selectedDevice === device && styles.dropdownItemActive,
+                                            index < devices.length - 1 && styles.dropdownItemBorder,
+                                        ]}
+                                        onPress={() => {
+                                            setSelectedDevice(device);
+                                            setShowDeviceDropdown(false);
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.dropdownItemText,
+                                            selectedDevice === device && styles.dropdownItemTextActive,
+                                        ]}>
+                                            {device}
+                                        </Text>
+                                        {selectedDevice === device && (
+                                            <IconSymbol name="checkmark" size={14} color="#8FD9E5" />
+                                        )}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                    </View>
                 </View>
 
                 {/* Select Date */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Select Date</Text>
                     <View style={styles.dateRow}>
-                        {/* Start Date Button */}
                         <TouchableOpacity
                             onPress={() => setShowPicker('start')}
                             activeOpacity={0.8}
@@ -279,7 +320,6 @@ export default function ExportReportScreen() {
                                 <IconSymbol name="chevron.right" size={18} color="#bbb" style={styles.dateButtonChevron} />
                             </View>
                         </TouchableOpacity>
-                        {/* End Date Button */}
                         <TouchableOpacity
                             onPress={() => !isSingleDate && setShowPicker('end')}
                             activeOpacity={isSingleDate ? 1 : 0.8}
@@ -364,15 +404,17 @@ export default function ExportReportScreen() {
                             label="Temperature"
                             checked={selectedMetrics.temperature}
                             onPress={() => toggleMetric('temperature')}
+                            iconSize={32}
                         />
                         <MetricCard
-                            icon="circle.fill"
-                            color="#E6FAF8"
-                            bgColor="#E6FAF8"
+                            icon="walk"
+                            color="#4DB6E8"
+                            bgColor="#E8F6FD"
                             label="Activity"
                             checked={selectedMetrics.activity}
                             onPress={() => toggleMetric('activity')}
-                            iconSize={40}
+                            iconSize={32}
+                            useMatIcon
                         />
                     </View>
                 </View>
@@ -414,17 +456,22 @@ export default function ExportReportScreen() {
                     </TouchableOpacity>
                     <Text style={styles.footerText}>{`Exporting as a ${exportFormat} document`}</Text>
                 </View>
+
             </ScrollView>
         </SafeAreaView>
     );
 }
 
-function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 40 }: any) {
+// ── MetricCard ──────────────────────────────────────────────────────────────
+function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 40, useMatIcon = false }: any) {
     return (
         <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.metricCardWrapper}>
             <View style={styles.metricCardContent}>
                 <View style={[styles.iconCircle, { backgroundColor: bgColor }]}>
-                    <IconSymbol name={icon} size={iconSize} color={color} />
+                    {useMatIcon
+                        ? <MaterialCommunityIcons name={icon} size={iconSize} color={color} />
+                        : <IconSymbol name={icon} size={iconSize} color={color} />
+                    }
                 </View>
                 <Text style={styles.metricLabel}>{label}</Text>
                 <View style={[styles.checkbox, checked && styles.metricCheckboxChecked, { borderRadius: 6, width: 22, height: 22 }]}>
@@ -440,6 +487,8 @@ const styles = StyleSheet.create({
     scrollContent: { padding: 30, paddingBottom: 40 },
     section: { marginBottom: 25 },
     sectionTitle: { fontSize: 16, fontWeight: '600', color: '#B0B0B0', marginBottom: 16 },
+
+    // Device Dropdown
     dropdownButtonBox: {
         backgroundColor: '#A0E4EB',
         borderRadius: 24,
@@ -456,6 +505,46 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
     },
     dropdownButtonText: { fontSize: 16, color: '#333333', fontWeight: '500' },
+    dropdownMenu: {
+        position: 'absolute',
+        top: 58,
+        left: 0,
+        zIndex: 999,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        width: 170,
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 10,
+        overflow: 'hidden',
+    },
+    dropdownItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 18,
+        paddingVertical: 13,
+    },
+    dropdownItemBorder: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
+    },
+    dropdownItemActive: {
+        backgroundColor: '#F0FAFB',
+    },
+    dropdownItemText: {
+        fontSize: 15,
+        color: '#333333',
+        fontWeight: '500',
+    },
+    dropdownItemTextActive: {
+        color: '#8FD9E5',
+        fontWeight: '600',
+    },
+
+    // Date
     dateRow: { flexDirection: 'row', gap: 16, marginBottom: 16 },
     dateButton: { flex: 1 },
     dateButtonContent: {
@@ -491,6 +580,7 @@ const styles = StyleSheet.create({
     metricCheckboxChecked: { backgroundColor: '#8FD9E5' },
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
+    // Metrics
     metricsRow: { flexDirection: 'row', gap: 20, justifyContent: 'center' },
     metricCardWrapper: { width: 140 },
     metricCardContent: {
@@ -510,6 +600,7 @@ const styles = StyleSheet.create({
     iconCircle: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
     metricLabel: { fontSize: 13, color: '#888888', textAlign: 'center', fontWeight: '500', marginBottom: 10 },
 
+    // Format Toggle
     formatToggleContainer: { width: '100%', marginBottom: 10 },
     formatToggleContent: {
         flexDirection: 'row',
@@ -530,6 +621,7 @@ const styles = StyleSheet.create({
     activityReportRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
     activityReportText: { fontSize: 16, fontWeight: '600', color: '#555555' },
 
+    // Footer
     footer: { marginTop: 10, alignItems: 'center', gap: 12 },
     exportButton: {
         width: '100%',
