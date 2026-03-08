@@ -3,6 +3,13 @@ import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 
+const FEATURES = [
+    { icon: 'pulse-outline' as const, title: 'Real-time Vitals Tracking', desc: 'Monitor heart rate, temperature, and more in real time.' },
+    { icon: 'sparkles-outline' as const, title: 'AI Health Summaries', desc: 'Get intelligent insights powered by machine learning.' },
+    { icon: 'document-text-outline' as const, title: 'Detailed Report Exports', desc: 'Export comprehensive PDF reports for your doctor.' },
+    { icon: 'notifications-outline' as const, title: 'Smart Alerts', desc: 'Receive timely notifications when vitals need attention.' },
+];
+
 export default function AboutScreen() {
     const router = useRouter();
 
@@ -24,51 +31,100 @@ export default function AboutScreen() {
             <StatusBar style="dark" />
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                {/* Logo & Identity */}
                 <View style={styles.logoContainer}>
                     <View style={styles.iconCircle}>
-                        <Ionicons name="fitness-outline" size={48} color="#8FD9E5" />
+                        <Ionicons name="fitness-outline" size={44} color="#8FD9E5" />
                     </View>
                     <Text style={styles.appName}>Sotercare</Text>
-                    <Text style={styles.appVersion}>Version 1.0.0</Text>
+                    <View style={styles.versionBadge}>
+                        <Text style={styles.versionText}>v1.0.0</Text>
+                    </View>
                 </View>
 
+                {/* Mission */}
                 <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>Overview</Text>
+                    <View style={styles.sectionHeader}>
+                        <View style={styles.sectionIconBox}>
+                            <Ionicons name="heart-outline" size={18} color="#8FD9E5" />
+                        </View>
+                        <Text style={styles.sectionTitle}>Our Mission</Text>
+                    </View>
                     <Text style={styles.paragraph}>
-                        Sotercare is a comprehensive health and fitness tracking application designed to help you monitor your lifestyle, track vital metrics, and generate AI-powered insights to improve your overall well-being.
+                        Sotercare empowers individuals to take charge of their health through continuous monitoring and intelligent insights — giving peace of mind to users and their loved ones.
                     </Text>
-
-                    <Text style={styles.sectionTitle}>Features</Text>
-                    <View style={styles.featureItem}>
-                        <Ionicons name="checkmark-circle" size={20} color="#8FD9E5" />
-                        <Text style={styles.featureText}>Real-time Vitals Tracking</Text>
-                    </View>
-                    <View style={styles.featureItem}>
-                        <Ionicons name="checkmark-circle" size={20} color="#8FD9E5" />
-                        <Text style={styles.featureText}>AI Health Summaries</Text>
-                    </View>
-                    <View style={styles.featureItem}>
-                        <Ionicons name="checkmark-circle" size={20} color="#8FD9E5" />
-                        <Text style={styles.featureText}>Detailed Report Exports</Text>
-                    </View>
-                    <View style={styles.featureItem}>
-                        <Ionicons name="checkmark-circle" size={20} color="#8FD9E5" />
-                        <Text style={styles.featureText}>Custom Layouts & Subscriptions</Text>
-                    </View>
                 </View>
 
-                <View style={styles.linkCard}>
-                    <TouchableOpacity style={styles.linkItemBorder} activeOpacity={0.7} onPress={() => Linking.openURL('https://example.com/terms')}>
-                        <Text style={styles.linkText}>Terms of Service</Text>
-                        <Ionicons name="chevron-forward" size={18} color="#A0A0A0" />
+                {/* Overview */}
+                <View style={styles.card}>
+                    <View style={styles.sectionHeader}>
+                        <View style={styles.sectionIconBox}>
+                            <Ionicons name="information-circle-outline" size={18} color="#8FD9E5" />
+                        </View>
+                        <Text style={styles.sectionTitle}>What is Sotercare?</Text>
+                    </View>
+                    <Text style={styles.paragraph}>
+                        A comprehensive health and wellness companion designed to help you monitor vital metrics, track daily activity, and generate AI-powered summaries — all from the convenience of your mobile device.
+                    </Text>
+                </View>
+
+                {/* Key Features */}
+                <View style={styles.card}>
+                    <View style={styles.sectionHeader}>
+                        <View style={styles.sectionIconBox}>
+                            <Ionicons name="grid-outline" size={18} color="#8FD9E5" />
+                        </View>
+                        <Text style={styles.sectionTitle}>Key Features</Text>
+                    </View>
+                    {FEATURES.map((feat, idx) => (
+                        <View key={idx} style={[styles.featureRow, idx < FEATURES.length - 1 && styles.featureRowBorder]}>
+                            <View style={styles.featureIconBox}>
+                                <Ionicons name={feat.icon} size={22} color="#8FD9E5" />
+                            </View>
+                            <View style={styles.featureContent}>
+                                <Text style={styles.featureTitle}>{feat.title}</Text>
+                                <Text style={styles.featureDesc}>{feat.desc}</Text>
+                            </View>
+                        </View>
+                    ))}
+                </View>
+
+                {/* Legal Links */}
+                <View style={styles.card}>
+                    <View style={styles.sectionHeader}>
+                        <View style={styles.sectionIconBox}>
+                            <Ionicons name="shield-checkmark-outline" size={18} color="#8FD9E5" />
+                        </View>
+                        <Text style={styles.sectionTitle}>Legal</Text>
+                    </View>
+                    <TouchableOpacity style={styles.linkRow} activeOpacity={0.6} onPress={() => Linking.openURL('https://example.com/terms')}>
+                        <View style={styles.linkLeft}>
+                            <Ionicons name="document-outline" size={20} color="#777" />
+                            <Text style={styles.linkText}>Terms of Service</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={16} color="#C0C0C0" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.linkItem} activeOpacity={0.7} onPress={() => Linking.openURL('https://example.com/privacy')}>
-                        <Text style={styles.linkText}>Privacy Policy</Text>
-                        <Ionicons name="chevron-forward" size={18} color="#A0A0A0" />
+                    <View style={styles.linkDivider} />
+                    <TouchableOpacity style={styles.linkRow} activeOpacity={0.6} onPress={() => Linking.openURL('https://example.com/privacy')}>
+                        <View style={styles.linkLeft}>
+                            <Ionicons name="lock-closed-outline" size={20} color="#777" />
+                            <Text style={styles.linkText}>Privacy Policy</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={16} color="#C0C0C0" />
                     </TouchableOpacity>
                 </View>
 
+                {/* Support Note */}
+                <View style={styles.supportNote}>
+                    <Ionicons name="chatbubble-ellipses-outline" size={16} color="#999" />
+                    <Text style={styles.supportNoteText}>
+                        Need help? Visit the Help & Support section from your profile.
+                    </Text>
+                </View>
+
+                {/* Footer */}
                 <Text style={styles.footerNote}>© 2026 Sanjula Herath. All rights reserved.</Text>
+                <Text style={styles.footerSubNote}>Made with care for better health.</Text>
             </ScrollView>
         </SafeAreaView>
     );
@@ -82,107 +138,163 @@ const styles = StyleSheet.create({
     headerBackBtn: { marginLeft: 4 },
     headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
     scrollContent: {
-        padding: 24,
-        paddingBottom: 40,
+        padding: 20,
+        paddingBottom: 48,
     },
+    /* Logo */
     logoContainer: {
         alignItems: 'center',
-        marginVertical: 32,
+        marginTop: 24,
+        marginBottom: 28,
     },
     iconCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 88,
+        height: 88,
+        borderRadius: 44,
         backgroundColor: '#FFFFFF',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 16,
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
+        marginBottom: 14,
+        elevation: 6,
+        shadowColor: '#8FD9E5',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        borderWidth: 2,
+        borderColor: '#E8F7FA',
     },
     appName: {
-        fontSize: 28,
+        fontSize: 26,
         fontWeight: '700',
-        color: '#333333',
-        marginBottom: 4,
+        color: '#2D3436',
+        letterSpacing: 0.5,
+        marginBottom: 8,
     },
-    appVersion: {
-        fontSize: 15,
-        color: '#888888',
-        fontWeight: '500',
+    versionBadge: {
+        backgroundColor: '#EAF7FA',
+        paddingHorizontal: 14,
+        paddingVertical: 4,
+        borderRadius: 12,
     },
+    versionText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#6BC4DB',
+    },
+    /* Cards */
     card: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        padding: 24,
-        marginBottom: 24,
-        elevation: 4,
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 16,
+        elevation: 2,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 14,
+    },
+    sectionIconBox: {
+        width: 32,
+        height: 32,
+        borderRadius: 10,
+        backgroundColor: '#F0F9FB',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: '700',
-        color: '#333333',
-        marginBottom: 12,
-        marginTop: 8,
+        color: '#2D3436',
     },
     paragraph: {
-        fontSize: 15,
-        lineHeight: 24,
-        color: '#555555',
-        marginBottom: 24,
+        fontSize: 14.5,
+        lineHeight: 22,
+        color: '#636E72',
     },
-    featureItem: {
+    /* Features */
+    featureRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        paddingVertical: 14,
+    },
+    featureRowBorder: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#F5F5F5',
+    },
+    featureIconBox: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: '#F0F9FB',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 14,
+    },
+    featureContent: {
+        flex: 1,
+    },
+    featureTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#2D3436',
+        marginBottom: 3,
+    },
+    featureDesc: {
+        fontSize: 13,
+        color: '#888',
+        lineHeight: 19,
+    },
+    /* Links */
+    linkRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
+        justifyContent: 'space-between',
+        paddingVertical: 14,
+    },
+    linkLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: 12,
     },
-    featureText: {
-        fontSize: 16,
-        color: '#444444',
-        fontWeight: '500',
-    },
-    linkCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        paddingHorizontal: 20,
-        marginBottom: 32,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-    },
-    linkItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 18,
-    },
-    linkItemBorder: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 18,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+    linkDivider: {
+        height: 1,
+        backgroundColor: '#F5F5F5',
     },
     linkText: {
-        fontSize: 16,
+        fontSize: 15,
         color: '#4A4A4A',
-        fontWeight: '600',
+        fontWeight: '500',
     },
+    /* Support Note */
+    supportNote: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 16,
+        marginBottom: 8,
+    },
+    supportNoteText: {
+        fontSize: 13,
+        color: '#999',
+    },
+    /* Footer */
     footerNote: {
         textAlign: 'center',
-        color: '#BBBBBB',
-        fontSize: 13,
-        marginBottom: 20,
+        color: '#BFBFBF',
+        fontSize: 12,
+        marginBottom: 2,
+    },
+    footerSubNote: {
+        textAlign: 'center',
+        color: '#D0D0D0',
+        fontSize: 11,
+        marginBottom: 16,
     },
 });
