@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Image, FlatList, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Shadows } from '@/theme/shadows';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
 import { summaryService, SummaryResponse } from '@/services/summaryService';
+import { TimelineColors } from '@/theme/colors';
 
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
@@ -14,6 +16,27 @@ export default function AISummaryScreen() {
     const [summary, setSummary] = useState<string | null>(null);
     const [historyList, setHistoryList] = useState<SummaryResponse[]>([]);
     const [selectedHistoryItem, setSelectedHistoryItem] = useState<SummaryResponse | null>(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [summaryData, setSummaryData] = useState<any>(null);
+
+    const handleTabToggle = (tab: 'today' | 'previous') => setActiveTab(tab);
+
+    const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
+        if (Platform.OS === 'android') setShowDatePicker(false);
+        if (date) setSelectedDate(date);
+    };
+
+    const formatTime = (date: Date) => {
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const renderMetricChip = (icon: React.ReactNode, label: string) => (
+        <View style={styles.metricChip}>
+            {icon}
+            <Text style={styles.metricLabel}>{label}</Text>
+        </View>
+    );
 
     useEffect(() => {
         if (activeTab === 'previous') {
@@ -76,8 +99,8 @@ export default function AISummaryScreen() {
         }
     };
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
+    const formatDate = (dateInput: string | Date) => {
+        const date = new Date(dateInput);
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
@@ -201,6 +224,28 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
+    },
+    historyCard: {
+        backgroundColor: '#FFFFFF',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#EEEEEE',
+    },
+    historyCardActive: {
+        borderColor: TimelineColors.primaryCyan,
+        backgroundColor: '#F0FBFC',
+    },
+    historyDate: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333333',
+        marginBottom: 4,
+    },
+    historyType: {
+        fontSize: 14,
+        color: '#666666',
     },
     scrollContent: {
         paddingHorizontal: 24,
