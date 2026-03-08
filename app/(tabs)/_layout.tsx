@@ -32,35 +32,35 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="home" color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="home" color={color} />,
         }}
       />
       <Tabs.Screen
         name="timeline"
         options={{
           title: 'Timeline',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="stats-chart" color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="stats-chart" color={color} />,
         }}
       />
       <Tabs.Screen
         name="ai-summary"
         options={{
           title: 'AI Summary',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="bulb" color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="bulb" color={color} />,
         }}
       />
       <Tabs.Screen
         name="device"
         options={{
           title: 'Device',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="phone-portrait" color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="phone-portrait" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <Ionicons size={24} name="person" color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="person" color={color} />,
         }}
       />
     </Tabs>

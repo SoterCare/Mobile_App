@@ -32,6 +32,25 @@ class BleService {
     async getServices(device: Device) {
         return await device.services();
     }
+
+    async readCharacteristic(deviceId: string, serviceUUID: string, characteristicUUID: string) {
+        const characteristic = await this.manager.readCharacteristicForDevice(deviceId, serviceUUID, characteristicUUID);
+        return characteristic.value;
+    }
+
+    monitorCharacteristic(
+        deviceId: string,
+        serviceUUID: string,
+        characteristicUUID: string,
+        listener: (error: Error | null, characteristic: any | null) => void
+    ) {
+        return this.manager.monitorCharacteristicForDevice(
+            deviceId,
+            serviceUUID,
+            characteristicUUID,
+            listener
+        );
+    }
 }
 
 export const bleService = new BleService();

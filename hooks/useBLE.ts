@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Platform, PermissionsAndroid, Alert } from 'react-native';
 import { State } from 'react-native-ble-plx';
 import { bleService } from '../services/bleService';
+import { BLE_CONFIG } from '../constants/bleConfig';
+import { useVitals } from '../contexts/VitalsContext';
+import { Buffer } from 'buffer';
 
 export interface BluetoothDevice {
     id: string;
@@ -15,6 +18,7 @@ export function useBLE() {
     const [connectedDevice, setConnectedDevice] = useState<string | null>(null);
     const [isConnecting, setIsConnecting] = useState<string | null>(null);
     const [bluetoothState, setBluetoothState] = useState<State>(State.Unknown);
+    const { updateVitals, resetVitals } = useVitals();
 
     const requestBluetoothPermissions = async () => {
         if (Platform.OS === 'android') {
@@ -127,7 +131,12 @@ export function useBLE() {
                             name: device.name || 'Unknown Device',
                             rssi: device.rssi || -100,
                         };
+                        
+                        // Optional: Filter only devices matching our prefix
+                        // if (newDevice.name.startsWith(BLE_CONFIG.DEVICE_NAME_PREFIX)) {
                         return [...prevDevices, newDevice].sort((a, b) => b.rssi - a.rssi);
+                        // }
+                        // return prevDevices;
                     } else {
                         return prevDevices
                             .map((d) =>
@@ -159,6 +168,9 @@ export function useBLE() {
 
             setConnectedDevice(deviceId);
             setIsConnecting(null);
+            
+            // Start streaming data once connected
+            startStreamingData(deviceId);
 
             Alert.alert(
                 'Connected',
@@ -180,10 +192,59 @@ export function useBLE() {
         try {
             await bleService.disconnectDevice(deviceId);
             setConnectedDevice(null);
+            resetVitals(); // Reset vitals when disconnected
             Alert.alert('Disconnected', `Disconnected from ${deviceName}`);
         } catch (error: any) {
             console.error('Disconnect error:', error);
             Alert.alert('Error', 'Failed to disconnect. The device may already be disconnected.');
+        }
+    };
+
+    const startStreamingData = async (deviceId: string) => {
+        try {
+            // Heart Rate Streaming Example
+            bleService.monitorCharacteristic(
+                deviceId,
+                BLE_CONFIG.SERVICES.HEALTH_DATA_SERVICE,
+                BLE_CONFIG.CHARACTERISTICS.HEART_RATE_MEASUREMENT,
+                (error, characteristic) => {
+                    if (error) {
+                        console.error('Heart Rate monitor error:', error);
+                        return;
+                    }
+                    if (characteristic?.value) {
+                        // Decode base64 value depending on your ESP32 data format
+                        // This assumes a simple 8-bit integer for heart rate as an example
+                        const decodedValue = Buffer.from(characteristic.value, 'base64');
+                        const heartRate = decodedValue.readUInt8(0);
+                        updateVitals({ heartRate });
+                    }
+                }
+            );
+
+            // SpO2 Streaming Example
+            bleService.monitorCharacteristic(
+                deviceId,
+                BLE_CONFIG.SERVICES.HEALTH_DATA_SERVICE,
+                BLE_CONFIG.CHARACTERISTICS.SPO2_MEASUREMENT,
+                (error, characteristic) => {
+                    if (error) {
+                        console.error('SpO2 monitor error:', error);
+                        return;
+                    }
+                    if (characteristic?.value) {
+                        const decodedValue = Buffer.from(characteristic.value, 'base64');
+                        const spO2 = decodedValue.readUInt8(0);
+                        updateVitals({ spO2 });
+                    }
+                }
+            );
+            
+            // Note: You can add more monitors here for Fall Detection, Battery etc.
+            // following the same pattern with bleService.monitorCharacteristic(...)
+
+        } catch (error) {
+            console.error('Failed to start streaming:', error);
         }
     };
 

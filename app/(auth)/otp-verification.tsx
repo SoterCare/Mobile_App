@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function OTPVerificationScreen() {
     const router = useRouter();
-    const { email, mode } = useLocalSearchParams<{ email: string; mode: 'signup' | 'signin' }>();
+    const { email, mode } = useLocalSearchParams() as { email: string; mode: 'signup' | 'signin' };
     // 6 digits state
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const inputRefs = useRef<Array<TextInput | null>>([]);

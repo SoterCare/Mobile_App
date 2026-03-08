@@ -15,7 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { BleManager, Device, State } from 'react-native-ble-plx';
 
-import { useBLE, BluetoothDevice } from '../hooks/useBLE';
+import { useBLE, type BluetoothDevice } from '@/hooks/useBLE';
 
 export default function DeviceScreen() {
     const {
