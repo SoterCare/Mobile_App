@@ -26,8 +26,6 @@ export default function ExportReportScreen() {
     const [showPicker, setShowPicker] = useState<'start' | 'end' | null>(null);
 
     const [selectedMetrics, setSelectedMetrics] = useState({
-        heartRate: false,
-        spo2: false,
         temperature: false,
         activity: false,
     });
@@ -75,7 +73,7 @@ export default function ExportReportScreen() {
         try {
             setIsExporting(true);
 
-            if (!selectedMetrics.temperature && !selectedMetrics.activity && !selectedMetrics.heartRate && !selectedMetrics.spo2) {
+            if (!selectedMetrics.temperature && !selectedMetrics.activity) {
                 Alert.alert('Selection Error', 'Please select at least one metric to export.');
                 return;
             }
@@ -360,28 +358,21 @@ export default function ExportReportScreen() {
                     <Text style={styles.sectionTitle}>Select Metrics to Export</Text>
                     <View style={styles.metricsRow}>
                         <MetricCard
-                            icon="heart.fill"
-                            color="#FF8A8A"
-                            bgColor="#FFEBEB"
-                            label="Heart Rate"
-                            checked={selectedMetrics.heartRate}
-                            onPress={() => toggleMetric('heartRate')}
-                        />
-                        <MetricCard
-                            icon="drop.fill"
-                            color="#8FD9E5"
-                            bgColor="#E6F7FA"
-                            label="SpO2 Level"
-                            checked={selectedMetrics.spo2}
-                            onPress={() => toggleMetric('spo2')}
-                        />
-                        <MetricCard
                             icon="thermometer"
                             color="#FFB966"
                             bgColor="#FFF5E6"
                             label="Temperature"
                             checked={selectedMetrics.temperature}
                             onPress={() => toggleMetric('temperature')}
+                        />
+                        <MetricCard
+                            icon="circle.fill"
+                            color="#E6FAF8"
+                            bgColor="#E6FAF8"
+                            label="Activity"
+                            checked={selectedMetrics.activity}
+                            onPress={() => toggleMetric('activity')}
+                            iconSize={40}
                         />
                     </View>
                 </View>
@@ -407,17 +398,6 @@ export default function ExportReportScreen() {
                     </View>
                 </View>
 
-                {/* Activity Report */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Activity Report</Text>
-                    <TouchableOpacity style={styles.activityReportRow} onPress={() => toggleMetric('activity')} activeOpacity={0.8}>
-                        <View style={[styles.checkbox, selectedMetrics.activity && styles.checkboxChecked]}>
-                            {selectedMetrics.activity && <IconSymbol name="checkmark" size={12} color="#FFF" />}
-                        </View>
-                        <Text style={styles.activityReportText}>Include Activity Report</Text>
-                    </TouchableOpacity>
-                </View>
-
                 {/* Export Button */}
                 <View style={styles.footer}>
                     <TouchableOpacity
@@ -439,7 +419,7 @@ export default function ExportReportScreen() {
     );
 }
 
-function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 30 }: any) {
+function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 40 }: any) {
     return (
         <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.metricCardWrapper}>
             <View style={styles.metricCardContent}>
@@ -447,8 +427,8 @@ function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 
                     <IconSymbol name={icon} size={iconSize} color={color} />
                 </View>
                 <Text style={styles.metricLabel}>{label}</Text>
-                <View style={[styles.checkbox, checked && styles.metricCheckboxChecked]}>
-                    {checked && <IconSymbol name="checkmark" size={12} color="#FFF" />}
+                <View style={[styles.checkbox, checked && styles.metricCheckboxChecked, { borderRadius: 6, width: 22, height: 22 }]}>
+                    {checked && <IconSymbol name="checkmark" size={14} color="#FFF" />}
                 </View>
             </View>
         </TouchableOpacity>
@@ -511,23 +491,23 @@ const styles = StyleSheet.create({
     metricCheckboxChecked: { backgroundColor: '#8FD9E5' },
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
-    metricsRow: { flexDirection: 'row', gap: 16, justifyContent: 'space-between' },
-    metricCardWrapper: { flex: 1 },
+    metricsRow: { flexDirection: 'row', gap: 20, justifyContent: 'center' },
+    metricCardWrapper: { width: 140 },
     metricCardContent: {
         alignItems: 'center',
-        justifyContent: 'space-evenly',
-        paddingVertical: 20,
-        paddingHorizontal: 5,
+        justifyContent: 'center',
+        paddingVertical: 24,
+        paddingHorizontal: 10,
         backgroundColor: '#FFFFFF',
         borderRadius: 20,
-        height: 140,
+        height: 150,
         elevation: 4,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
     },
-    iconCircle: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+    iconCircle: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
     metricLabel: { fontSize: 13, color: '#888888', textAlign: 'center', fontWeight: '500', marginBottom: 10 },
 
     formatToggleContainer: { width: '100%', marginBottom: 10 },
