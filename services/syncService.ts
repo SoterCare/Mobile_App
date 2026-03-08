@@ -14,6 +14,7 @@ interface SyncResponse {
 // In-memory buffer to reduce DB I/O
 let logBuffer: any[] = [];
 const BATCH_SIZE = 5; // Write to DB every 5 logs (approx 20 seconds)
+const CHUNK_SIZE = 200; // SQLite bulk update chunk size
 
 export const syncService = {
     /**
@@ -72,13 +73,17 @@ export const syncService = {
             );
 
             if (response.data.success) {
-                // Mark as synced locally
-                // Optimize: Update all in one go or loop
-                for (const log of unsyncedLogs) {
-                    await db.update(nightlyLogs)
-                        .set({ synced: true })
-                        .where(eq(nightlyLogs.id, log.id));
-                }
+                // Mark as synced locally in a single transaction with chunking
+                await db.transaction(async (tx) => {
+                    for (let i = 0; i < unsyncedLogs.length; i += CHUNK_SIZE) {
+                        const chunk = unsyncedLogs.slice(i, i + CHUNK_SIZE);
+                        for (const log of chunk) {
+                            await tx.update(nightlyLogs)
+                                .set({ synced: true })
+                                .where(eq(nightlyLogs.id, log.id));
+                        }
+                    }
+                });
                 console.log(`Synced ${response.data.syncedCount} logs successfully.`);
             } else {
                 console.warn('Sync failed:', response.data.message);

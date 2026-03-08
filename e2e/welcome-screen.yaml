@@ -1,0 +1,4 @@
+appId: com.sanjula.myapp
+---
+- launchApp
+- assertVisible: "Welcome to SoterCare"
