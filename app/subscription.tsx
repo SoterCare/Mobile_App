@@ -1,0 +1,273 @@
+import React, { useState } from 'react';
+import {
+    StyleSheet,
+    View,
+    Text,
+    TouchableOpacity,
+    ScrollView,
+    Dimensions,
+    SafeAreaView,
+    Platform,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack, useRouter } from 'expo-router';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.82; 
+const CARD_MARGIN = 16;
+
+const PLANS = [
+    {
+        id: 'free',
+        name: 'Free',
+        monthlyPrice: '0',
+        yearlyPrice: '0',
+        monthlyLabel: '/ month',
+        yearlyLabel: '/ yearly',
+        description: 'Free plan basic features',
+        features: ['Basic', 'Basic', 'Basic', 'Basic', 'Basic', 'Basic'],
+    },
+    {
+        id: 'pro',
+        name: 'Pro',
+        monthlyPrice: '00',
+        yearlyPrice: '00',
+        monthlyLabel: '/ month',
+        yearlyLabel: '/ yearly',
+        description: 'Pro plan advanced features',
+        features: ['Advanced', 'Advanced', 'Advanced', 'Advanced', 'Advanced', 'Advanced'],
+    },
+    {
+        id: 'enterprise',
+        name: 'Enterprise',
+        monthlyPrice: '000',
+        yearlyPrice: '000',
+        monthlyLabel: '/ month',
+        yearlyLabel: '/ yearly',
+        description: 'Premium plan features',
+        features: ['Premium', 'Premium', 'Premium', 'Premium', 'Premium', 'Premium'],
+    },
+];
+
+export default function SubscriptionScreen() {
+    const router = useRouter();
+    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <Stack.Screen
+                options={{
+                    headerLeft: () => (
+                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
+                            <Ionicons name="chevron-back" size={24} color="#333" />
+                        </TouchableOpacity>
+                    ),
+                    headerTitle: () => <Text style={styles.headerTitle}>Our Plans</Text>,
+                    headerTitleAlign: 'left',
+                    headerShadowVisible: false,
+                    headerStyle: { backgroundColor: '#F8F9FA' },
+                }}
+            />
+
+            {/* ── Monthly / Yearly toggle (White with shadow) ── */}
+            <View style={styles.toggleContainer}>
+                <View style={styles.toggleBg}>
+                    <TouchableOpacity
+                        style={[styles.toggleBtn, billingCycle === 'monthly' && styles.activeTab]}
+                        onPress={() => setBillingCycle('monthly')}
+                        activeOpacity={1}
+                    >
+                        <Text style={[styles.toggleText, billingCycle === 'monthly' && styles.activeTabText]}>
+                            Monthly
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.toggleBtn, billingCycle === 'yearly' && styles.activeTab]}
+                        onPress={() => setBillingCycle('yearly')}
+                        activeOpacity={1}
+                    >
+                        <Text style={[styles.toggleText, billingCycle === 'yearly' && styles.activeTabText]}>
+                            Yearly
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            {/* ── Horizontal scrolling for all three cards ── */}
+            <ScrollView
+                horizontal
+                snapToInterval={CARD_WIDTH + CARD_MARGIN}
+                snapToAlignment="start"
+                decelerationRate="fast"
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.scrollArea}
+            >
+                {PLANS.map((plan) => {
+                    const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
+                    const periodLabel = billingCycle === 'monthly' ? plan.monthlyLabel : plan.yearlyLabel;
+
+                    return (
+                        <View key={plan.id} style={styles.card}>
+                            <Text style={styles.planName}>{plan.name}</Text>
+
+                            <View style={styles.priceRow}>
+                                <Text style={styles.currency}>$</Text>
+                                <Text style={styles.priceText}>{price}</Text>
+                                <Text style={styles.cycleText}> {periodLabel}</Text>
+                            </View>
+
+                            <Text style={styles.planDescription}>{plan.description}</Text>
+
+                            <View style={styles.featuresList}>
+                                {plan.features.map((feature, i) => (
+                                    <View key={i} style={styles.featureItem}>
+                                        <Ionicons name="checkmark" size={18} color="#97DBE7" />
+                                        <Text style={styles.featureText}>{feature}</Text>
+                                    </View>
+                                ))}
+                            </View>
+
+                            <View style={{ flex: 1 }} />
+
+                            <TouchableOpacity style={styles.subscribeButton} activeOpacity={0.8}>
+                                <Text style={styles.subscribeText}>Subscribe</Text>
+                            </TouchableOpacity>
+
+                            <Text style={styles.footerNote}>Auto-renews. Cancel anytime</Text>
+                        </View>
+                    );
+                })}
+            </ScrollView>
+        </SafeAreaView>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#F8F9FA',
+    },
+    // Spacing matched to Temperature and Language screens
+    headerBackBtn: { marginLeft: 4 }, 
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+
+    toggleContainer: {
+        alignItems: 'center',
+        paddingVertical: 25,
+    },
+    toggleBg: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 35,
+        padding: 5,
+        width: '75%',
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
+            },
+            android: { elevation: 5 },
+        }),
+    },
+    toggleBtn: {
+        flex: 1,
+        paddingVertical: 14,
+        alignItems: 'center',
+        borderRadius: 30,
+    },
+    activeTab: {
+        backgroundColor: '#97DBE7',
+    },
+    toggleText: {
+        fontSize: 16,
+        color: '#888',
+        fontWeight: '600',
+    },
+    activeTabText: {
+        color: '#FFF',
+    },
+
+    scrollArea: {
+        paddingHorizontal: 20,
+        paddingBottom: 60,
+    },
+    card: {
+        width: CARD_WIDTH,
+        minHeight: 540,
+        backgroundColor: '#FFF',
+        borderRadius: 30,
+        padding: 30,
+        marginRight: CARD_MARGIN,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 12 },
+                shadowOpacity: 0.06,
+                shadowRadius: 16,
+            },
+            android: { elevation: 8 },
+        }),
+    },
+    planName: {
+        fontSize: 34,
+        fontWeight: '700',
+        color: '#333',
+        marginBottom: 8,
+    },
+    priceRow: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        marginBottom: 12,
+    },
+    currency: {
+        fontSize: 28,
+        fontWeight: '700',
+        color: '#333',
+    },
+    priceText: {
+        fontSize: 56,
+        fontWeight: '700',
+        color: '#333',
+    },
+    cycleText: {
+        fontSize: 16,
+        color: '#999',
+    },
+    planDescription: {
+        fontSize: 16,
+        color: '#666',
+        marginBottom: 35,
+    },
+    featuresList: {
+        gap: 16,
+    },
+    featureItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    featureText: {
+        fontSize: 18,
+        color: '#444',
+        fontWeight: '500',
+    },
+    subscribeButton: {
+        backgroundColor: '#97DBE7',
+        paddingVertical: 18,
+        borderRadius: 22,
+        alignItems: 'center',
+    },
+    subscribeText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontWeight: '700',
+    },
+    footerNote: {
+        textAlign: 'center',
+        color: '#BBB',
+        fontSize: 13,
+        marginTop: 15,
+    },
+});
