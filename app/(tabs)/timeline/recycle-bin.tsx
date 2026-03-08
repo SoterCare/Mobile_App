@@ -4,7 +4,7 @@
  * Allows restoring them back to the timeline
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,10 +12,13 @@ import {
   ScrollView,
   Pressable,
   Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { recycleBinService } from '@/services/recycleBinService';
 
 // Types
 interface RemovedActivity {
@@ -25,27 +28,13 @@ interface RemovedActivity {
   time: string;
 }
 
-// Mock data for removed activities
-const INITIAL_REMOVED_ACTIVITIES: RemovedActivity[] = [
-  {
-    id: '1',
-    type: 'movement',
-    title: 'Movement Detected',
-    time: '05:23 AM',
-  },
-  {
-    id: '2',
-    type: 'fall',
-    title: 'Fall Detected',
-    time: '08:42 AM',
-  },
-  {
-    id: '3',
-    type: 'urine',
-    title: 'Urine Detected',
-    time: '10:18 PM',
-  },
-];
+// Helper to map backend items to RemovedActivity
+const mapToRemovedActivity = (item: any): RemovedActivity => ({
+  id: String(item.id ?? item._id ?? item.eventId),
+  type: item.type ?? item.category ?? 'movement',
+  title: item.title ?? item.label ?? item.name ?? 'Activity',
+  time: item.time ?? item.createdAt ?? item.timestamp ?? '',
+});
 
 // Color configurations for different activity types
 const getActivityConfig = (type: RemovedActivity['type']) => {
@@ -92,19 +81,60 @@ const ITEM_GAP = 16;
 
 export default function RecycleBinScreen() {
   const router = useRouter();
-  const [removedActivities, setRemovedActivities] = useState<RemovedActivity[]>(
-    INITIAL_REMOVED_ACTIVITIES
-  );
+  const [removedActivities, setRemovedActivities] = useState<RemovedActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchDismissed = useCallback(async () => {
+    try {
+      setError(null);
+      const data = await recycleBinService.getDismissed();
+      const mapped = (data || []).map(mapToRemovedActivity);
+      setRemovedActivities(mapped);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load dismissed activities');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDismissed();
+  }, [fetchDismissed]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchDismissed();
+  }, [fetchDismissed]);
 
   const handleGoBack = useCallback(() => {
     router.back();
   }, [router]);
 
   const handleRestore = useCallback((activity: RemovedActivity) => {
-    setRemovedActivities((prev) =>
-      prev.filter((item) => item.id !== activity.id)
+    Alert.alert(
+      'Restore Activity',
+      `Are you sure you want to restore "${activity.title}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Restore',
+          onPress: async () => {
+            try {
+              await recycleBinService.restore(activity.id);
+              setRemovedActivities((prev) =>
+                prev.filter((item) => item.id !== activity.id)
+              );
+              Alert.alert('Restored', `"${activity.title}" has been restored.`);
+            } catch (err: any) {
+              Alert.alert('Error', err?.message || 'Failed to restore activity');
+            }
+          },
+        },
+      ]
     );
-    Alert.alert('Restored', `"${activity.title}" has been restored.`);
   }, []);
 
   // Calculate line height for connecting vertical line
@@ -139,7 +169,29 @@ export default function RecycleBinScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
+        {/* Loading State */}
+        {loading && (
+          <View style={styles.emptyState}>
+            <ActivityIndicator size="large" color="#4ECDC4" />
+          </View>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>{error}</Text>
+            <Pressable onPress={fetchDismissed} style={{ marginTop: 12 }}>
+              <Text style={{ color: '#4ECDC4', fontWeight: '600' }}>Retry</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {!loading && !error && (
+          <>
         {/* Top Row: Label + Date */}
         <View style={styles.topRow}>
           <Text style={styles.removedLabel}>Removed Activities</Text>
@@ -224,6 +276,8 @@ export default function RecycleBinScreen() {
             <Ionicons name="trash-outline" size={48} color="#CCCCCC" />
             <Text style={styles.emptyStateText}>No removed activities</Text>
           </View>
+        )}
+        </>
         )}
       </ScrollView>
     </SafeAreaView>
