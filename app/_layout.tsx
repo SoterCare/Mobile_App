@@ -52,10 +52,11 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="subscription" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/payment" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/temperature" options={{ headerShown: false }} />
-        <Stack.Screen name="settings/language" options={{ headerShown: false }} />
+        <Stack.Screen name="subscription" />
+        <Stack.Screen name="export-report" />
+        <Stack.Screen name="settings/payment" />
+        <Stack.Screen name="settings/temperature" />
+        <Stack.Screen name="settings/language" />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
