@@ -54,18 +54,18 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f2f3f7', // Neumorphic Base
+        backgroundColor: '#F7F7F7',
     },
     scrollContent: {
-        padding: 20,
+        padding: 24,
         paddingBottom: 40,
     },
     screenTitle: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 20,
+        fontSize: 26,
+        fontWeight: '700',
+        color: '#4A4A4A',
+        marginBottom: 24,
         marginTop: 10,
     },
-});   
+});
 

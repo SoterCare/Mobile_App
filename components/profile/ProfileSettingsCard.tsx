@@ -48,7 +48,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
             ) : (
                 <>
                     {value && <Text style={styles.valueText}>{value}</Text>}
-                    <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+                    <Ionicons name="chevron-forward" size={18} color="#A0A0A0" />
                 </>
             )}
         </View>
@@ -108,42 +108,50 @@ export const ProfileSettingsCard: React.FC = () => {
 
 const styles = StyleSheet.create({
     cardContainer: {
-        marginBottom: 24
+        marginBottom: 20,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
     },
     cardContent: {
-        paddingVertical: 8,
-        paddingHorizontal: 16
+        paddingVertical: 5,
+        paddingHorizontal: 20,
     },
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 16
+        paddingVertical: 18,
     },
     menuItemBorder: {
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0'
+        borderBottomColor: '#F0F0F0',
     },
     menuItemLeft: {
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     icon: {
-        marginRight: 12,
-        width: 24
+        marginRight: 15,
+        width: 24,
     },
     menuLabel: {
         fontSize: 16,
-        color: '#333',
-        fontWeight: '600'
+        color: '#4A4A4A',
+        fontWeight: '600',
     },
     menuItemRight: {
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     valueText: {
-        fontSize: 14,
-        color: '#999',
-        marginRight: 8
+        fontSize: 15,
+        color: '#999999',
+        marginRight: 8,
+        fontWeight: '500',
     },
 });

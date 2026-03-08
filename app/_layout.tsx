@@ -57,6 +57,8 @@ function RootLayoutNav() {
         <Stack.Screen name="settings/payment" />
         <Stack.Screen name="settings/temperature" />
         <Stack.Screen name="settings/language" />
+        <Stack.Screen name="settings/about" />
+        <Stack.Screen name="settings/help" />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
