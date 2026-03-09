@@ -111,17 +111,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 24,
     borderRadius: 999,
-    backgroundColor: TimelineColors.cardBackground,
+    backgroundColor: '#FFFFFF',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   } as ViewStyle,
 
   pillButtonActive: {
-    backgroundColor: TimelineColors.primaryCyan,
+    backgroundColor: '#8FD9E5',
+    elevation: 2,
+    shadowOpacity: 0.15,
   } as ViewStyle,
 
   pillButtonText: {
     fontSize: 14,
     fontWeight: '500',
-    color: TimelineColors.textMedium,
+    color: '#333333',
   } as TextStyle,
 
   pillButtonTextActive: {
