@@ -161,7 +161,7 @@ export default function OTPVerificationScreen() {
 
                 <TouchableOpacity style={styles.resendContainer}>
                     <Text style={styles.resendText}>
-                        Didn&apos;t receive the code? <Text style={styles.resendLink}>Click to resend</Text>
+                        Didn't receive the code? <Text style={styles.resendLink}>Click to resend</Text>
                     </Text>
                 </TouchableOpacity>
             </View>

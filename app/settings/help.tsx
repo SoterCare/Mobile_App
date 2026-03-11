@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Linking } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
@@ -13,9 +13,9 @@ const FAQ_ITEMS = [
 ];
 
 const SUPPORT_OPTIONS = [
-    { icon: 'mail-outline' as const, label: 'Email Support', desc: 'Get help via email', action: () => Linking.openURL('mailto:support@example.com') },
-    { icon: 'chatbubbles-outline' as const, label: 'Live Chat', desc: 'Chat with our team', action: () => Linking.openURL('https://example.com/chat') },
-    { icon: 'bug-outline' as const, label: 'Report a Problem', desc: 'Let us know about issues', action: () => Linking.openURL('https://example.com/feedback') },
+    { icon: 'mail-outline' as const, label: 'Email Support', desc: 'Get help via email', action: () => Alert.alert('Email Support', 'Contact us at support@sotercare.com') },
+    { icon: 'chatbubbles-outline' as const, label: 'Live Chat', desc: 'Chat with our team', action: () => Alert.alert('Live Chat', 'Live chat will be available soon.') },
+    { icon: 'bug-outline' as const, label: 'Report a Problem', desc: 'Let us know about issues', action: () => Alert.alert('Report a Problem', 'Bug reporting will be available soon.') },
 ];
 
 function FAQItem({ item, isLast }: { item: typeof FAQ_ITEMS[number]; isLast: boolean }) {
@@ -100,19 +100,19 @@ export default function HelpSupportScreen() {
                         <Text style={styles.sectionTitle}>Quick Help</Text>
                     </View>
                     <View style={styles.quickActions}>
-                        <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Linking.openURL('https://example.com/getting-started')}>
+                        <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Alert.alert('Getting Started', 'Getting started guide will be available soon.')}>
                             <View style={styles.quickActionIcon}>
                                 <Ionicons name="rocket-outline" size={22} color="#8FD9E5" />
                             </View>
                             <Text style={styles.quickActionLabel}>Getting{'\n'}Started</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Linking.openURL('https://example.com/device-help')}>
+                        <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Alert.alert('Device Setup', 'Device setup guide will be available soon.')}>
                             <View style={styles.quickActionIcon}>
                                 <Ionicons name="watch-outline" size={22} color="#8FD9E5" />
                             </View>
                             <Text style={styles.quickActionLabel}>Device{'\n'}Setup</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Linking.openURL('https://example.com/app-guide')}>
+                        <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Alert.alert('App Guide', 'App guide will be available soon.')}>
                             <View style={styles.quickActionIcon}>
                                 <Ionicons name="phone-portrait-outline" size={22} color="#8FD9E5" />
                             </View>

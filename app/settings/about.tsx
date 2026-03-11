@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Linking } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
@@ -97,7 +97,7 @@ export default function AboutScreen() {
                         </View>
                         <Text style={styles.sectionTitle}>Legal</Text>
                     </View>
-                    <TouchableOpacity style={styles.linkRow} activeOpacity={0.6} onPress={() => Linking.openURL('https://example.com/terms')}>
+                    <TouchableOpacity style={styles.linkRow} activeOpacity={0.6} onPress={() => Alert.alert('Terms of Service', 'Terms of Service will be available soon.')}>
                         <View style={styles.linkLeft}>
                             <Ionicons name="document-outline" size={20} color="#777" />
                             <Text style={styles.linkText}>Terms of Service</Text>
@@ -105,7 +105,7 @@ export default function AboutScreen() {
                         <Ionicons name="chevron-forward" size={16} color="#C0C0C0" />
                     </TouchableOpacity>
                     <View style={styles.linkDivider} />
-                    <TouchableOpacity style={styles.linkRow} activeOpacity={0.6} onPress={() => Linking.openURL('https://example.com/privacy')}>
+                    <TouchableOpacity style={styles.linkRow} activeOpacity={0.6} onPress={() => Alert.alert('Privacy Policy', 'Privacy Policy will be available soon.')}>
                         <View style={styles.linkLeft}>
                             <Ionicons name="lock-closed-outline" size={20} color="#777" />
                             <Text style={styles.linkText}>Privacy Policy</Text>

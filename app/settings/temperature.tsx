@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     View,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Unit = 'F' | 'C';
 
@@ -20,6 +21,17 @@ const UNITS: { key: Unit; label: string; symbol: string }[] = [
 export default function TemperatureScreen() {
     const router = useRouter();
     const [unit, setUnit] = useState<Unit>('F');
+
+    useEffect(() => {
+        AsyncStorage.getItem('temp_unit').then((val) => {
+            if (val === 'F' || val === 'C') setUnit(val);
+        });
+    }, []);
+
+    const handleUnitChange = async (u: Unit) => {
+        setUnit(u);
+        await AsyncStorage.setItem('temp_unit', u);
+    };
 
     const selectedLabel = unit === 'F' ? 'Fahrenheit (°F)' : 'Celsius (°C)';
 
@@ -52,7 +64,7 @@ export default function TemperatureScreen() {
                         <TouchableOpacity
                             key={u.key}
                             style={[styles.unitCard, isActive && styles.unitCardActive]}
-                            onPress={() => setUnit(u.key)}
+                            onPress={() => handleUnitChange(u.key)}
                             activeOpacity={0.8}
                         >
                             {/* Symbol circle */}

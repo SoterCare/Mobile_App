@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     StyleSheet,
     View,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Language = { code: string; name: string; nativeName: string; flag: string };
 
@@ -30,12 +31,18 @@ export default function LanguageScreen() {
     const { current } = useLocalSearchParams<{ current?: string }>();
     const [selected, setSelected] = useState(current ?? 'English');
 
+    useEffect(() => {
+        AsyncStorage.getItem('app_language').then((val) => {
+            if (val) setSelected(val);
+        });
+    }, []);
+
     const selectedLang = LANGUAGES.find(l => l.name === selected) ?? LANGUAGES[0];
 
-    const handleSelect = (lang: Language) => {
+    const handleSelect = async (lang: Language) => {
         setSelected(lang.name);
+        await AsyncStorage.setItem('app_language', lang.name);
         router.back();
-        router.setParams({ language: lang.name });
     };
 
     return (

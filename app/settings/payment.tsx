@@ -174,7 +174,7 @@ export default function PaymentMethodScreen() {
 
                 <View style={styles.secureRow}>
                     <Ionicons name="shield-checkmark-outline" size={14} color="#51CF66" />
-                    <Text style={styles.secureText}>256-bit encrypted &amp; secure</Text>
+                    <Text style={styles.secureText}>256-bit encrypted & secure</Text>
                 </View>
             </ScrollView>
         </SafeAreaView>

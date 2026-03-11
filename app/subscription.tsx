@@ -8,6 +8,7 @@ import {
     Dimensions,
     SafeAreaView,
     Platform,
+    Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
@@ -23,29 +24,29 @@ const PLANS = [
         monthlyPrice: '0',
         yearlyPrice: '0',
         monthlyLabel: '/ month',
-        yearlyLabel: '/ yearly',
-        description: 'Free plan basic features',
-        features: ['Basic', 'Basic', 'Basic', 'Basic', 'Basic', 'Basic'],
+        yearlyLabel: '/ year',
+        description: 'Get started with essential health monitoring',
+        features: ['Basic vitals tracking', 'Daily summary', '7-day data retention', 'Single device', 'Community support', 'Standard alerts'],
     },
     {
         id: 'pro',
         name: 'Pro',
-        monthlyPrice: '00',
-        yearlyPrice: '00',
+        monthlyPrice: '9.99',
+        yearlyPrice: '99.99',
         monthlyLabel: '/ month',
-        yearlyLabel: '/ yearly',
-        description: 'Pro plan advanced features',
-        features: ['Advanced', 'Advanced', 'Advanced', 'Advanced', 'Advanced', 'Advanced'],
+        yearlyLabel: '/ year',
+        description: 'Advanced insights for proactive health management',
+        features: ['All Free features', 'AI-powered summaries', '90-day data retention', 'Up to 3 devices', 'Priority support', 'Export PDF reports'],
     },
     {
         id: 'enterprise',
         name: 'Enterprise',
-        monthlyPrice: '000',
-        yearlyPrice: '000',
+        monthlyPrice: '24.99',
+        yearlyPrice: '249.99',
         monthlyLabel: '/ month',
-        yearlyLabel: '/ yearly',
-        description: 'Premium plan features',
-        features: ['Premium', 'Premium', 'Premium', 'Premium', 'Premium', 'Premium'],
+        yearlyLabel: '/ year',
+        description: 'Complete health intelligence for families & caregivers',
+        features: ['All Pro features', 'Unlimited data retention', 'Unlimited devices', 'Family dashboard', 'Dedicated account manager', 'Custom alert rules'],
     },
 ];
 
@@ -129,8 +130,14 @@ export default function SubscriptionScreen() {
 
                             <View style={{ flex: 1 }} />
 
-                            <TouchableOpacity style={styles.subscribeButton} activeOpacity={0.8}>
-                                <Text style={styles.subscribeText}>Subscribe</Text>
+                            <TouchableOpacity
+                                style={styles.subscribeButton}
+                                activeOpacity={0.8}
+                                onPress={() => Alert.alert('Subscribe', `You selected the ${plan.name} plan (${billingCycle}). This feature will be available soon!`)}
+                            >
+                                <Text style={styles.subscribeText}>
+                                    {plan.id === 'free' ? 'Current Plan' : 'Subscribe'}
+                                </Text>
                             </TouchableOpacity>
 
                             <Text style={styles.footerNote}>Auto-renews. Cancel anytime</Text>

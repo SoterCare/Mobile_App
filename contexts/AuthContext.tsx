@@ -4,16 +4,10 @@ import {
   AuthContextType,
   AuthState,
   User,
-  SignupArgs, // Import the new type
+  SignupArgs,
   JWTPayload,
 } from '@/types/auth.types';
-import { jwtDecode, JwtPayload } from "jwt-decode";
-
-interface JWTPayload extends JwtPayload {
-  userId: string;
-  email: string;
-  name: string;
-}
+import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

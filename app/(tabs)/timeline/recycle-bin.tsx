@@ -195,7 +195,11 @@ export default function RecycleBinScreen() {
         {/* Top Row: Label + Date */}
         <View style={styles.topRow}>
           <Text style={styles.removedLabel}>Removed Activities</Text>
-          <Text style={styles.dateLabel}>2025/11/01</Text>
+          <Text style={styles.dateLabel}>
+            {removedActivities.length > 0 && removedActivities[0].time
+              ? new Date(removedActivities[0].time).toLocaleDateString('en-CA')
+              : new Date().toLocaleDateString('en-CA')}
+          </Text>
         </View>
 
         {/* Timeline */}

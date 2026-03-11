@@ -7,12 +7,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { isValidEmail, isValidName } from "../../utils/validation";
 import * as WebBrowser from 'expo-web-browser';
 import { useGoogleAuth, processGoogleAuthResponse, useFacebookAuth, processFacebookAuthResponse, appleSignIn } from '@/services/socialAuthService';
+import { useAuth } from '@/contexts/AuthContext';
 
 WebBrowser.maybeCompleteAuthSession();
 
 
 export default function SignUpScreen() {
     const router = useRouter();
+    const { signIn } = useAuth();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [agreed, setAgreed] = useState(false);
@@ -53,9 +55,15 @@ export default function SignUpScreen() {
                 return;
             }
 
-            // Success - show user info for now
-            Alert.alert('Success', `Signed in as ${result.user.email}`);
-            // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
+            // Send provider token to backend and sign in
+            const backendResult = await authService.socialLogin(result.user.providerToken, {
+                email: result.user.email,
+                name: result.user.name || result.user.email.split('@')[0],
+                userId: `google-${result.user.email}`
+            });
+
+            await signIn(backendResult.accessToken, backendResult.user);
+            router.replace("/(tabs)");
         } catch (error: any) {
             Alert.alert('Error', 'Google sign-in failed');
         } finally {
@@ -77,9 +85,15 @@ export default function SignUpScreen() {
                 return;
             }
 
-            // Success - show user info for now
-            Alert.alert('Success', `Signed in with Facebook as ${result.user.email || result.user.name || 'user'}`);
-            // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
+            // Send provider token to backend and sign in
+            const backendResult = await authService.socialLogin(result.user.providerToken, {
+                email: result.user.email || '',
+                name: result.user.name || 'Facebook User',
+                userId: `facebook-${result.user.providerToken.substring(0, 10)}`
+            });
+
+            await signIn(backendResult.accessToken, backendResult.user);
+            router.replace("/(tabs)");
         } catch (error: any) {
             Alert.alert('Error', 'Facebook sign-in failed');
         } finally {
@@ -172,9 +186,15 @@ export default function SignUpScreen() {
                 return;
             }
 
-            // Success - show user info for now
-            Alert.alert('Success', `Signed in with Apple as ${result.user.email || result.user.name || 'user'}`);
-            // TODO: Send provider token to backend -> receive session token + user -> authContext.signIn(token, user); router.replace("/(tabs)")
+            // Send provider token to backend and sign in
+            const backendResult = await authService.socialLogin(result.user.providerToken, {
+                email: result.user.email || '',
+                name: result.user.name || 'Apple User',
+                userId: `apple-${result.user.providerToken.substring(0, 10)}`
+            });
+
+            await signIn(backendResult.accessToken, backendResult.user);
+            router.replace("/(tabs)");
         } catch (error: any) {
             Alert.alert('Error', 'Apple sign-in failed');
         } finally {
