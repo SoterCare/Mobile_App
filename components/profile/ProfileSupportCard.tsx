@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     },
     menuItemBorder: {
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        borderBottomColor: '#e2e2e2',
     },
     menuItemLeft: {
         flexDirection: 'row',
