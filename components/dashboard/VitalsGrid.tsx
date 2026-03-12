@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { VitalCard } from './VitalCard';
-const sampleData = require('../../patientData.json');
-import { syncService } from '../../services/syncService';
+import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 
 // Gait Analysis card — blue-tinted circle with pulse/activity icon, grey N/A text
 const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
@@ -19,36 +18,16 @@ const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
 );
 
 export const VitalsGrid = () => {
-    const [skinTemp, setSkinTemp] = useState<number>(30.4);
-    const [moisture, setMoisture] = useState<number>(0);
+    const { latestVitals } = useRaspberryPi();
 
-    useEffect(() => {
-        let index = 0;
-        const intervalId = setInterval(() => {
-            index = (index + 1) % sampleData.length;
-            const row = sampleData[index];
+    const skinTemp = typeof latestVitals?.temperature === 'number' ? latestVitals.temperature : 30.4;
+    const moisture = typeof latestVitals?.moisture === 'number' ? latestVitals.moisture : 0;
+    const roomTemp =
+        typeof latestVitals?.roomTemperature === 'number'
+            ? latestVitals.roomTemperature.toFixed(1)
+            : (skinTemp - 0.5).toFixed(1);
 
-            if (row) {
-                const newTemp = Number(row.temp) || 30.4;
-                // Moisture in the logged files is often 0, so simulate it dynamically if 0
-                const actualMoisture = Number(row.moisture) || 0;
-                const newMoisture = actualMoisture === 0 ? Math.floor(Math.random() * 5) : actualMoisture;
-
-                setSkinTemp(newTemp);
-                setMoisture(newMoisture);
-
-                syncService.logVitals({
-                    temperature: newTemp,
-                    moisture: newMoisture,
-                    timestamp: Date.now(),
-                });
-            }
-        }, 4000);
-
-        return () => clearInterval(intervalId);
-    }, []);
-
-    const roomTemp = (skinTemp - 0.5).toFixed(1);
+    const gaitValue = latestVitals?.gaitAnalysis || 'N/A';
 
     return (
         <View style={styles.gridContainer}>
@@ -79,7 +58,7 @@ export const VitalsGrid = () => {
 
             {/* Row 2: Gait Analysis */}
             <View style={styles.gridRow}>
-                <GaitAnalysisCard value="N/A" />
+                <GaitAnalysisCard value={gaitValue} />
             </View>
         </View>
     );

@@ -103,8 +103,13 @@ export default function ExportReportScreen() {
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
                 isSingleDate,
-                metrics: selectedMetrics,
+                metrics: {
+                    heartRate: false,
+                    spo2: false,
+                    temperature: selectedMetrics.temperature,
+                },
                 format: exportFormat,
+                includeActivity: selectedMetrics.activity,
             };
 
             const response = await apiClient.post(API_CONFIG.ENDPOINTS.REPORTS.EXPORT, payload);

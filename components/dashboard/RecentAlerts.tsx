@@ -9,18 +9,21 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertCard } from './AlertCard';
+import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 
 // Height of one expanded alert card is slightly more, so just set a standard max height
 const SCROLL_HEIGHT = 280;
 
-const ALERTS = [
-    { id: '1', type: 'movement' as const, title: 'Movement Detected', timestamp: 'now' },
-    { id: '2', type: 'fall' as const, title: 'Fall Detected', timestamp: '1m ago' },
-    { id: '3', type: 'urine' as const, title: 'Urine Detected', timestamp: '2m ago' },
-    { id: '4', type: 'movement' as const, title: 'Movement Detected', timestamp: '3m ago' },
-];
-
 export const RecentAlerts = () => {
+    const { recentAlerts } = useRaspberryPi();
+
+    const alertsToRender = recentAlerts.map((a, index) => ({
+        id: a.id || `alert_${index}`,
+        type: (a.type as 'movement' | 'fall' | 'urine') || 'movement',
+        title: a.title,
+        timestamp: a.timestamp,
+    }));
+
     return (
         <View style={styles.alertsContainer}>
             {/* Header */}
@@ -38,7 +41,7 @@ export const RecentAlerts = () => {
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
             >
-                {ALERTS.map((alert) => (
+                {alertsToRender.map((alert) => (
                     <AlertCard
                         key={alert.id}
                         type={alert.type}
@@ -46,6 +49,9 @@ export const RecentAlerts = () => {
                         timestamp={alert.timestamp}
                     />
                 ))}
+                {alertsToRender.length === 0 && (
+                    <Text style={styles.emptyText}>No recent alerts</Text>
+                )}
             </ScrollView>
         </View>
     );
@@ -85,5 +91,11 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#888',
         fontWeight: '500',
+    },
+    emptyText: {
+        color: '#999',
+        textAlign: 'center',
+        paddingVertical: 16,
+        fontSize: 13,
     },
 });

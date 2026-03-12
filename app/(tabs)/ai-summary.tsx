@@ -76,18 +76,21 @@ export default function AISummaryScreen() {
     };
 
     const handleGenerate = async () => {
-        if (isLoading) return;
+        if (isLoading) return; // Prevent multiple clicks
         
         setIsLoading(true);
+        console.log('Starting summary generation...'); // Debug log
         
         try {
             let data;
             
+            // Add timeout to prevent hanging
             const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Request timeout')), 15000)
+                setTimeout(() => reject(new Error('Request timeout')), 15000) // 15 second timeout
             );
             
             if (activeTab === 'today') {
+                console.log('Generating today summary...'); // Debug log
                 data = await Promise.race([
                     summaryService.generateTodaySummary(),
                     timeoutPromise
@@ -98,6 +101,7 @@ export default function AISummaryScreen() {
                     toTime: data.to || formatTime(new Date()),
                 });
             } else {
+                console.log('Generating previous summary for:', selectedDate); // Debug log
                 data = await Promise.race([
                     summaryService.generatePreviousSummary(selectedDate),
                     timeoutPromise
@@ -107,9 +111,11 @@ export default function AISummaryScreen() {
                     date: data.date || formatDate(selectedDate),
                 });
             }
+            console.log('Summary generated successfully'); // Debug log
         } catch (error: any) {
             console.error('Generate summary error:', error);
             
+            // Set fallback data
             if (activeTab === 'today') {
                 setSummaryData({
                     summary: 'Unable to generate summary. Please try again later.',
@@ -123,6 +129,7 @@ export default function AISummaryScreen() {
                 });
             }
         } finally {
+            console.log('Resetting loading state'); // Debug log
             setIsLoading(false);
         }
     };
@@ -195,6 +202,18 @@ export default function AISummaryScreen() {
                 {/* Generate Button */}
                 <View style={styles.generateButtonContainer}>
                     <GenerateButton onPress={handleGenerate} isLoading={isLoading} />
+                    {/* Debug info and manual reset */}
+                    {isLoading && (
+                        <TouchableOpacity 
+                            style={styles.resetButton}
+                            onPress={() => {
+                                console.log('Manual reset triggered');
+                                setIsLoading(false);
+                            }}
+                        >
+                            <Text style={styles.resetButtonText}>Force Stop Loading</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* Summary Content - Only show after generation */}
@@ -238,25 +257,6 @@ export default function AISummaryScreen() {
                                 'Heart Rate'
                             )}
                         </View>
-                    </View>
-                )}
-
-                {/* History List — shown in 'previous' tab */}
-                {activeTab === 'previous' && historyList.length > 0 && (
-                    <View style={styles.historySection}>
-                        <Text style={styles.historySectionTitle}>Previous Summaries</Text>
-                        <FlatList
-                            data={historyList}
-                            keyExtractor={(item) => item.id}
-                            renderItem={renderHistoryItem}
-                            scrollEnabled={false}
-                        />
-                        {selectedHistoryItem && (
-                            <View style={[styles.summaryCard, Shadows.card, { marginTop: 16 }]}>
-                                <Text style={styles.summaryTitle}>Summary — {formatDate(selectedHistoryItem.createdAt)}</Text>
-                                <Text style={styles.summaryText}>{selectedHistoryItem.content}</Text>
-                            </View>
-                        )}
                     </View>
                 )}
             </ScrollView>
@@ -347,14 +347,17 @@ const styles = StyleSheet.create({
     generateButtonContainer: {
         marginBottom: 24,
     },
-    historySection: {
-        marginTop: 8,
+    resetButton: {
+        marginTop: 12,
+        padding: 8,
+        alignItems: 'center',
+        backgroundColor: '#FF6B6B',
+        borderRadius: 8,
     },
-    historySectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333333',
-        marginBottom: 12,
+    resetButtonText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '500',
     },
     summarySection: {
         flex: 1,

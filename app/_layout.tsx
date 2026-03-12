@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { VitalsProvider } from '@/contexts/VitalsContext';
-import { View, ActivityIndicator, StyleSheet, Image } from 'react-native';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { RaspberryPiProvider } from '@/contexts/RaspberryPiContext';
 import { reportError } from '@/services/crashReportService';
 import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
 import { initDatabase } from '@/database/db';
@@ -85,22 +83,11 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <VitalsProvider>
-        <RootLayoutNav />
+        <RaspberryPiProvider>
+          <RootLayoutNav />
+        </RaspberryPiProvider>
       </VitalsProvider>
     </AuthProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  logo: {
-    width: 246,
-    height: 96,
-    resizeMode: 'contain',
-  },
-});
