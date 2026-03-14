@@ -28,15 +28,15 @@ const getIconConfig = (type: ActivityEvent['type']) => {
       return {
         iconName: 'walk' as const,
         iconComponent: MaterialCommunityIcons,
-        backgroundColor: '#40DFDF', // Cyan
-        cardBackground: '#DDFAFA',
+        backgroundColor: '#42dfdf', // Cyan
+        cardBackground: '#dffcfc',
       };
     case 'fall':
       return {
         iconName: 'warning' as const, // Changed from alert
         iconComponent: Ionicons,
-        backgroundColor: '#FF9789', // Light Red Pastel
-        cardBackground: '#FDECEB',
+        backgroundColor: '#FF9D93', // Light Red Pastel
+        cardBackground: '#FFF0F0',
       };
     case 'connected':
       return {

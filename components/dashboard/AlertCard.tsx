@@ -14,7 +14,7 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     movement: {
         icon: 'walk',
         iconColor: '#ffffff',
-        bgColor: '#3EEFD7', // Cyan
+        bgColor: '#42dfdf', // Cyan
     },
     fall: {
         icon: 'warning',

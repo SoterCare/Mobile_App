@@ -19,9 +19,9 @@ interface ActivityStatsCardsProps {
 
 // Design-specific color constants to ensure exact Figma matching
 const FIGMA_COLORS = {
-  movement: { main: '#43dbdb', bg: '#E0FBFB' },
-  fall: { main: '#FF8E8E', bg: '#FFF0F0' },
-  urine: { main: '#91d4f0', bg: '#F0F7FF' },
+  movement: { main: '#42dfdf', bg: '#dffcfc' },
+  fall: { main: '#FF9D93', bg: '#FFF0F0' },
+  urine: { main: '#91D7E4', bg: '#F0F7FF' },
 };
 
 const ActivityStatsCards: React.FC<ActivityStatsCardsProps> = ({
