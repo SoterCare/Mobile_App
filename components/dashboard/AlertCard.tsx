@@ -14,17 +14,17 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     movement: {
         icon: 'walk',
         iconColor: '#ffffff',
-        bgColor: '#40DFDF', // Cyan
+        bgColor: '#3EEFD7', // Cyan
     },
     fall: {
         icon: 'warning',
         iconColor: '#ffffff',
-        bgColor: '#FF9789', // Light Red Pastel
+        bgColor: '#FF9D93', // Light Red Pastel
     },
     urine: {
         icon: 'water',
         iconColor: '#ffffff',
-        bgColor: '#64d8e8',
+        bgColor: '#91D7E4',
     },
 };
 

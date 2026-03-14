@@ -36,23 +36,23 @@ export const VitalsGrid = () => {
                 {/* Thermometer icon to match Image 2 */}
                 <VitalCard
                     icon="thermometer-outline"
-                    iconColor="#f8a831"
-                    backgroundColor="#FFF3E0"
+                    iconColor="#f9c45a"
+                    backgroundColor="#FFF1D9"
                     value={skinTemp.toFixed(1)}
                     unit="°C"
                     label="Patient Skin"
                     sublabel={`Room : ${roomTemp} °C`}
-                    valueColor="#fbcb3c"
+                    valueColor="#f9c45a"
                 />
                 {/* Water drop icon, teal */}
                 <VitalCard
                     icon="water"
-                    iconColor="#5bcfde"
-                    backgroundColor="#daf9fb"
+                    iconColor="#91D7E4"
+                    backgroundColor="#e0f2fb"
                     value={String(moisture)}
                     unit="%"
                     label="Moisture · Dry"
-                    valueColor="#5bcfde"
+                    valueColor="#91D7E4"
                 />
             </View>
 
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
         height: 54,
         borderRadius: 27,
         // Soft blue-grey background matching Image 2
-        backgroundColor: '#d9ecf6',
+        backgroundColor: '#daeffd',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,

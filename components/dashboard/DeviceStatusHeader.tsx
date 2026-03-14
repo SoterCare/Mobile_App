@@ -117,11 +117,11 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     statusOnline: {
-        color: '#64df76',
+        color: '#48FF00',
         fontWeight: '600',
     },
     statusOffline: {
-        color: '#FF6B6B',
+        color: '#ff2121',
         fontWeight: '600',
         textTransform: 'capitalize',
     },
@@ -137,18 +137,18 @@ const styles = StyleSheet.create({
         width: 6,
         height: 6,
         borderRadius: 3,
-        backgroundColor: '#64df76',
+        backgroundColor: '#48FF00',
         marginRight: 5,
     },
     offlineDot: {
-        backgroundColor: '#FF6B6B',
+        backgroundColor: '#ff2121',
     },
     connectionText: {
         fontSize: 11,
         color: '#999',
     },
     deviceDropdown: {
-        backgroundColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
         paddingVertical: 5,
         paddingHorizontal: 17,
         borderRadius: 20,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     deviceDropdownActive: {
-        backgroundColor: '#6ECFDE',
+        backgroundColor: '#91D7E4',
     },
     deviceDropdownText: {
         fontSize: 13,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     retryButton: {
         marginTop: 10,
         alignSelf: 'flex-end',
-        backgroundColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 14,

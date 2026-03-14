@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     vitalValue: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#E8A020',
+        color: '#FFCF70',
         lineHeight: 32,
     },
     vitalUnit: {
