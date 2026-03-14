@@ -1,82 +1,121 @@
-import React, { useState, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, Image, FlatList, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Shadows } from '@/theme/shadows';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
-import { summaryService } from '@/services/summaryService';
+import { summaryService, SummaryResponse } from '@/services/summaryService';
 import { TimelineColors } from '@/theme/colors';
-import { Shadows } from '@/theme/shadows';
-
-interface SummaryData {
-    summary: string;
-    fromTime?: string;
-    toTime?: string;
-    date?: string;
-}
 
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
     const [isLoading, setIsLoading] = useState(false);
-    const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [summary, setSummary] = useState<string | null>(null);
+    const [historyList, setHistoryList] = useState<SummaryResponse[]>([]);
+    const [selectedHistoryItem, setSelectedHistoryItem] = useState<SummaryResponse | null>(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [summaryData, setSummaryData] = useState<any>(null);
 
-    // Format time for display (e.g., "12.00 AM")
-    const formatTime = (date: Date): string => {
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-        const displayMinutes = minutes.toString().padStart(2, '0');
-        return `${displayHours.toString().padStart(2, '0')}.${displayMinutes}${ampm}`;
-    };
-
-    // Format date for display (e.g., "07/12/2025")
-    const formatDate = (date: Date): string => {
-        const day = date.getDate().toString().padStart(2, '0');
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
-    // Current time string
-    const currentTimeString = useMemo(() => formatTime(new Date()), []);
-
-    const handleTabToggle = (tab: 'today' | 'previous') => {
-        setActiveTab(tab);
-        setSummaryData(null); // Reset summary when switching tabs
-    };
+    const handleTabToggle = (tab: 'today' | 'previous') => setActiveTab(tab);
 
     const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
-        setShowDatePicker(Platform.OS === 'ios');
-        if (date) {
-            setSelectedDate(date);
-            setSummaryData(null); // Reset summary when date changes
+        if (Platform.OS === 'android') setShowDatePicker(false);
+        if (date) setSelectedDate(date);
+    };
+
+    const formatTime = (date: Date) => {
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const renderMetricChip = (icon: React.ReactNode, label: string) => (
+        <View style={styles.metricChip}>
+            {icon}
+            <Text style={styles.metricLabel}>{label}</Text>
+        </View>
+    );
+
+    useEffect(() => {
+        if (activeTab === 'previous') {
+            fetchHistory();
+        } else {
+            setSummary(null);
+            setSelectedHistoryItem(null);
+        }
+    }, [activeTab]);
+
+    // Auto-reset loading state if it gets stuck
+    useEffect(() => {
+        if (isLoading) {
+            const timeout = setTimeout(() => {
+                console.warn('Loading state auto-reset after 30 seconds');
+                setIsLoading(false);
+            }, 30000); // 30 second auto-reset
+
+            return () => clearTimeout(timeout);
+        }
+    }, [isLoading]);
+
+    const fetchHistory = async () => {
+        setIsLoading(true);
+        try {
+            const data = await summaryService.getHistory();
+            setHistoryList(data);
+            if (data.length > 0) {
+                setSelectedHistoryItem(data[0]);
+            }
+        } catch (error: any) {
+            console.error('Fetch history error:', error);
+            setHistoryList([]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleGenerate = async () => {
+        if (isLoading) return; // Prevent multiple clicks
+        
         setIsLoading(true);
+        console.log('Starting summary generation...'); // Debug log
+        
         try {
+            let data;
+            
+            // Add timeout to prevent hanging
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timeout')), 15000) // 15 second timeout
+            );
+            
             if (activeTab === 'today') {
-                const data = await summaryService.generateTodaySummary();
+                console.log('Generating today summary...'); // Debug log
+                data = await Promise.race([
+                    summaryService.generateTodaySummary(),
+                    timeoutPromise
+                ]);
                 setSummaryData({
-                    summary: data.summary,
-                    fromTime: data.from,
-                    toTime: data.to,
+                    summary: data.summary || 'No summary available',
+                    fromTime: data.from || '12.00 AM',
+                    toTime: data.to || formatTime(new Date()),
                 });
             } else {
-                const data = await summaryService.generatePreviousSummary(selectedDate);
+                console.log('Generating previous summary for:', selectedDate); // Debug log
+                data = await Promise.race([
+                    summaryService.generatePreviousSummary(selectedDate),
+                    timeoutPromise
+                ]);
                 setSummaryData({
-                    summary: data.summary,
-                    date: data.date,
+                    summary: data.summary || 'No summary available',
+                    date: data.date || formatDate(selectedDate),
                 });
             }
+            console.log('Summary generated successfully'); // Debug log
         } catch (error: any) {
             console.error('Generate summary error:', error);
+            
+            // Set fallback data
             if (activeTab === 'today') {
                 setSummaryData({
                     summary: 'Unable to generate summary. Please try again later.',
@@ -90,15 +129,27 @@ export default function AISummaryScreen() {
                 });
             }
         } finally {
+            console.log('Resetting loading state'); // Debug log
             setIsLoading(false);
         }
     };
 
-    const renderMetricChip = (icon: React.ReactNode, label: string) => (
-        <View style={styles.metricChip}>
-            {icon}
-            <Text style={styles.metricLabel}>{label}</Text>
-        </View>
+    const formatDate = (dateInput: string | Date) => {
+        const date = new Date(dateInput);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const renderHistoryItem = ({ item }: { item: SummaryResponse }) => (
+        <TouchableOpacity
+            style={[
+                styles.historyCard,
+                selectedHistoryItem?.id === item.id && styles.historyCardActive
+            ]}
+            onPress={() => setSelectedHistoryItem(item)}
+        >
+            <Text style={styles.historyDate}>{formatDate(item.createdAt)}</Text>
+            <Text style={styles.historyType}>{item.type}</Text>
+        </TouchableOpacity>
     );
 
     return (
@@ -151,6 +202,18 @@ export default function AISummaryScreen() {
                 {/* Generate Button */}
                 <View style={styles.generateButtonContainer}>
                     <GenerateButton onPress={handleGenerate} isLoading={isLoading} />
+                    {/* Debug info and manual reset */}
+                    {isLoading && (
+                        <TouchableOpacity 
+                            style={styles.resetButton}
+                            onPress={() => {
+                                console.log('Manual reset triggered');
+                                setIsLoading(false);
+                            }}
+                        >
+                            <Text style={styles.resetButtonText}>Force Stop Loading</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* Summary Content - Only show after generation */}
@@ -209,6 +272,28 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
     },
+    historyCard: {
+        backgroundColor: '#FFFFFF',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#EEEEEE',
+    },
+    historyCardActive: {
+        borderColor: TimelineColors.primaryCyan,
+        backgroundColor: '#F0FBFC',
+    },
+    historyDate: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333333',
+        marginBottom: 4,
+    },
+    historyType: {
+        fontSize: 14,
+        color: '#666666',
+    },
     scrollContent: {
         paddingHorizontal: 24,
         paddingTop: 16,
@@ -261,6 +346,18 @@ const styles = StyleSheet.create({
     },
     generateButtonContainer: {
         marginBottom: 24,
+    },
+    resetButton: {
+        marginTop: 12,
+        padding: 8,
+        alignItems: 'center',
+        backgroundColor: '#FF6B6B',
+        borderRadius: 8,
+    },
+    resetButtonText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '500',
     },
     summarySection: {
         flex: 1,

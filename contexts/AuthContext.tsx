@@ -4,7 +4,7 @@ import {
   AuthContextType,
   AuthState,
   User,
-  SignupArgs,
+  SignupArgs, // Import the new type
   JWTPayload,
 } from '@/types/auth.types';
 import { jwtDecode, JwtPayload } from "jwt-decode";
