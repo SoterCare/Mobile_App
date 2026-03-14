@@ -54,7 +54,8 @@ export default function SignInScreen() {
             const backendResult = await authService.socialLogin(result.user.providerToken, {
                 email: result.user.email,
                 name: result.user.name || result.user.email.split('@')[0],
-                userId: `google-${result.user.email}`
+                userId: result.user.id,
+                provider: 'google'
             });
 
             await signIn(backendResult.accessToken, backendResult.user);
@@ -83,7 +84,8 @@ export default function SignInScreen() {
             const backendResult = await authService.socialLogin(result.user.providerToken, {
                 email: result.user.email || '',
                 name: result.user.name || 'Facebook User',
-                userId: `facebook-${result.user.providerToken.substring(0, 10)}`
+                userId: result.user.id,
+                provider: 'facebook'
             });
 
             await signIn(backendResult.accessToken, backendResult.user);
@@ -151,11 +153,11 @@ export default function SignInScreen() {
                 Alert.alert('Error', result.error || 'Apple sign-in failed');
                 return;
             }
-
             const backendResult = await authService.socialLogin(result.user.providerToken, {
                 email: result.user.email || '',
                 name: result.user.name || 'Apple User',
-                userId: `apple-${result.user.providerToken.substring(0, 10)}`
+                userId: result.user.id, // The unique Apple user identifier
+                provider: 'apple'       // Essential for the Gateway to know which verification logic to use
             });
 
             await signIn(backendResult.accessToken, backendResult.user);

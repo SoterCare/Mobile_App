@@ -10,6 +10,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 // Types
 export interface SocialUser {
+    id: string;
     name: string;
     email: string;
     picture: string | null;
@@ -54,7 +55,7 @@ const googleConfig = {
  */
 export const useGoogleAuth = () => {
     const redirectUri = getRedirectUri();
-    
+
     const [request, response, promptAsync] = Google.useAuthRequest({
         webClientId: googleConfig.webClientId,
         androidClientId: googleConfig.androidClientId,
@@ -81,8 +82,9 @@ export const fetchGoogleUserProfile = async (accessToken: string): Promise<Socia
     }
 
     const data = await response.json();
-    
+
     return {
+        id: data.sub || '',
         name: data.name || '',
         email: data.email || '',
         picture: data.picture || null,
@@ -111,7 +113,7 @@ export const processGoogleAuthResponse = async (
 
     if (response.type === 'success') {
         const { authentication } = response;
-        
+
         if (!authentication?.accessToken) {
             return { success: false, error: 'No access token received' };
         }
@@ -143,13 +145,13 @@ const facebookAppId = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID || '';
  */
 export const useFacebookAuth = () => {
     const redirectUri = getRedirectUri();
-    
+
     // Build Facebook OAuth discovery document
     const discovery = {
         authorizationEndpoint: 'https://www.facebook.com/v19.0/dialog/oauth',
         tokenEndpoint: 'https://graph.facebook.com/v19.0/oauth/access_token',
     };
-    
+
     const [request, response, promptAsync] = AuthSession.useAuthRequest(
         {
             clientId: facebookAppId,
@@ -184,7 +186,7 @@ export const processFacebookAuthResponse = async (
     if (response.type === 'success') {
         // Extract access token from params
         const accessToken = response.params?.access_token;
-        
+
         if (!accessToken) {
             return { success: false, error: 'No access token received from Facebook' };
         }
@@ -202,6 +204,7 @@ export const processFacebookAuthResponse = async (
             const userData = await userResponse.json();
 
             const user: SocialUser = {
+                id: userData.id || '',
                 name: userData.name || '',
                 email: userData.email || '',
                 picture: userData.picture?.data?.url || null,
@@ -230,7 +233,7 @@ export const facebookSignIn = async (): Promise<SocialAuthResult> => {
             error: 'Facebook App ID not configured. Please add EXPO_PUBLIC_FACEBOOK_APP_ID to your .env file.',
         };
     }
-    
+
     // This function exists for backward compatibility
     // The actual implementation uses hooks (useFacebookAuth)
     return {
@@ -259,7 +262,7 @@ export const appleSignIn = async (): Promise<SocialAuthResult> => {
     try {
         // Check if Apple Authentication is available
         const isAvailable = await AppleAuthentication.isAvailableAsync();
-        
+
         if (!isAvailable) {
             return {
                 success: false,
@@ -277,7 +280,7 @@ export const appleSignIn = async (): Promise<SocialAuthResult> => {
 
         // Get identity token (JWT)
         const identityToken = credential.identityToken;
-        
+
         if (!identityToken) {
             return {
                 success: false,
@@ -288,7 +291,8 @@ export const appleSignIn = async (): Promise<SocialAuthResult> => {
         // Build user object
         // Note: Apple only returns name/email on first sign-in
         const user: SocialUser = {
-            name: credential.fullName 
+            id: credential.user || '',
+            name: credential.fullName
                 ? `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim()
                 : '',
             email: credential.email || '',
@@ -303,7 +307,7 @@ export const appleSignIn = async (): Promise<SocialAuthResult> => {
         if (error.code === 'ERR_REQUEST_CANCELED') {
             return { success: false, cancelled: true };
         }
-        
+
         return { success: false, error: error.message || 'Apple sign-in failed' };
     }
 };
