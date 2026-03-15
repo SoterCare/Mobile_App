@@ -37,26 +37,6 @@ jest.mock('../database/schema', () => ({
   nightlyLogs: { id: 'id', synced: 'synced' },
 }));
 
-const mockPost: any = jest.fn();
-jest.mock('../api/client', () => ({
-  __esModule: true,
-  default: {
-    post: (...args: any[]) => mockPost(...args),
-  },
-}));
-
-jest.mock('../api/config/api.config', () => ({
-  API_CONFIG: {
-    ENDPOINTS: {
-      LOGS: { SYNC: '/logs/sync' },
-    },
-  },
-}));
-
-jest.mock('pako', () => ({
-  gzip: jest.fn(() => new Uint8Array([1, 2, 3])),
-}));
-
 jest.mock('drizzle-orm', () => ({
   eq: jest.fn((...args: any[]) => args),
 }));
@@ -68,16 +48,20 @@ beforeEach(() => {
 });
 
 describe('syncService.syncNightlyLogs', () => {
-  it('does not call API when there are no unsynced logs', async () => {
+  it('returns successful no-op result when there are no unsynced logs', async () => {
     mockWhere.mockImplementationOnce(async () => []);
 
-    await syncService.syncNightlyLogs();
+    const result = await syncService.syncNightlyLogs();
 
     expect(mockSelect).toHaveBeenCalled();
-    expect(mockPost).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      success: true,
+      message: 'Mobile upload is disabled. Logs remain local and backend is read-only for mobile.',
+      syncedCount: 0,
+    });
   });
 
-  it('syncs logs and marks them as synced on success', async () => {
+  it('reports unsynced log count without making network calls', async () => {
     const fakeLogs: any[] = [
       { id: 1, data: '{"hr":72}', synced: false, createdAt: new Date() },
       { id: 2, data: '{"hr":75}', synced: false, createdAt: new Date() },
@@ -85,42 +69,26 @@ describe('syncService.syncNightlyLogs', () => {
 
     mockWhere.mockImplementationOnce(async () => fakeLogs);
 
-    mockPost.mockImplementationOnce(async () => ({
-      data: { success: true, message: 'ok', syncedCount: 2 },
-    }));
+    const result = await syncService.syncNightlyLogs();
 
-    await syncService.syncNightlyLogs();
-
-    expect(mockPost).toHaveBeenCalledTimes(1);
-    expect(mockPost).toHaveBeenCalledWith(
-      '/logs/sync',
-      expect.any(Uint8Array),
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          'Content-Encoding': 'gzip',
-        }),
-      })
-    );
-
-    // Current implementation should mark each log as synced
-    expect(mockUpdate).toHaveBeenCalledTimes(2);
+    expect(result.success).toBe(true);
+    expect(result.syncedCount).toBe(2);
+    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockTransaction).not.toHaveBeenCalled();
   });
 
-  it('does not mark logs as synced when API returns failure', async () => {
-    const fakeLogs: any[] = [
-      { id: 1, data: '{"hr":72}', synced: false, createdAt: new Date() },
-    ];
+  it('returns failure response when reading local logs throws', async () => {
+    mockWhere.mockImplementationOnce(async () => {
+      throw new Error('db error');
+    });
 
-    mockWhere.mockImplementationOnce(async () => fakeLogs);
+    const result = await syncService.syncNightlyLogs();
 
-    mockPost.mockImplementationOnce(async () => ({
-      data: { success: false, message: 'server error', syncedCount: 0 },
-    }));
-
-    await syncService.syncNightlyLogs();
-
-    expect(mockPost).toHaveBeenCalledTimes(1);
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      success: false,
+      message: 'Unable to read local logs',
+      syncedCount: 0,
+    });
   });
 });
 

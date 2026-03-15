@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
@@ -13,6 +13,7 @@ import { NeumorphicCard } from '@/components/ui/NeumorphicCard';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import apiClient from '@/api/client';
 import { API_CONFIG } from '@/api/config/api.config';
+import { HealthLogItem, healthLogsService } from '@/services/healthLogsService';
 
 export default function ExportReportScreen() {
     const router = useRouter();
@@ -21,7 +22,7 @@ export default function ExportReportScreen() {
     const [showDeviceDropdown, setShowDeviceDropdown] = useState(false);
     const devices = ['Device 01', 'Device 02'];
 
-    const [isSingleDate, setIsSingleDate] = useState(false);
+    const [rangeMode, setRangeMode] = useState<'day' | 'week' | 'month'>('day');
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [hasSelectedDate, setHasSelectedDate] = useState(false);
@@ -37,28 +38,109 @@ export default function ExportReportScreen() {
 
     const [availableDates, setAvailableDates] = useState<string[]>([]);
     const [isLoadingDates, setIsLoadingDates] = useState(true);
+    const [dateError, setDateError] = useState<string | null>(null);
+    const [logsByRange, setLogsByRange] = useState<HealthLogItem[]>([]);
+    const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+    const [logsError, setLogsError] = useState<string | null>(null);
+
+    const getAuthStatus = (error: any): number | undefined => error?.response?.status;
+
+    const toUtcStartOfDay = (date: Date): Date => {
+        return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0));
+    };
+
+    const toUtcEndOfDay = (date: Date): Date => {
+        return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999));
+    };
+
+    const getRangeFromMode = (baseDate: Date) => {
+        const dayStart = toUtcStartOfDay(baseDate);
+        const dayEnd = toUtcEndOfDay(baseDate);
+
+        if (rangeMode === 'day') {
+            return { start: dayStart, end: dayEnd };
+        }
+
+        if (rangeMode === 'week') {
+            const weekStart = new Date(baseDate);
+            const diffToMonday = (weekStart.getDay() + 6) % 7;
+            weekStart.setDate(weekStart.getDate() - diffToMonday);
+
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+
+            return {
+                start: toUtcStartOfDay(weekStart),
+                end: toUtcEndOfDay(weekEnd),
+            };
+        }
+
+        const monthStart = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+        const monthEnd = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+        return {
+            start: toUtcStartOfDay(monthStart),
+            end: toUtcEndOfDay(monthEnd),
+        };
+    };
+
+    const effectiveRange = useMemo(() => getRangeFromMode(startDate), [startDate, rangeMode]);
 
     React.useEffect(() => {
         const fetchDates = async () => {
             try {
-                const response = await apiClient.get(API_CONFIG.ENDPOINTS.LOGS.DATES);
-                if (response.data && Array.isArray(response.data.dates)) {
-                    const sorted = response.data.dates.sort();
-                    setAvailableDates(sorted);
-                    if (sorted.length > 0) {
-                        const latestDate = new Date(sorted[sorted.length - 1]);
-                        setStartDate(latestDate);
-                        setEndDate(latestDate);
-                    }
+                setDateError(null);
+                const dates = await healthLogsService.getAvailableDates();
+                const sorted = [...dates].sort();
+                setAvailableDates(sorted);
+                if (sorted.length > 0) {
+                    const latestDate = new Date(sorted[sorted.length - 1]);
+                    setStartDate(latestDate);
+                    setEndDate(latestDate);
+                    setHasSelectedDate(true);
                 }
             } catch (error) {
                 console.error('Failed to fetch available dates:', error);
+                const status = getAuthStatus(error);
+                if (status === 401 || status === 403) {
+                    setDateError('Session expired. Please sign in again.');
+                } else {
+                    setDateError('Unable to load available dates. Tap retry.');
+                }
             } finally {
                 setIsLoadingDates(false);
             }
         };
         fetchDates();
     }, []);
+
+    const fetchLogsBySelectedRange = React.useCallback(async () => {
+        if (!hasSelectedDate) return;
+
+        try {
+            setIsLoadingLogs(true);
+            setLogsError(null);
+            const logs = await healthLogsService.getLogsByRange(
+                effectiveRange.start.toISOString(),
+                effectiveRange.end.toISOString()
+            );
+            setLogsByRange(logs);
+        } catch (error) {
+            console.error('Failed to fetch logs by range:', error);
+            const status = getAuthStatus(error);
+            if (status === 401 || status === 403) {
+                setLogsError('Session expired. Please sign in again.');
+            } else {
+                setLogsError('Unable to load logs for selected range. Tap retry.');
+            }
+            setLogsByRange([]);
+        } finally {
+            setIsLoadingLogs(false);
+        }
+    }, [hasSelectedDate, effectiveRange.start, effectiveRange.end]);
+
+    React.useEffect(() => {
+        fetchLogsBySelectedRange();
+    }, [fetchLogsBySelectedRange]);
 
     const toggleMetric = (metric: keyof typeof selectedMetrics) => {
         setSelectedMetrics(prev => ({ ...prev, [metric]: !prev[metric] }));
@@ -80,29 +162,22 @@ export default function ExportReportScreen() {
                 return;
             }
 
-            const startStr = toLocalDateString(startDate);
-            const endStr = toLocalDateString(endDate);
+            const startStr = toLocalDateString(effectiveRange.start);
+            const endStr = toLocalDateString(effectiveRange.end);
 
-            if (isSingleDate) {
-                if (availableDates.length > 0 && !availableDates.includes(startStr)) {
-                    Alert.alert('No Data', `No logs found for ${startStr}.`);
+            if (availableDates.length > 0) {
+                const hasData = availableDates.some(date => date >= startStr && date <= endStr);
+                if (!hasData) {
+                    Alert.alert('No Data', 'No logs found for the selected date range.');
                     return;
-                }
-            } else {
-                if (availableDates.length > 0) {
-                    const hasData = availableDates.some(date => date >= startStr && date <= endStr);
-                    if (!hasData) {
-                        Alert.alert('No Data', 'No logs found for the selected date range.');
-                        return;
-                    }
                 }
             }
 
             const payload = {
                 device: selectedDevice,
-                startDate: startDate.toISOString(),
-                endDate: endDate.toISOString(),
-                isSingleDate,
+                startDate: effectiveRange.start.toISOString(),
+                endDate: effectiveRange.end.toISOString(),
+                isSingleDate: rangeMode === 'day',
                 metrics: {
                     heartRate: false,
                     spo2: false,
@@ -131,7 +206,17 @@ export default function ExportReportScreen() {
             }
         } catch (error) {
             console.error('Export Error:', error);
-            Alert.alert('Export Failed', 'Failed to export report.');
+            const status = getAuthStatus(error);
+            if (status === 401 || status === 403) {
+                Alert.alert('Session Expired', 'Please sign in again to continue.', [
+                    {
+                        text: 'OK',
+                        onPress: () => router.replace('/(auth)/sign-in'),
+                    },
+                ]);
+            } else {
+                Alert.alert('Export Failed', 'Failed to export report.');
+            }
         } finally {
             setIsExporting(false);
         }
@@ -310,6 +395,60 @@ export default function ExportReportScreen() {
                 {/* Select Date */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Select Date</Text>
+                    <View style={styles.rangeModeRow}>
+                        {(['day', 'week', 'month'] as const).map((mode) => (
+                            <TouchableOpacity
+                                key={mode}
+                                style={[styles.rangeModeButton, rangeMode === mode && styles.rangeModeButtonActive]}
+                                onPress={() => setRangeMode(mode)}
+                            >
+                                <Text style={[styles.rangeModeButtonText, rangeMode === mode && styles.rangeModeButtonTextActive]}>
+                                    {mode.toUpperCase()}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <View style={styles.statusRow}>
+                        {isLoadingDates ? (
+                            <Text style={styles.helperText}>Loading available dates...</Text>
+                        ) : dateError ? (
+                            <>
+                                <Text style={styles.errorText}>{dateError}</Text>
+                                <TouchableOpacity
+                                    style={styles.retryChip}
+                                    onPress={async () => {
+                                        setIsLoadingDates(true);
+                                        try {
+                                            const dates = await healthLogsService.getAvailableDates();
+                                            const sorted = [...dates].sort();
+                                            setAvailableDates(sorted);
+                                            setDateError(null);
+                                            if (sorted.length > 0) {
+                                                const latestDate = new Date(sorted[sorted.length - 1]);
+                                                setStartDate(latestDate);
+                                                setHasSelectedDate(true);
+                                            }
+                                        } catch (error) {
+                                            const status = getAuthStatus(error);
+                                            if (status === 401 || status === 403) {
+                                                setDateError('Session expired. Please sign in again.');
+                                            } else {
+                                                setDateError('Unable to load available dates. Tap retry.');
+                                            }
+                                        } finally {
+                                            setIsLoadingDates(false);
+                                        }
+                                    }}
+                                >
+                                    <Text style={styles.retryChipText}>Retry</Text>
+                                </TouchableOpacity>
+                            </>
+                        ) : (
+                            <Text style={styles.helperText}>{availableDates.length} available date(s)</Text>
+                        )}
+                    </View>
+
                     <View style={styles.dateRow}>
                         <TouchableOpacity
                             onPress={() => setShowPicker('start')}
@@ -326,17 +465,16 @@ export default function ExportReportScreen() {
                             </View>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => !isSingleDate && setShowPicker('end')}
-                            activeOpacity={isSingleDate ? 1 : 0.8}
+                            activeOpacity={1}
                             style={styles.dateButton}
                         >
-                            <View style={(isSingleDate ? styles.dateButtonContentDisabled : styles.dateButtonContent) as any}>
-                                <Text style={isSingleDate ? styles.dateButtonDisabled : (!hasSelectedDate ? styles.dateButtonPlaceholder : styles.dateButtonText)}>
-                                    {hasSelectedDate && !isSingleDate
-                                        ? endDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-                                        : 'End Date'}
+                            <View style={styles.dateButtonContentDisabled as any}>
+                                <Text style={!hasSelectedDate ? styles.dateButtonPlaceholder : styles.dateButtonDisabled}>
+                                    {hasSelectedDate
+                                        ? effectiveRange.end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                                        : 'Range End'}
                                 </Text>
-                                <IconSymbol name="chevron.right" size={18} color={isSingleDate ? '#ddd' : '#bbb'} style={styles.dateButtonChevron} />
+                                <IconSymbol name="chevron.right" size={18} color={'#ddd'} style={styles.dateButtonChevron} />
                             </View>
                         </TouchableOpacity>
                     </View>
@@ -353,35 +491,27 @@ export default function ExportReportScreen() {
 
                                     setHasSelectedDate(true);
 
-                                    if (showPicker === 'start') {
-                                        setStartDate(date);
-                                        if (isSingleDate || date > endDate) setEndDate(date);
-                                    } else {
-                                        setEndDate(date);
-                                        if (date < startDate) setStartDate(date);
-                                    }
+                                    const range = getRangeFromMode(date);
+                                    setStartDate(date);
+                                    setEndDate(range.end);
                                     setShowPicker(null);
                                 }}
                                 markingType={'period'}
                                 markedDates={(() => {
                                     const marks: any = {};
-                                    const sStr = toLocalDateString(startDate);
-                                    const eStr = toLocalDateString(endDate);
+                                    const sStr = toLocalDateString(effectiveRange.start);
+                                    const eStr = toLocalDateString(effectiveRange.end);
 
-                                    if (isSingleDate) {
-                                        marks[sStr] = { selected: true, color: '#81D4FA', textColor: 'white' };
-                                    } else {
-                                        let curr = new Date(startDate);
-                                        while (curr <= endDate) {
-                                            const str = toLocalDateString(curr);
-                                            marks[str] = {
-                                                selected: true,
-                                                color: '#81D4FA',
-                                                startingDay: str === sStr,
-                                                endingDay: str === eStr
-                                            };
-                                            curr.setDate(curr.getDate() + 1);
-                                        }
+                                    let curr = new Date(effectiveRange.start);
+                                    while (curr <= effectiveRange.end) {
+                                        const str = toLocalDateString(curr);
+                                        marks[str] = {
+                                            selected: true,
+                                            color: '#81D4FA',
+                                            startingDay: str === sStr,
+                                            endingDay: str === eStr
+                                        };
+                                        curr.setDate(curr.getDate() + 1);
                                     }
                                     return marks;
                                 })()}
@@ -389,13 +519,47 @@ export default function ExportReportScreen() {
                             />
                         </View>
                     )}
+                </View>
 
-                    <TouchableOpacity style={styles.singleDateRow} onPress={() => setIsSingleDate(!isSingleDate)}>
-                        <View style={[styles.checkbox, isSingleDate && styles.checkboxChecked]}>
-                            {isSingleDate && <IconSymbol name="checkmark" size={14} color="#FFF" />}
+                {/* Logs Preview */}
+                <View style={styles.section}>
+                    <View style={styles.logsHeaderRow}>
+                        <Text style={styles.sectionTitle}>Logs by Selected Range</Text>
+                        <TouchableOpacity style={styles.retryChip} onPress={fetchLogsBySelectedRange}>
+                            <Text style={styles.retryChipText}>Retry</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {isLoadingLogs ? (
+                        <View style={styles.logsStateBox}>
+                            <ActivityIndicator color="#8FD9E5" />
+                            <Text style={styles.helperText}>Loading logs...</Text>
                         </View>
-                        <Text style={styles.checkboxLabel}>Single Date</Text>
-                    </TouchableOpacity>
+                    ) : logsError ? (
+                        <View style={styles.logsStateBox}>
+                            <Text style={styles.errorText}>{logsError}</Text>
+                        </View>
+                    ) : logsByRange.length === 0 ? (
+                        <View style={styles.logsStateBox}>
+                            <Text style={styles.helperText}>No logs available for this range.</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.logsList}>
+                            {logsByRange.slice(0, 5).map((log, index) => {
+                                const timestamp = String(log.timestamp || log.createdAt || 'Unknown time');
+                                const content = typeof log.data === 'object'
+                                    ? JSON.stringify(log.data)
+                                    : JSON.stringify(log);
+
+                                return (
+                                    <View key={String(log.id ?? index)} style={styles.logRow}>
+                                        <Text style={styles.logTime}>{timestamp}</Text>
+                                        <Text style={styles.logText} numberOfLines={2}>{content}</Text>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    )}
                 </View>
 
                 {/* Metrics */}
@@ -492,6 +656,59 @@ const styles = StyleSheet.create({
     scrollContent: { padding: 30, paddingBottom: 40 },
     section: { marginBottom: 25 },
     sectionTitle: { fontSize: 16, fontWeight: '600', color: '#B0B0B0', marginBottom: 16 },
+    rangeModeRow: {
+        flexDirection: 'row',
+        gap: 10,
+        marginBottom: 12,
+    },
+    rangeModeButton: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 18,
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E4E7EC',
+    },
+    rangeModeButtonActive: {
+        backgroundColor: '#8FD9E5',
+        borderColor: '#8FD9E5',
+    },
+    rangeModeButtonText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#566074',
+    },
+    rangeModeButtonTextActive: {
+        color: '#FFFFFF',
+    },
+    statusRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    helperText: {
+        color: '#7A869A',
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    errorText: {
+        color: '#C53030',
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    retryChip: {
+        backgroundColor: '#E8F6FD',
+        borderRadius: 16,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+    },
+    retryChipText: {
+        color: '#2B6CB0',
+        fontWeight: '600',
+        fontSize: 12,
+    },
 
     // Device Dropdown
     dropdownButtonBox: {
@@ -628,6 +845,42 @@ const styles = StyleSheet.create({
 
     // Footer
     footer: { marginTop: 10, alignItems: 'center', gap: 12 },
+    logsHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    logsStateBox: {
+        minHeight: 72,
+        borderRadius: 14,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#EEF1F5',
+        padding: 14,
+        justifyContent: 'center',
+        gap: 10,
+    },
+    logsList: {
+        gap: 10,
+    },
+    logRow: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: '#EEF1F5',
+        padding: 12,
+        gap: 6,
+    },
+    logTime: {
+        fontSize: 12,
+        color: '#64748B',
+        fontWeight: '600',
+    },
+    logText: {
+        fontSize: 13,
+        color: '#334155',
+    },
     exportButton: {
         width: '100%',
         backgroundColor: '#8FD9E5',

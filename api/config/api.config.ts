@@ -31,8 +31,8 @@ export const API_CONFIG = {
       HISTORY: '/summary/history',
     },
     LOGS: {
-      SYNC: '/logs/sync',
       DATES: '/logs/dates',
+      RANGE: '/logs/range',
     },
     REPORTS: {
       EXPORT: '/reports/export',

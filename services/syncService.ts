@@ -1,11 +1,8 @@
 import { db } from '../database/db';
 import { nightlyLogs } from '../database/schema';
-import apiClient from '@/api/client';
-import { API_CONFIG } from '@/api/config/api.config';
 import { eq } from "drizzle-orm";
-import pako from "pako";
 
-interface SyncResponse {
+interface LocalSyncResult {
     success: boolean;
     message: string;
     syncedCount: number;
@@ -14,7 +11,6 @@ interface SyncResponse {
 // In-memory buffer to reduce DB I/O
 let logBuffer: any[] = [];
 const BATCH_SIZE = 5; // Write to DB every 5 logs (approx 20 seconds)
-const CHUNK_SIZE = 200; // SQLite bulk update chunk size
 
 export const syncService = {
     /**
@@ -39,57 +35,25 @@ export const syncService = {
     },
 
     /**
-     * Sync unsynced logs to backend
+     * Deprecated upload path.
+     * Logs are no longer uploaded from mobile for Raspberry data.
+     * Keep local records and return a no-op result for compatibility.
      */
-    syncNightlyLogs: async () => {
+    syncNightlyLogs: async (): Promise<LocalSyncResult> => {
         try {
-            // Fetch unsynced logs
             const unsyncedLogs = await db.select().from(nightlyLogs).where(eq(nightlyLogs.synced, false));
-
-            if (unsyncedLogs.length === 0) return;
-
-            const payload = {
-                logs: unsyncedLogs.map(log => ({
-                    id: log.id,
-                    data: JSON.parse(log.data),
-                    timestamp: log.createdAt
-                }))
+            return {
+                success: true,
+                message: 'Mobile upload is disabled. Logs remain local and backend is read-only for mobile.',
+                syncedCount: unsyncedLogs.length,
             };
-
-            // Compress payload using pako (GZIP)
-            const jsonString = JSON.stringify(payload);
-            const compressedData = pako.gzip(jsonString);
-
-            // Send to backend
-            const response = await apiClient.post<SyncResponse>(
-                API_CONFIG.ENDPOINTS.LOGS.SYNC,
-                compressedData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json', // Keep as JSON or application/octet-stream? Standard often implies keeping original type + encoding
-                        'Content-Encoding': 'gzip'
-                    }
-                }
-            );
-
-            if (response.data.success) {
-                // Mark as synced locally in a single transaction with chunking
-                await db.transaction(async (tx) => {
-                    for (let i = 0; i < unsyncedLogs.length; i += CHUNK_SIZE) {
-                        const chunk = unsyncedLogs.slice(i, i + CHUNK_SIZE);
-                        for (const log of chunk) {
-                            await tx.update(nightlyLogs)
-                                .set({ synced: true })
-                                .where(eq(nightlyLogs.id, log.id));
-                        }
-                    }
-                });
-                console.log(`Synced ${response.data.syncedCount} logs successfully.`);
-            } else {
-                console.warn('Sync failed:', response.data.message);
-            }
         } catch (error) {
             console.error('Sync failed:', error);
+            return {
+                success: false,
+                message: 'Unable to read local logs',
+                syncedCount: 0,
+            };
         }
     }
 };
