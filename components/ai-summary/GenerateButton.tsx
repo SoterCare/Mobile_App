@@ -26,7 +26,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, isLoadi
 
 const styles = StyleSheet.create({
     generateButton: {
-        backgroundColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
         borderRadius: 30,
         paddingVertical: 18,
         alignItems: 'center',

@@ -41,7 +41,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
                 <Switch
                     value={isToggled}
                     onValueChange={onToggle}
-                    trackColor={{ false: "#D1D1D1", true: "#8FD9E5" }}
+                    trackColor={{ false: "#D1D1D1", true: "#91D7E4" }}
                     thumbColor={"#FFFFFF"}
                 />
             ) : (
@@ -103,7 +103,7 @@ export const ProfileSettingsCard: React.FC = () => {
 const styles = StyleSheet.create({
     cardContainer: {
         marginBottom: 20,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#ffffff',
         borderRadius: 24,
         elevation: 4,
         shadowColor: '#000',

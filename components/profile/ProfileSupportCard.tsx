@@ -55,7 +55,7 @@ export const ProfileSupportCard: React.FC<ProfileSupportCardProps> = ({ onLogout
 const styles = StyleSheet.create({
     cardContainer: {
         marginBottom: 30,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#ffffff',
         borderRadius: 20,
         elevation: 4,
         shadowColor: '#000',

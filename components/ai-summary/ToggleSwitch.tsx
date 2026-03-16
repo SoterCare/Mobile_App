@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     activeToggleButton: {
-        backgroundColor: '#8FD9E5', // the cyan color mapped exactly
+        backgroundColor: '#91D7E4', // the cyan color mapped exactly
     },
     toggleText: {
         fontSize: 16,

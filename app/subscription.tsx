@@ -122,7 +122,7 @@ export default function SubscriptionScreen() {
                             <View style={styles.featuresList}>
                                 {plan.features.map((feature, i) => (
                                     <View key={i} style={styles.featureItem}>
-                                        <Ionicons name="checkmark" size={18} color="#97DBE7" />
+                                        <Ionicons name="checkmark" size={18} color="#91D7E4" />
                                         <Text style={styles.featureText}>{feature}</Text>
                                     </View>
                                 ))}
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
         borderRadius: 30,
     },
     activeTab: {
-        backgroundColor: '#97DBE7',
+        backgroundColor: '#91D7E4',
     },
     toggleText: {
         fontSize: 16,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     subscribeButton: {
-        backgroundColor: '#97DBE7',
+        backgroundColor: '#91D7E4',
         paddingVertical: 18,
         borderRadius: 22,
         alignItems: 'center',
