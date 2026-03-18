@@ -9,35 +9,55 @@ export interface HealthLogItem {
   [key: string]: unknown;
 }
 
-const unwrapData = <T>(payload: any): T => {
-  if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
+type Envelope = {
+  success: boolean;
+  data: unknown;
+};
+
+const isObject = (value: unknown): value is Record<string, unknown> => {
+  return value !== null && typeof value === 'object';
+};
+
+const isEnvelope = (value: unknown): value is Envelope => {
+  return isObject(value) && 'success' in value && 'data' in value;
+};
+
+const unwrapData = <T>(payload: unknown): T => {
+  if (isEnvelope(payload)) {
     return payload.data as T;
   }
   return payload as T;
 };
 
-const coerceDates = (payload: any): string[] => {
-  const unwrapped = unwrapData<any>(payload);
+const coerceDates = (payload: unknown): string[] => {
+  const unwrapped = unwrapData<unknown>(payload);
+
   if (Array.isArray(unwrapped)) {
     return unwrapped.filter((value) => typeof value === 'string');
   }
-  if (unwrapped && Array.isArray(unwrapped.dates)) {
-    return unwrapped.dates.filter((value: unknown) => typeof value === 'string');
+
+  if (isObject(unwrapped) && Array.isArray(unwrapped.dates)) {
+    return unwrapped.dates.filter((value) => typeof value === 'string');
   }
+
   return [];
 };
 
-const coerceLogs = (payload: any): HealthLogItem[] => {
-  const unwrapped = unwrapData<any>(payload);
+const coerceLogs = (payload: unknown): HealthLogItem[] => {
+  const unwrapped = unwrapData<unknown>(payload);
+
   if (Array.isArray(unwrapped)) {
     return unwrapped as HealthLogItem[];
   }
-  if (unwrapped && Array.isArray(unwrapped.logs)) {
+
+  if (isObject(unwrapped) && Array.isArray(unwrapped.logs)) {
     return unwrapped.logs as HealthLogItem[];
   }
-  if (unwrapped && Array.isArray(unwrapped.items)) {
+
+  if (isObject(unwrapped) && Array.isArray(unwrapped.items)) {
     return unwrapped.items as HealthLogItem[];
   }
+
   return [];
 };
 
