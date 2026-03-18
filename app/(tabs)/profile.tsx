@@ -61,11 +61,10 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     screenTitle: {
-        fontSize: 26,
+        fontSize: 22,
         fontWeight: '700',
         color: '#4A4A4A',
         marginBottom: 24,
-        marginTop: 10,
     },
 });
 
