@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   // Top Header
   topHeader: {
     alignItems: 'flex-end',
-    marginTop: 10,
+    marginTop: 5,
   },
   exportButton: {
     flexDirection: 'row',
