@@ -156,7 +156,6 @@ export default function RecycleBinScreen() {
           <Ionicons name="chevron-back" size={24} color="#333333" />
         </Pressable>
         <Text style={styles.headerTitle}>Recycle Bin</Text>
-        <View style={styles.headerSpacer} />
       </View>
 
       {/* Description */}
@@ -297,15 +296,16 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    gap: 8,
+    marginTop: 10,
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: '#333333',
   },
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666',
     lineHeight: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: 30,
     marginBottom: 24,
   },
   // Scroll
