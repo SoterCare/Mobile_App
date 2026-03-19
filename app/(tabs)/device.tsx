@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -7,58 +7,70 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Alert,
-    Platform,
-    PermissionsAndroid,
+    TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { BleManager, Device, State } from 'react-native-ble-plx';
-
-import { useBLE, type BluetoothDevice } from '@/hooks/useBLE';
+import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 
 export default function DeviceScreen() {
     const {
-        isScanning,
         devices,
-        connectedDevice,
-        isConnecting,
-        bluetoothState,
-        startScan,
-        connectToDevice,
-        disconnectDevice,
-    } = useBLE();
+        selectedDeviceId,
+        setSelectedDeviceId,
+        claimDevice,
+        latestVitals,
+        liveLogs,
+        connectionState,
+        scanAndConnect,
+        refreshDevices,
+        lastError,
+    } = useRaspberryPi();
 
-    const renderDevice = ({ item }: { item: BluetoothDevice }) => {
-        const isConnected = connectedDevice === item.id;
-        const isConnectingToThis = isConnecting === item.id;
+    const [claimInput, setClaimInput] = useState('');
+    const [isClaiming, setIsClaiming] = useState(false);
 
-        const getSignalColor = (rssi: number) => {
-            if (rssi > -60) return '#4CAF50';
-            if (rssi > -70) return '#8BC34A';
-            if (rssi > -80) return '#FFC107';
-            return '#FF5722';
-        };
+    const connectionLabel = useMemo(() => {
+        if (connectionState === 'connected') return 'Backend Sync Connected';
+        if (connectionState === 'reconnecting' || connectionState === 'connecting') return 'Backend Sync Connecting';
+        return 'Backend Sync Disconnected';
+    }, [connectionState]);
+
+    const handleClaim = async () => {
+        const deviceId = claimInput.trim();
+        if (!deviceId) {
+            Alert.alert('Missing Device ID', 'Enter the scanned QR device_id to claim.');
+            return;
+        }
+
+        try {
+            setIsClaiming(true);
+            await claimDevice(deviceId);
+            setClaimInput('');
+            Alert.alert('Device Claimed', `Device ${deviceId} has been claimed.`);
+        } catch (error: any) {
+            Alert.alert('Claim Failed', error?.message || 'Unable to claim device.');
+        } finally {
+            setIsClaiming(false);
+        }
+    };
+
+    const renderDevice = ({ item }: { item: any }) => {
+        const isSelected = selectedDeviceId === item.id;
 
         return (
             <TouchableOpacity
-                style={[styles.deviceCard, isConnected && styles.connectedCard]}
-                onPress={() => {
-                    if (isConnected) {
-                        disconnectDevice(item.id, item.name);
-                    } else if (!isConnectingToThis && !isConnecting) {
-                        connectToDevice(item.id, item.name);
-                    }
-                }}
-                disabled={isConnectingToThis || (isConnecting !== null && !isConnected)}
+                style={[styles.deviceCard, isSelected && styles.connectedCard]}
+                onPress={() => setSelectedDeviceId(item.id)}
                 activeOpacity={0.7}
             >
                 <View style={styles.deviceInfo}>
-                    <View style={[styles.iconContainer, { backgroundColor: isConnected ? '#E8F5E9' : '#E3F2FD' }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: isSelected ? '#E8F5E9' : '#E3F2FD' }]}>
                         <Ionicons
                             name="bluetooth"
                             size={28}
-                            color={isConnected ? '#4CAF50' : '#03A9F4'}
+                            color={isSelected ? '#4CAF50' : '#03A9F4'}
                         />
                     </View>
                     <View style={styles.deviceDetails}>
@@ -72,35 +84,20 @@ export default function DeviceScreen() {
                             <View
                                 style={[
                                     styles.signalDot,
-                                    { backgroundColor: getSignalColor(item.rssi) },
+                                    { backgroundColor: item.status === 'online' ? '#4CAF50' : '#FF5722' },
                                 ]}
                             />
                             <Text style={styles.deviceRssi}>
-                                Signal: {item.rssi} dBm
+                                Status: {item.status || 'unknown'}
                             </Text>
                         </View>
                     </View>
                 </View>
-
-                {isConnectingToThis ? (
-                    <ActivityIndicator size="small" color="#03A9F4" />
-                ) : (
-                    <View
-                        style={[
-                            styles.statusBadge,
-                            isConnected && styles.connectedBadge,
-                        ]}
-                    >
-                        <Text
-                            style={[
-                                styles.statusText,
-                                isConnected && styles.connectedText,
-                            ]}
-                        >
-                            {isConnected ? 'Connected' : 'Connect'}
-                        </Text>
-                    </View>
-                )}
+                <View style={[styles.statusBadge, isSelected && styles.connectedBadge]}>
+                    <Text style={[styles.statusText, isSelected && styles.connectedText]}>
+                        {isSelected ? 'Selected' : 'Select'}
+                    </Text>
+                </View>
             </TouchableOpacity>
         );
     };
@@ -110,45 +107,51 @@ export default function DeviceScreen() {
             <StatusBar style="dark" />
 
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Bluetooth Devices</Text>
+                <Text style={styles.headerTitle}>My Devices</Text>
                 <View style={styles.headerRow}>
-                    <Text style={styles.headerSubtitle}>
-                        {connectedDevice
-                            ? '✓ Device Connected'
-                            : isScanning
-                                ? 'Scanning for devices...'
-                                : 'Tap below to scan for nearby devices'}
-                    </Text>
+                    <Text style={styles.headerSubtitle}>{connectionLabel}</Text>
                     <View style={[
                         styles.bluetoothStatus,
-                        { backgroundColor: bluetoothState === State.PoweredOn ? '#4CAF50' : '#F44336' }
+                        { backgroundColor: connectionState === 'connected' ? '#4CAF50' : '#F44336' }
                     ]}>
                         <Text style={styles.bluetoothStatusText}>
-                            {bluetoothState === State.PoweredOn ? 'BT ON' : 'BT OFF'}
+                            {connectionState === 'connected' ? 'LIVE' : 'DOWN'}
                         </Text>
                     </View>
                 </View>
             </View>
 
+            <View style={styles.claimContainer}>
+                <Text style={styles.sectionTitle}>Claim Device (QR device_id)</Text>
+                <View style={styles.claimRow}>
+                    <TextInput
+                        value={claimInput}
+                        onChangeText={setClaimInput}
+                        placeholder="Paste scanned device_id"
+                        autoCapitalize="none"
+                        style={styles.claimInput}
+                    />
+                    <TouchableOpacity
+                        style={styles.claimButton}
+                        onPress={handleClaim}
+                        disabled={isClaiming}
+                    >
+                        {isClaiming ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.claimButtonText}>Claim</Text>}
+                    </TouchableOpacity>
+                </View>
+                {lastError ? <Text style={styles.errorText}>{lastError}</Text> : null}
+            </View>
+
             <TouchableOpacity
-                style={[styles.scanButton, isScanning && styles.scanningButton]}
-                onPress={startScan}
-                disabled={isScanning}
+                style={styles.scanButton}
+                onPress={async () => {
+                    await scanAndConnect();
+                    await refreshDevices();
+                }}
                 activeOpacity={0.8}
             >
-                {isScanning ? (
-                    <>
-                        <ActivityIndicator size="small" color="#fff" style={styles.scanIcon} />
-                        <Text style={styles.scanButtonText}>Scanning...</Text>
-                    </>
-                ) : (
-                    <>
-                        <Ionicons name="scan" size={24} color="#fff" style={styles.scanIcon} />
-                        <Text style={styles.scanButtonText}>
-                            {devices.length > 0 ? 'Scan Again' : 'Start Scan'}
-                        </Text>
-                    </>
-                )}
+                <Ionicons name="refresh" size={24} color="#fff" style={styles.scanIcon} />
+                <Text style={styles.scanButtonText}>Refresh Devices</Text>
             </TouchableOpacity>
 
             {devices.length > 0 && (
@@ -159,14 +162,14 @@ export default function DeviceScreen() {
                 </View>
             )}
 
-            {devices.length === 0 && !isScanning ? (
+            {devices.length === 0 ? (
                 <View style={styles.emptyState}>
                     <View style={styles.emptyIconContainer}>
                         <Ionicons name="bluetooth-outline" size={64} color="#ccc" />
                     </View>
-                    <Text style={styles.emptyText}>No devices found</Text>
+                    <Text style={styles.emptyText}>No claimed devices</Text>
                     <Text style={styles.emptySubtext}>
-                        Make sure Bluetooth is enabled and devices are nearby
+                        Claim a device using its QR device_id
                     </Text>
                 </View>
             ) : (
@@ -176,15 +179,27 @@ export default function DeviceScreen() {
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
-                    ListEmptyComponent={
-                        isScanning ? (
-                            <View style={styles.scanningState}>
-                                <ActivityIndicator size="large" color="#03A9F4" />
-                                <Text style={styles.scanningText}>
-                                    Looking for devices...
-                                </Text>
-                            </View>
-                        ) : null
+                    ListFooterComponent={
+                        <View style={styles.liveSection}>
+                            <Text style={styles.sectionTitle}>Latest Vitals</Text>
+                            <Text style={styles.vitalsText}>
+                                {latestVitals
+                                    ? `Temp ${latestVitals.temperature ?? '--'}°C · Moisture ${latestVitals.moisture ?? '--'} · ${latestVitals.timestamp}`
+                                    : 'No latest vitals available'}
+                            </Text>
+
+                            <Text style={[styles.sectionTitle, { marginTop: 14 }]}>Latest Synced Logs</Text>
+                            {liveLogs.length === 0 ? (
+                                <Text style={styles.emptySubtext}>No recent synced logs.</Text>
+                            ) : (
+                                liveLogs.slice(0, 5).map((log, idx) => (
+                                    <View key={`${log.id || idx}-${log.timestamp}`} style={styles.liveLogRow}>
+                                        <Text style={styles.liveLogTitle}>{log.title || log.type || 'Log'}</Text>
+                                        <Text style={styles.liveLogTime}>{log.timestamp}</Text>
+                                    </View>
+                                ))
+                            )}
+                        </View>
                     }
                 />
             )}
@@ -229,6 +244,45 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
     },
+    claimContainer: {
+        marginHorizontal: 20,
+        marginBottom: 12,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 12,
+    },
+    claimRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    claimInput: {
+        flex: 1,
+        height: 44,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#d3d7de',
+        paddingHorizontal: 12,
+        color: '#1f2937',
+    },
+    claimButton: {
+        backgroundColor: '#03A9F4',
+        borderRadius: 10,
+        paddingHorizontal: 14,
+        height: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    claimButtonText: {
+        color: '#fff',
+        fontWeight: '700',
+    },
+    errorText: {
+        marginTop: 8,
+        color: '#dc2626',
+        fontSize: 12,
+        fontWeight: '500',
+    },
     scanButton: {
         flexDirection: 'row',
         backgroundColor: '#03A9F4',
@@ -268,6 +322,7 @@ const styles = StyleSheet.create({
     listContent: {
         padding: 20,
         paddingTop: 8,
+        paddingBottom: 28,
     },
     deviceCard: {
         backgroundColor: '#fff',
@@ -376,13 +431,36 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         lineHeight: 20,
     },
-    scanningState: {
-        paddingTop: 60,
-        alignItems: 'center',
+    liveSection: {
+        marginTop: 10,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 14,
     },
-    scanningText: {
-        marginTop: 16,
-        fontSize: 16,
-        color: '#666',
+    sectionTitle: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#344054',
+        marginBottom: 8,
+    },
+    vitalsText: {
+        fontSize: 13,
+        color: '#4b5563',
+    },
+    liveLogRow: {
+        borderTopWidth: 1,
+        borderTopColor: '#edf2f7',
+        paddingTop: 8,
+        marginTop: 8,
+    },
+    liveLogTitle: {
+        fontSize: 13,
+        color: '#1f2937',
+        fontWeight: '600',
+    },
+    liveLogTime: {
+        marginTop: 2,
+        fontSize: 12,
+        color: '#6b7280',
     },
 });

@@ -23,6 +23,7 @@ import { recycleBinService } from '@/services/recycleBinService';
 // Types
 interface RemovedActivity {
   id: string;
+  deviceId?: string;
   type: 'movement' | 'fall' | 'urine';
   title: string;
   time: string;
@@ -31,6 +32,7 @@ interface RemovedActivity {
 // Helper to map backend items to RemovedActivity
 const mapToRemovedActivity = (item: any): RemovedActivity => ({
   id: String(item.id ?? item._id ?? item.eventId),
+  deviceId: item.deviceId ?? item.device_id,
   type: item.type ?? item.category ?? 'movement',
   title: item.title ?? item.label ?? item.name ?? 'Activity',
   time: item.time ?? item.createdAt ?? item.timestamp ?? '',
@@ -123,7 +125,11 @@ export default function RecycleBinScreen() {
           text: 'Restore',
           onPress: async () => {
             try {
-              await recycleBinService.restore(activity.id);
+              await recycleBinService.restore({
+                id: activity.id,
+                deviceId: activity.deviceId,
+                type: 'alert',
+              });
               setRemovedActivities((prev) =>
                 prev.filter((item) => item.id !== activity.id)
               );

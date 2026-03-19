@@ -10,7 +10,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Alert,
   Pressable,
   ScrollView,
 } from 'react-native';
@@ -28,13 +27,11 @@ import { Shadows } from '../../../theme/shadows';
 import {
   getVitalData,
   vitalYAxisConfig,
-  activityEventsDay,
-  activityStatsMonth,
-  activityStatsCustom,
   VitalType,
   PeriodType,
   ActivityEvent,
 } from '../../../data/mockVitals';
+import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 
 const BACKGROUND_COLOR = '#F6F6F6';
 
@@ -45,46 +42,28 @@ const PERIOD_OPTIONS = [
   { key: 'custom', label: 'Custom' },
 ];
 
-// Vital type options for segmented control (removed from UI, defaulting to temp)
-const VITAL_OPTIONS = [
-  { key: 'temp', label: 'Temperature' },
-];
-
-// Date options for picker modal
-const DAY_OPTIONS = [
-  '2025/11/01',
-  '2025/11/02',
-  '2025/11/03',
-  '2025/11/04',
-  '2025/11/05',
-  '2025/11/06',
-  '2025/11/07',
-];
-
-const MONTH_OPTIONS = [
-  '2025/09',
-  '2025/10',
-  '2025/11',
-  '2025/12',
-];
-
-const CUSTOM_RANGE_OPTIONS = [
-  '2025/11/01 - 2025/11/07',
-  '2025/11/08 - 2025/11/14',
-  '2025/10/01 - 2025/10/31',
-];
-
 // Filter options for activity timeline
 const FILTER_OPTIONS = ['All', 'Movements', 'Falls', 'Urine'];
 
 export default function TimelineScreen() {
   const router = useRouter();
+  const {
+    selectedDeviceId,
+    availableLogDates,
+    historicalLogs,
+    liveLogs,
+    logsError,
+    isLoadingLogs,
+    loadAvailableLogDates,
+    loadLogsByRange,
+    connectionState,
+  } = useRaspberryPi();
 
   const [period, setPeriod] = useState<PeriodType>('day');
   const [vital, setVital] = useState<VitalType>('temp'); // Defaulting to temp
-  const [selectedDay, setSelectedDay] = useState('2025/11/01');
-  const [selectedMonth, setSelectedMonth] = useState('2025/11');
-  const [selectedRange, setSelectedRange] = useState('2025/11/01 - 2025/11/07');
+  const [selectedDay, setSelectedDay] = useState<string>('');
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedRange, setSelectedRange] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState('All');
 
   // Modal states
@@ -92,15 +71,83 @@ export default function TimelineScreen() {
   const [chartExpandedVisible, setChartExpandedVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
+  const toDayDisplay = useCallback((iso: string) => iso.replace(/-/g, '/').slice(0, 10), []);
+
+  const dayOptions = useMemo(() => {
+    if (!availableLogDates.length) return [];
+    return availableLogDates.map(toDayDisplay);
+  }, [availableLogDates, toDayDisplay]);
+
+  const monthOptions = useMemo(() => {
+    const unique = new Set(dayOptions.map((day) => day.slice(0, 7)));
+    return Array.from(unique);
+  }, [dayOptions]);
+
+  const customRangeOptions = useMemo(() => {
+    if (dayOptions.length < 2) return dayOptions.length === 1 ? [`${dayOptions[0]} - ${dayOptions[0]}`] : [];
+    const end = dayOptions[dayOptions.length - 1];
+    const start = dayOptions[Math.max(0, dayOptions.length - 7)];
+    return [`${start} - ${end}`];
+  }, [dayOptions]);
+
+  React.useEffect(() => {
+    loadAvailableLogDates();
+  }, [loadAvailableLogDates]);
+
+  React.useEffect(() => {
+    if (!selectedDay && dayOptions.length > 0) {
+      setSelectedDay(dayOptions[dayOptions.length - 1]);
+    }
+    if (!selectedMonth && monthOptions.length > 0) {
+      setSelectedMonth(monthOptions[monthOptions.length - 1]);
+    }
+    if (!selectedRange && customRangeOptions.length > 0) {
+      setSelectedRange(customRangeOptions[0]);
+    }
+  }, [dayOptions, monthOptions, customRangeOptions, selectedDay, selectedMonth, selectedRange]);
+
+  const fetchLogsForSelection = useCallback(async (mode: PeriodType, option: string) => {
+    if (!option) return;
+
+    const toIsoStart = (value: string) => new Date(`${value.replace(/\//g, '-')}T00:00:00.000Z`);
+    const toIsoEnd = (value: string) => new Date(`${value.replace(/\//g, '-')}T23:59:59.999Z`);
+
+    if (mode === 'day') {
+      const start = toIsoStart(option);
+      const end = toIsoEnd(option);
+      await loadLogsByRange(start.toISOString(), end.toISOString());
+      return;
+    }
+
+    if (mode === 'month') {
+      const [year, month] = option.split('/').map((v) => Number(v));
+      const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+      const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+      await loadLogsByRange(start.toISOString(), end.toISOString());
+      return;
+    }
+
+    const [rawStart, rawEnd] = option.split(' - ');
+    const start = toIsoStart(rawStart);
+    const end = toIsoEnd(rawEnd || rawStart);
+    await loadLogsByRange(start.toISOString(), end.toISOString());
+  }, [loadLogsByRange]);
+
+  React.useEffect(() => {
+    const selection = period === 'day' ? selectedDay : period === 'month' ? selectedMonth : selectedRange;
+    if (!selection || !selectedDeviceId) return;
+    fetchLogsForSelection(period, selection);
+  }, [period, selectedDay, selectedMonth, selectedRange, selectedDeviceId, fetchLogsForSelection]);
+
   // Get current date display text based on period
   const dateDisplayText = useMemo(() => {
     switch (period) {
       case 'day':
-        return selectedDay;
+        return selectedDay || 'No date';
       case 'month':
-        return selectedMonth;
+        return selectedMonth || 'No month';
       case 'custom':
-        return selectedRange;
+        return selectedRange || 'No range';
     }
   }, [period, selectedDay, selectedMonth, selectedRange]);
 
@@ -108,18 +155,29 @@ export default function TimelineScreen() {
   const datePickerOptions = useMemo(() => {
     switch (period) {
       case 'day':
-        return DAY_OPTIONS;
+        return dayOptions;
       case 'month':
-        return MONTH_OPTIONS;
+        return monthOptions;
       case 'custom':
-        return CUSTOM_RANGE_OPTIONS;
+        return customRangeOptions;
     }
-  }, [period]);
+  }, [period, dayOptions, monthOptions, customRangeOptions]);
 
   // Get vital data for chart
   const chartData = useMemo(() => {
-    return getVitalData(vital, period);
-  }, [vital, period]);
+    const points = historicalLogs
+      .filter((log) => typeof log.temperature === 'number' || (log.data as any)?.temperature)
+      .slice(0, 24)
+      .map((log) => {
+        const ts = String(log.timestamp || '');
+        const label = ts ? new Date(ts).toISOString().slice(11, 16) : '--:--';
+        const value = Number(log.temperature ?? (log.data as any)?.temperature ?? 0);
+        return { xLabel: label, value };
+      })
+      .reverse();
+
+    return points.length > 0 ? points : getVitalData(vital, period);
+  }, [historicalLogs, vital, period]);
 
   // Get y-axis config for current vital
   const yAxisConfig = useMemo(() => {
@@ -128,21 +186,49 @@ export default function TimelineScreen() {
 
   // Get filtered activity events
   const filteredEvents = useMemo((): ActivityEvent[] => {
+    const sourceLogs = [...liveLogs, ...historicalLogs].slice(0, 40);
+    const mapped: ActivityEvent[] = sourceLogs.map((log, index) => {
+      const rawType = String(log.type || log.eventType || '').toLowerCase();
+      const type: ActivityEvent['type'] = rawType.includes('fall')
+        ? 'fall'
+        : rawType.includes('connect')
+          ? 'connected'
+          : rawType.includes('disconnect')
+            ? 'disconnected'
+            : 'movement';
+
+      return {
+        id: String(log.id || `${log.timestamp}-${index}`),
+        type,
+        label: String(log.title || log.type || 'Activity Detected'),
+        time: log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : '--:--',
+      };
+    });
+
+    if (mapped.length === 0 && activeFilter === 'All') {
+      return [];
+    }
+
     if (activeFilter === 'All') {
-      return activityEventsDay;
+      return mapped;
     }
     const filterMap: Record<string, ActivityEvent['type']> = {
       Movements: 'movement',
       Falls: 'fall',
+      Urine: 'movement',
     };
     const filterType = filterMap[activeFilter];
-    return activityEventsDay.filter((event) => event.type === filterType);
-  }, [activeFilter]);
+    return mapped.filter((event) => event.type === filterType);
+  }, [activeFilter, historicalLogs, liveLogs]);
 
   // Get activity stats based on period
   const activityStats = useMemo(() => {
-    return period === 'month' ? activityStatsMonth : activityStatsCustom;
-  }, [period]);
+    return {
+      movements: filteredEvents.filter((event) => event.type === 'movement').length,
+      falls: filteredEvents.filter((event) => event.type === 'fall').length,
+      urine: filteredEvents.filter((event) => event.label.toLowerCase().includes('urine')).length,
+    };
+  }, [filteredEvents]);
 
   // Get activity section title based on period
   const activityTitle = useMemo(() => {
@@ -161,12 +247,8 @@ export default function TimelineScreen() {
     setPeriod(key as PeriodType);
   }, []);
 
-  const handleVitalChange = useCallback((key: string) => {
-    setVital(key as VitalType);
-  }, []);
-
   const handleDateSelect = useCallback(
-    (option: string) => {
+    async (option: string) => {
       switch (period) {
         case 'day':
           setSelectedDay(option);
@@ -178,9 +260,11 @@ export default function TimelineScreen() {
           setSelectedRange(option);
           break;
       }
+
+      await fetchLogsForSelection(period, option);
       setDatePickerVisible(false);
     },
-    [period]
+    [period, fetchLogsForSelection]
   );
 
   const handleExportReport = useCallback(() => {
@@ -248,6 +332,12 @@ export default function TimelineScreen() {
               color={"#666"}
             />
           </TouchableOpacity>
+
+          <View style={styles.statusRow}>
+            <Text style={styles.statusText}>Backend Sync: {connectionState}</Text>
+            {isLoadingLogs ? <Text style={styles.statusText}>Loading logs...</Text> : null}
+            {logsError ? <Text style={styles.statusError}>{logsError}</Text> : null}
+          </View>
 
           {/* Flex container for bottom alignment */}
           <View style={styles.flexContainer}>
@@ -470,6 +560,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#4A4A4A',
+  },
+  statusRow: {
+    marginTop: 6,
+    marginBottom: 8,
+    alignItems: 'center',
+    gap: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  statusError: {
+    fontSize: 12,
+    color: '#DC2626',
+    fontWeight: '600',
+    textAlign: 'center',
   },
   // Vital control
   vitalControl: {

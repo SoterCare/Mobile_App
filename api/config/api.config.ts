@@ -29,15 +29,39 @@ export const API_CONFIG = {
       EMAIL_VERIFY: '/user/email/verify',
     },
     SUMMARY: {
-      GENERATE: '/summary/generate',
+      GENERATE: '/summary',
       HISTORY: '/summary/history',
+      UPLOAD_PRESCRIPTION: '/summary/upload_prescription',
+      QUERY_PRESCRIPTION: '/summary/query_prescription',
     },
     LOGS: {
+      SYNC: '/logs/sync',
       DATES: '/logs/dates',
       RANGE: '/logs/range',
     },
+    DEVICES: {
+      LIST: '/devices',
+      CLAIM: '/devices/claim',
+      STATUS: (deviceId: string) => `/devices/${deviceId}/status`,
+    },
+    DASHBOARD: {
+      LATEST_VITALS: '/dashboard/vitals/latest',
+    },
+    ALERTS: {
+      RECENT: '/alerts/recent',
+    },
     REPORTS: {
       EXPORT: '/reports/export',
+      DEVICES: '/reports/devices',
+    },
+    TIMELINE: {
+      VITALS: '/timeline/vitals',
+      EVENTS: '/timeline/events',
+      STATS: '/timeline/stats',
+      DATE_OPTIONS: '/timeline/date-options',
+      DISMISSED: '/timeline/dismissed',
+      RESTORE: '/timeline/restore',
+      DISMISS: '/timeline/dismiss',
     },
   },
 

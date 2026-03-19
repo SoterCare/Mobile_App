@@ -1,4 +1,4 @@
-export type PiConnectionState = 'disconnected' | 'scanning' | 'connecting' | 'connected';
+export type PiConnectionState = 'disconnected' | 'scanning' | 'connecting' | 'connected' | 'reconnecting';
 
 export interface PiDevice {
   id: string;
@@ -37,6 +37,17 @@ export interface RecordingSession {
   recordingId: string;
   deviceId?: string;
   createdAt: string;
+}
+
+export interface DeviceLog {
+  id?: string;
+  device_id?: string;
+  deviceId?: string;
+  timestamp: string;
+  type?: string;
+  title?: string;
+  eventType?: string;
+  [key: string]: unknown;
 }
 
 export interface GatewayResponse<T = unknown> {

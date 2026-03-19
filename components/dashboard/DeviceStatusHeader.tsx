@@ -19,6 +19,7 @@ export const DeviceStatusHeader = () => {
     );
 
     const isConnected = connectionState === 'connected';
+    const isReconnecting = connectionState === 'reconnecting' || connectionState === 'connecting';
 
     const handleSelect = (deviceId: string) => {
         setSelectedDeviceId(deviceId);
@@ -30,13 +31,13 @@ export const DeviceStatusHeader = () => {
             <View style={styles.headerCard}>
                 <View>
                     <Text style={styles.statusLabel}>
-                        Gateway: <Text style={isConnected ? styles.statusOnline : styles.statusOffline}>{connectionState}</Text>
+                        Realtime: <Text style={isConnected ? styles.statusOnline : styles.statusOffline}>{connectionState}</Text>
                     </Text>
                 </View>
                 <View style={styles.deviceControl}>
                     <View style={styles.connectionStatus}>
                         <View style={[styles.onlineDot, !isConnected && styles.offlineDot]} />
-                        <Text style={styles.connectionText}>{isConnected ? 'Connected' : 'Disconnected'}</Text>
+                        <Text style={styles.connectionText}>{isConnected ? 'Connected' : isReconnecting ? 'Reconnecting' : 'Disconnected'}</Text>
                     </View>
                     <TouchableOpacity
                         style={[styles.deviceDropdown, dropdownOpen && styles.deviceDropdownActive]}
@@ -58,7 +59,7 @@ export const DeviceStatusHeader = () => {
                 <>
                     {!isConnected && (
                         <TouchableOpacity style={styles.retryButton} onPress={scanAndConnect} activeOpacity={0.8}>
-                            <Text style={styles.retryButtonText}>Connect Raspberry Pi</Text>
+                            <Text style={styles.retryButtonText}>{isReconnecting ? 'Reconnecting...' : 'Reconnect Realtime'}</Text>
                         </TouchableOpacity>
                     )}
 

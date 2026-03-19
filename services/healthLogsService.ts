@@ -9,6 +9,22 @@ export interface HealthLogItem {
   [key: string]: unknown;
 }
 
+export interface ClaimDeviceResponse {
+  success?: boolean;
+  message?: string;
+  deviceId?: string;
+  [key: string]: unknown;
+}
+
+export interface LatestVitalsResponse {
+  deviceId: string;
+  timestamp: string;
+  temperature?: number;
+  roomTemperature?: number;
+  moisture?: number;
+  gaitAnalysis?: string;
+}
+
 const unwrapData = <T>(payload: any): T => {
   if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
     return payload.data as T;
@@ -42,6 +58,13 @@ const coerceLogs = (payload: any): HealthLogItem[] => {
 };
 
 export const healthLogsService = {
+  async claimDevice(deviceId: string): Promise<ClaimDeviceResponse> {
+    const response = await apiClient.post(API_CONFIG.ENDPOINTS.DEVICES.CLAIM, {
+      device_id: deviceId,
+    });
+    return unwrapData<ClaimDeviceResponse>(response.data);
+  },
+
   async getAvailableDates(): Promise<string[]> {
     const response = await apiClient.get(API_CONFIG.ENDPOINTS.LOGS.DATES);
     return coerceDates(response.data).sort();
@@ -55,5 +78,14 @@ export const healthLogsService = {
       },
     });
     return coerceLogs(response.data);
+  },
+
+  async getLatestVitals(deviceId: string): Promise<LatestVitalsResponse | null> {
+    const response = await apiClient.get(API_CONFIG.ENDPOINTS.DASHBOARD.LATEST_VITALS, {
+      params: { deviceId },
+    });
+
+    const unwrapped = unwrapData<LatestVitalsResponse | null>(response.data);
+    return unwrapped ?? null;
   },
 };

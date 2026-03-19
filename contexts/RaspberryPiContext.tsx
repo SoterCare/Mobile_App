@@ -8,24 +8,31 @@ import React, {
   useState,
 } from 'react';
 import { deviceDataService } from '@/services/deviceDataService';
-import { raspberryPiGatewayService } from '@/services/raspberryPiGatewayService';
-import { raspberryPiBackendSyncService } from '@/services/raspberryPiBackendSyncService';
+import { healthLogsService, HealthLogItem } from '@/services/healthLogsService';
+import { useAuth } from '@/contexts/AuthContext';
 import {
+  DeviceLog,
   DashboardVitals,
   PiConnectionState,
   PiDevice,
-  RecordingSession,
   RecentAlert,
 } from '@/types/raspberryPi.types';
 
 interface RaspberryPiContextType {
   connectionState: PiConnectionState;
-  gatewayHost: string | null;
   devices: PiDevice[];
   selectedDeviceId: string | null;
+  availableLogDates: string[];
+  historicalLogs: DeviceLog[];
+  liveLogs: DeviceLog[];
+  isLoadingLogs: boolean;
+  logsError: string | null;
   latestVitals: DashboardVitals | null;
   recentAlerts: RecentAlert[];
-  recordings: RecordingSession[];
+  lastError: string | null;
+  claimDevice: (deviceId: string) => Promise<void>;
+  loadAvailableLogDates: () => Promise<void>;
+  loadLogsByRange: (startDate: string, endDate: string) => Promise<void>;
   scanAndConnect: () => Promise<void>;
   disconnect: () => void;
   refreshDevices: () => Promise<void>;
@@ -37,121 +44,223 @@ interface RaspberryPiContextType {
 const RaspberryPiContext = createContext<RaspberryPiContextType | undefined>(undefined);
 
 export function RaspberryPiProvider({ children }: { children: ReactNode }) {
+  const { signOut } = useAuth();
   const [connectionState, setConnectionState] = useState<PiConnectionState>('disconnected');
-  const [gatewayHost, setGatewayHost] = useState<string | null>(null);
   const [devices, setDevices] = useState<PiDevice[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [availableLogDates, setAvailableLogDates] = useState<string[]>([]);
+  const [historicalLogs, setHistoricalLogs] = useState<DeviceLog[]>([]);
+  const [liveLogs, setLiveLogs] = useState<DeviceLog[]>([]);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+  const [logsError, setLogsError] = useState<string | null>(null);
   const [latestVitals, setLatestVitals] = useState<DashboardVitals | null>(null);
   const [recentAlerts, setRecentAlerts] = useState<RecentAlert[]>([]);
-  const [recordings, setRecordings] = useState<RecordingSession[]>([]);
+  const [lastError, setLastError] = useState<string | null>(null);
+
+  const parseApiError = useCallback((error: any, fallback: string) => {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message;
+
+    if (status === 401) {
+      signOut();
+      return 'Session expired. Please sign in again.';
+    }
+
+    if (status === 400 || status === 403) {
+      return message || fallback;
+    }
+
+    return fallback;
+  }, [signOut]);
+
+  const toDeviceLog = useCallback((log: HealthLogItem | DeviceLog): DeviceLog => {
+    const deviceId = String((log as any).device_id || (log as any).deviceId || '');
+    const rawTimestamp = (log as any).timestamp || (log as any).ts || (log as any).createdAt;
+    const timestamp = String(rawTimestamp || new Date().toISOString());
+    const id = (log as any).id ? String((log as any).id) : undefined;
+    const type = String((log as any).type || (log as any).eventType || ((log as any).fallAlert ? 'fall' : 'movement'));
+    const title = String((log as any).title || (log as any).message || ((log as any).fallAlert ? 'Fall Alert' : 'Log ingested'));
+
+    return {
+      ...log,
+      id,
+      device_id: deviceId,
+      deviceId,
+      timestamp,
+      type,
+      title,
+    };
+  }, []);
+
+  const dedupeLogs = useCallback((logs: DeviceLog[]) => {
+    const map = new Map<string, DeviceLog>();
+    logs.forEach((item) => {
+      const normalized = toDeviceLog(item);
+      const key = [
+        normalized.device_id || normalized.deviceId || 'unknown-device',
+        normalized.timestamp,
+        normalized.id || 'no-id',
+      ].join('::');
+      map.set(key, normalized);
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+  }, [toDeviceLog]);
 
   const refreshDevices = useCallback(async () => {
     try {
       const list = await deviceDataService.getDevices({ includeStatus: true });
       setDevices(list);
+      setConnectionState('connected');
 
       if (!selectedDeviceId && list.length > 0) {
         setSelectedDeviceId(list[0].id);
       }
-    } catch {
+      setLastError(null);
+    } catch (error) {
       setDevices([]);
+      setConnectionState('disconnected');
+      setLastError(parseApiError(error, 'Failed to load devices'));
     }
-  }, [selectedDeviceId]);
+  }, [parseApiError, selectedDeviceId]);
 
   const refreshLatestVitals = useCallback(async () => {
     if (!selectedDeviceId) return;
     try {
       const vitals = await deviceDataService.getLatestVitals(selectedDeviceId);
       setLatestVitals(vitals);
-    } catch {
+    } catch (error) {
       setLatestVitals(null);
+      setLastError(parseApiError(error, 'Failed to load latest vitals'));
     }
-  }, [selectedDeviceId]);
+  }, [parseApiError, selectedDeviceId]);
 
   const refreshRecentAlerts = useCallback(async () => {
     if (!selectedDeviceId) return;
     try {
       const alerts = await deviceDataService.getRecentAlerts({ deviceId: selectedDeviceId, limit: 20 });
       setRecentAlerts(alerts);
-    } catch {
+    } catch (error) {
       setRecentAlerts([]);
+      setLastError(parseApiError(error, 'Failed to load recent alerts'));
     }
-  }, [selectedDeviceId]);
+  }, [parseApiError, selectedDeviceId]);
+
+  const claimDevice = useCallback(async (deviceId: string) => {
+    try {
+      setLastError(null);
+      await healthLogsService.claimDevice(deviceId);
+      await refreshDevices();
+    } catch (error) {
+      const message = parseApiError(error, 'Failed to claim device');
+      setLastError(message);
+      throw new Error(message);
+    }
+  }, [parseApiError, refreshDevices]);
+
+  const loadAvailableLogDates = useCallback(async () => {
+    try {
+      setLastError(null);
+      setLogsError(null);
+      const dates = await healthLogsService.getAvailableDates();
+      setAvailableLogDates(dates);
+    } catch (error) {
+      const message = parseApiError(error, 'Failed to load log dates');
+      setLastError(message);
+      setLogsError(message);
+      setAvailableLogDates([]);
+    }
+  }, [parseApiError]);
+
+  const loadLogsByRange = useCallback(async (startDate: string, endDate: string) => {
+    try {
+      setIsLoadingLogs(true);
+      setLogsError(null);
+      const logs = await healthLogsService.getLogsByRange(startDate, endDate);
+      const normalized = logs.map((item) => toDeviceLog(item));
+      const filtered = selectedDeviceId
+        ? normalized.filter((item) => (item.device_id || item.deviceId) === selectedDeviceId)
+        : normalized;
+
+      const deduped = dedupeLogs(filtered);
+      setHistoricalLogs(deduped);
+      // REST-only mode: expose latest fetched records in the "Latest Synced Logs" UI section.
+      setLiveLogs(deduped.slice(0, 20));
+    } catch (error) {
+      const message = parseApiError(error, 'Failed to load logs for the selected range');
+      setLogsError(message);
+      setHistoricalLogs([]);
+      setLiveLogs([]);
+    } finally {
+      setIsLoadingLogs(false);
+    }
+  }, [dedupeLogs, parseApiError, selectedDeviceId, toDeviceLog]);
 
   const scanAndConnect = useCallback(async () => {
-    await raspberryPiGatewayService.scanAndConnect();
-    setGatewayHost(raspberryPiGatewayService.gatewayHost);
+    setConnectionState('connecting');
     await refreshDevices();
   }, [refreshDevices]);
 
   const disconnect = () => {
-    raspberryPiGatewayService.disconnect();
-    setGatewayHost(null);
+    setConnectionState('disconnected');
+    setLiveLogs([]);
   };
 
   useEffect(() => {
-    const unsub = raspberryPiGatewayService.subscribe((state) => {
-      setConnectionState(state);
-      setGatewayHost(raspberryPiGatewayService.gatewayHost);
-    });
-
-    const unsubRecordings = raspberryPiGatewayService.subscribeRecordings((session) => {
-      setRecordings((prev) => [session, ...prev].slice(0, 100));
-    });
-
     scanAndConnect();
-
-    return () => {
-      unsub();
-      unsubRecordings();
-    };
   }, [scanAndConnect]);
 
   useEffect(() => {
-    refreshDevices();
-  }, [connectionState, refreshDevices]);
+    const interval = setInterval(() => {
+      refreshDevices();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refreshDevices]);
 
   useEffect(() => {
-    if (!selectedDeviceId) return;
+    if (!selectedDeviceId) {
+      setLiveLogs([]);
+      setHistoricalLogs([]);
+      return;
+    }
+
     refreshLatestVitals();
     refreshRecentAlerts();
+    loadAvailableLogDates();
+
+    const end = new Date();
+    const start = new Date(end);
+    start.setDate(end.getDate() - 1);
+    loadLogsByRange(start.toISOString(), end.toISOString());
 
     const interval = setInterval(() => {
       refreshLatestVitals();
       refreshRecentAlerts();
-    }, 5000);
+      loadLogsByRange(start.toISOString(), end.toISOString());
+    }, 15000);
 
     return () => clearInterval(interval);
-  }, [selectedDeviceId, connectionState, refreshLatestVitals, refreshRecentAlerts]);
-
-  // Scheduled backend sync from Raspberry Pi data: 3 times per day (00/08/16 slots)
-  useEffect(() => {
-    const runSyncIfDue = async () => {
-      try {
-        await raspberryPiBackendSyncService.runScheduledSync();
-      } catch (error) {
-        console.warn('Raspberry Pi scheduled sync failed:', error);
-      }
-    };
-
-    // Try once on mount/connection changes
-    runSyncIfDue();
-
-    // Check every 5 minutes whether current slot is due and not synced yet
-    const interval = setInterval(runSyncIfDue, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [connectionState]);
+  }, [selectedDeviceId, connectionState, refreshLatestVitals, refreshRecentAlerts, loadAvailableLogDates, loadLogsByRange]);
 
   const value = useMemo<RaspberryPiContextType>(
     () => ({
       connectionState,
-      gatewayHost,
       devices,
       selectedDeviceId,
+      availableLogDates,
+      historicalLogs,
+      liveLogs,
+      isLoadingLogs,
+      logsError,
       latestVitals,
       recentAlerts,
-      recordings,
+      lastError,
+      claimDevice,
+      loadAvailableLogDates,
+      loadLogsByRange,
       scanAndConnect,
       disconnect,
       refreshDevices,
@@ -161,12 +270,19 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
     }),
     [
       connectionState,
-      gatewayHost,
       devices,
       selectedDeviceId,
+      availableLogDates,
+      historicalLogs,
+      liveLogs,
+      isLoadingLogs,
+      logsError,
       latestVitals,
       recentAlerts,
-      recordings,
+      lastError,
+      claimDevice,
+      loadAvailableLogDates,
+      loadLogsByRange,
       scanAndConnect,
       refreshDevices,
       refreshLatestVitals,
