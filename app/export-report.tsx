@@ -383,7 +383,7 @@ export default function ExportReportScreen() {
                                             {device}
                                         </Text>
                                         {selectedDevice === device && (
-                                            <IconSymbol name="checkmark" size={14} color="#8FD9E5" />
+                                            <IconSymbol name="checkmark" size={14} color="#91D7E4" />
                                         )}
                                     </TouchableOpacity>
                                 ))}
@@ -532,7 +532,7 @@ export default function ExportReportScreen() {
 
                     {isLoadingLogs ? (
                         <View style={styles.logsStateBox}>
-                            <ActivityIndicator color="#8FD9E5" />
+                            <ActivityIndicator color="#91D7E4" />
                             <Text style={styles.helperText}>Loading logs...</Text>
                         </View>
                     ) : logsError ? (
@@ -671,8 +671,8 @@ const styles = StyleSheet.create({
         borderColor: '#E4E7EC',
     },
     rangeModeButtonActive: {
-        backgroundColor: '#8FD9E5',
-        borderColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
+        borderColor: '#91D7E4',
     },
     rangeModeButtonText: {
         fontSize: 13,
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     dropdownItemTextActive: {
-        color: '#8FD9E5',
+        color: '#91D7E4',
         fontWeight: '600',
     },
 
@@ -798,8 +798,8 @@ const styles = StyleSheet.create({
     dateButtonDisabled: { fontSize: 15, color: '#C0C0C0', fontWeight: '500' },
     singleDateRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     checkbox: { width: 22, height: 22, borderRadius: 6, backgroundColor: '#D9D9D9', justifyContent: 'center', alignItems: 'center' },
-    checkboxChecked: { backgroundColor: '#8FD9E5' },
-    metricCheckboxChecked: { backgroundColor: '#8FD9E5' },
+    checkboxChecked: { backgroundColor: '#91D7E4' },
+    metricCheckboxChecked: { backgroundColor: '#91D7E4' },
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
     // Metrics
@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
     },
     formatOption: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 26 },
-    formatOptionActive: { backgroundColor: '#8FD9E5' },
+    formatOptionActive: { backgroundColor: '#91D7E4' },
     formatText: { fontSize: 16, fontWeight: '600', color: '#333333' },
     formatTextActive: { color: '#FFFFFF' },
 
@@ -883,7 +883,7 @@ const styles = StyleSheet.create({
     },
     exportButton: {
         width: '100%',
-        backgroundColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
         borderRadius: 30,
         paddingVertical: 18,
         alignItems: 'center',

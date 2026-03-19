@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
         elevation: 6,
     },
     primaryButton: {
-        backgroundColor: '#8FD9E5', // Cyan
+        backgroundColor: '#91D7E4', // Cyan
     },
     primaryButtonText: {
         color: '#fff',
@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     secondaryButton: {
         backgroundColor: '#fff',
         borderWidth: 1,
-        borderColor: '#8FD9E5',
+        borderColor: '#91D7E4',
         shadowColor: 'transparent',
         elevation: 0,
     },
     secondaryButtonText: {
-        color: '#8FD9E5',
+        color: '#91D7E4',
         fontSize: 18,
         fontWeight: '700',
     },

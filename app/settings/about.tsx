@@ -34,7 +34,7 @@ export default function AboutScreen() {
                 {/* Logo & Identity */}
                 <View style={styles.logoContainer}>
                     <View style={styles.iconCircle}>
-                        <Ionicons name="fitness-outline" size={44} color="#8FD9E5" />
+                        <Ionicons name="fitness-outline" size={44} color="#91D7E4" />
                     </View>
                     <Text style={styles.appName}>Sotercare</Text>
                     <View style={styles.versionBadge}>
@@ -46,7 +46,7 @@ export default function AboutScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="heart-outline" size={18} color="#8FD9E5" />
+                            <Ionicons name="heart-outline" size={18} color="#91D7E4" />
                         </View>
                         <Text style={styles.sectionTitle}>Our Mission</Text>
                     </View>
@@ -59,7 +59,7 @@ export default function AboutScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="information-circle-outline" size={18} color="#8FD9E5" />
+                            <Ionicons name="information-circle-outline" size={18} color="#91D7E4" />
                         </View>
                         <Text style={styles.sectionTitle}>What is Sotercare?</Text>
                     </View>
@@ -72,14 +72,14 @@ export default function AboutScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="grid-outline" size={18} color="#8FD9E5" />
+                            <Ionicons name="grid-outline" size={18} color="#91D7E4" />
                         </View>
                         <Text style={styles.sectionTitle}>Key Features</Text>
                     </View>
                     {FEATURES.map((feat, idx) => (
                         <View key={idx} style={[styles.featureRow, idx < FEATURES.length - 1 && styles.featureRowBorder]}>
                             <View style={styles.featureIconBox}>
-                                <Ionicons name={feat.icon} size={22} color="#8FD9E5" />
+                                <Ionicons name={feat.icon} size={22} color="#91D7E4" />
                             </View>
                             <View style={styles.featureContent}>
                                 <Text style={styles.featureTitle}>{feat.title}</Text>
@@ -93,7 +93,7 @@ export default function AboutScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="shield-checkmark-outline" size={18} color="#8FD9E5" />
+                            <Ionicons name="shield-checkmark-outline" size={18} color="#91D7E4" />
                         </View>
                         <Text style={styles.sectionTitle}>Legal</Text>
                     </View>
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 14,
         elevation: 6,
-        shadowColor: '#8FD9E5',
+        shadowColor: '#91D7E4',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 12,

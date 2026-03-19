@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     unitCardActive: {
-        borderColor: '#8FD9E5',
-        shadowColor: '#8FD9E5',
+        borderColor: '#91D7E4',
+        shadowColor: '#91D7E4',
         shadowOpacity: 0.18,
         shadowRadius: 12,
         elevation: 5,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexShrink: 0,
     },
-    symbolCircleActive: { backgroundColor: '#8FD9E5' },
+    symbolCircleActive: { backgroundColor: '#91D7E4' },
     symbolText: { fontSize: 17, fontWeight: '800', color: '#ADB5BD', letterSpacing: -0.5 },
     symbolTextActive: { color: '#FFFFFF' },
 
@@ -168,8 +168,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexShrink: 0,
     },
-    radioOuterActive: { borderColor: '#8FD9E5' },
-    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#8FD9E5' },
+    radioOuterActive: { borderColor: '#91D7E4' },
+    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#91D7E4' },
 
     // ── Current setting banner ──
     previewCard: {

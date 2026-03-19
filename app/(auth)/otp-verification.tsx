@@ -120,7 +120,7 @@ export default function OTPVerificationScreen() {
             <View style={styles.content}>
                 <View style={styles.iconContainer}>
                     <View style={styles.iconCircle}>
-                        <Ionicons name="mail-open-outline" size={40} color="#8FD9E5" />
+                        <Ionicons name="mail-open-outline" size={40} color="#91D7E4" />
                     </View>
                 </View>
 
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         backgroundColor: 'transparent',
         borderWidth: 3,
-        borderColor: '#8FD9E5',
+        borderColor: '#91D7E4',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         height: 56,
-        backgroundColor: '#8FD9E5', // Cyan/Light Blue
+        backgroundColor: '#91D7E4', // Cyan/Light Blue
         borderRadius: 28,
         alignItems: 'center',
         justifyContent: 'center',
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     resendLink: {
-        color: '#8FD9E5',
+        color: '#91D7E4',
         fontWeight: 'bold',
     },
 });

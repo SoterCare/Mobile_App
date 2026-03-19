@@ -85,7 +85,7 @@ export default function LanguageScreen() {
                         <Text style={styles.currentNative}> · {selectedLang.nativeName}</Text>
                     </Text>
                 </View>
-                <Ionicons name="checkmark-circle" size={22} color="#8FD9E5" />
+                <Ionicons name="checkmark-circle" size={22} color="#91D7E4" />
             </View>
 
             {/* Language list */}
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     currentFlag: { fontSize: 28 },
     currentLabel: {
         fontSize: 11, 
-        color: '#8FD9E5', 
+        color: '#91D7E4', 
         fontWeight: '700',
         marginBottom: 2, 
         textTransform: 'uppercase', 
@@ -210,6 +210,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center', 
         flexShrink: 0,
     },
-    radioOuterActive: { borderColor: '#8FD9E5' },
-    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#8FD9E5' },
+    radioOuterActive: { borderColor: '#91D7E4' },
+    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#91D7E4' },
 });

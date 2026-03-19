@@ -192,7 +192,7 @@ export default function PaymentAddScreen() {
                                     <Text style={styles.bankOptionName}>{b.name}</Text>
                                     <Text style={styles.bankOptionShort}>{b.shortName}</Text>
                                 </View>
-                                {selectedBank === key && <Ionicons name="checkmark-circle" size={22} color="#8FD9E5" />}
+                                {selectedBank === key && <Ionicons name="checkmark-circle" size={22} color="#91D7E4" />}
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -218,9 +218,9 @@ const styles = StyleSheet.create({
     brandRow: { flexDirection: 'row', gap: 10 },
     brandBtn: { flex: 1, height: 44, borderRadius: 12, borderWidth: 1.5, borderColor: '#F1F3F5',
         backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center' },
-    brandBtnActive: { borderColor: '#8FD9E5', backgroundColor: 'rgba(143,217,229,0.07)' },
+    brandBtnActive: { borderColor: '#91D7E4', backgroundColor: 'rgba(143,217,229,0.07)' },
     brandBtnText: { fontSize: 13, fontWeight: '700', color: '#ADB5BD' },
-    brandBtnTextActive: { color: '#8FD9E5' },
+    brandBtnTextActive: { color: '#91D7E4' },
     inputBox: { backgroundColor: '#FFF', borderRadius: 13, borderWidth: 1.5, borderColor: '#F1F3F5',
         flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, height: 48 },
     inputError: { borderColor: '#FF6B6B' },
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     secureBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(81,207,102,0.06)',
         borderRadius: 12, padding: 12, borderWidth: 1, borderColor: 'rgba(81,207,102,0.15)', marginBottom: 16 },
     secureText: { fontSize: 11, color: '#51CF66', fontWeight: '600' },
-    addButton: { backgroundColor: '#8FD9E5', borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center' },
+    addButton: { backgroundColor: '#91D7E4', borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center' },
     addButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
     modalSheet: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 36 },
