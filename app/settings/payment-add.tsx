@@ -204,8 +204,8 @@ export default function PaymentAddScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { marginLeft: -4, marginTop: 20, padding: 6 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 4, marginTop: 20, },
     content: { padding: 20, paddingBottom: 40 },
     previewWrap: { alignItems: 'center', marginBottom: 24, marginTop: 4 },
     fieldWrap: { marginBottom: 14 },

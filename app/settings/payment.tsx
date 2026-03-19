@@ -183,8 +183,8 @@ export default function PaymentMethodScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { marginLeft: 4, marginTop: 20 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop: 20 },
     content: { padding: 20, paddingBottom: 40 },
     emptyState: { alignItems: 'center', paddingVertical: 48 },
     emptyText: { marginTop: 12, fontSize: 14, color: '#ADB5BD', fontWeight: '600' },

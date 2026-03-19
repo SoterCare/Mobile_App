@@ -145,8 +145,8 @@ export default function PaymentEditScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { marginLeft: 4, marginTop:20 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop:20 },
     content: { padding: 20, paddingBottom: 40 },
     previewWrap: { alignItems: 'center', marginBottom: 20, marginTop: 4 },
     infoBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 13,
