@@ -1,12 +1,9 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
-import { openDatabaseSync } from "expo-sqlite";
+import { openDatabaseAsync, type SQLiteDatabase } from "expo-sqlite";
 import * as schema from "./schema";
 
-// Open the database synchronously (Expo SQLite)
-const expoDb = openDatabaseSync("db.db");
-
-// Initialize Drizzle
-export const db = drizzle(expoDb, { schema });
+let expoDb: SQLiteDatabase | null = null;
+export let db: any = null;
 
 // Helper to initialize tables (Optional if not using migrations)
 // Drizzle usually recommends 'drizzle-kit push' for dev, but for simple embedded usage:
@@ -15,6 +12,9 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 // We can run raw SQL to ensure table exists for this simple case without complex migrations
 export const initDatabase = async () => {
     try {
+        expoDb = await openDatabaseAsync("db.db");
+        db = drizzle(expoDb, { schema });
+
         await expoDb.execAsync(`
             CREATE TABLE IF NOT EXISTS nightly_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,6 +30,7 @@ export const initDatabase = async () => {
 };
 
 export const insertLog = async (data: any) => {
+    if (!expoDb) return;
     try {
         const timestamp = Date.now();
         await expoDb.runAsync(
