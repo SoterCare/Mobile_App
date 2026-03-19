@@ -328,16 +328,20 @@ export default function ExportReportScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['bottom']}>
-            <Stack.Screen
-                options={{
-                    title: 'Export Report',
-                    headerTitleStyle: { fontSize: 20, fontWeight: '600', color: '#333' },
-                    headerShadowVisible: false,
-                    headerStyle: { backgroundColor: '#f2f3f7' },
-                    headerTintColor: '#333',
-                }}
-            />
+        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+
+            {/* ── Hide the default Stack header ── */}
+            <Stack.Screen options={{ headerShown: false }} />
+
+            {/* ── Custom Header ── */}
+            <View style={styles.customHeader}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <MaterialCommunityIcons name="chevron-left" size={28} color="#333" />
+                </TouchableOpacity>
+                <Text style={styles.customHeaderTitle}>Export Report</Text>
+                {/* Spacer to keep title centered */}
+                <View style={{ width: 38 }} />
+            </View>
 
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
@@ -507,7 +511,7 @@ export default function ExportReportScreen() {
                                         const str = toLocalDateString(curr);
                                         marks[str] = {
                                             selected: true,
-                                            color: '#81D4FA',
+                                            color: '#91D7E4',
                                             startingDay: str === sStr,
                                             endingDay: str === eStr
                                         };
@@ -515,7 +519,7 @@ export default function ExportReportScreen() {
                                     }
                                     return marks;
                                 })()}
-                                theme={{ arrowColor: '#81D4FA', todayTextColor: '#81D4FA' }}
+                                theme={{ arrowColor: '#91D7E4', todayTextColor: '#81D4FA' }}
                             />
                         </View>
                     )}
@@ -568,7 +572,7 @@ export default function ExportReportScreen() {
                     <View style={styles.metricsRow}>
                         <MetricCard
                             icon="thermometer"
-                            color="#FFB966"
+                            color="#F9C45A"
                             bgColor="#FFF5E6"
                             label="Temperature"
                             checked={selectedMetrics.temperature}
@@ -577,7 +581,7 @@ export default function ExportReportScreen() {
                         />
                         <MetricCard
                             icon="walk"
-                            color="#4DB6E8"
+                            color="#78d6e7"
                             bgColor="#E8F6FD"
                             label="Activity"
                             checked={selectedMetrics.activity}
@@ -656,6 +660,28 @@ const styles = StyleSheet.create({
     scrollContent: { padding: 30, paddingBottom: 40 },
     section: { marginBottom: 25 },
     sectionTitle: { fontSize: 16, fontWeight: '600', color: '#B0B0B0', marginBottom: 16 },
+
+    customHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 20,       
+        paddingBottom: 1,
+        backgroundColor: '#f2f3f7',
+    },
+    backButton: {
+        width: 38,
+        height: 38,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    customHeaderTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#333',
+        marginLeft: 8,
+    },
+
     rangeModeRow: {
         flexDirection: 'row',
         gap: 10,
@@ -712,7 +738,7 @@ const styles = StyleSheet.create({
 
     // Device Dropdown
     dropdownButtonBox: {
-        backgroundColor: '#A0E4EB',
+        backgroundColor: '#91D7E4',
         borderRadius: 24,
         paddingHorizontal: 20,
         paddingVertical: 14,

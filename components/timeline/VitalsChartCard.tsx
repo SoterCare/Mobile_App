@@ -81,7 +81,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
-    marginBottom: 8, // Reduced padding bottom
+    marginBottom: 8,
+    marginHorizontal: 4, // Reduced padding bottom
   },
   header: {
     flexDirection: 'row',

@@ -14,26 +14,27 @@ type Unit = 'F' | 'C';
 
 // Fahrenheit on top, Celsius below
 const UNITS: { key: Unit; label: string; symbol: string }[] = [
-    { key: 'F', label: 'Fahrenheit', symbol: '°F' },
     { key: 'C', label: 'Celsius',     symbol: '°C' },
+    { key: 'F', label: 'Fahrenheit',  symbol: '°F' },
 ];
 
 export default function TemperatureScreen() {
     const router = useRouter();
-    const [unit, setUnit] = useState<Unit>('F');
+    const [unit, setUnit] = useState<Unit>('C');
 
     useEffect(() => {
-        AsyncStorage.getItem('temp_unit').then((val) => {
-            if (val === 'F' || val === 'C') setUnit(val);
-        });
-    }, []);
+    AsyncStorage.getItem('temp_unit').then((val) => {
+        if (val === 'F' || val === 'C') setUnit(val);
+        else setUnit('C');
+    });
+}, []);
 
     const handleUnitChange = async (u: Unit) => {
         setUnit(u);
         await AsyncStorage.setItem('temp_unit', u);
     };
 
-    const selectedLabel = unit === 'F' ? 'Fahrenheit (°F)' : 'Celsius (°C)';
+    const selectedLabel = unit === 'C' ? 'Celsius (°C)' : 'Fahrenheit (°F)';
 
     return (
         <SafeAreaView style={styles.container}>
@@ -102,8 +103,8 @@ export default function TemperatureScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
 
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { marginLeft: 4, marginTop: 20 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop: 20 },
 
     content: { paddingHorizontal: 20, paddingTop: 20, gap: 14 },
 

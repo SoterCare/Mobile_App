@@ -112,8 +112,8 @@ export default function PaymentDetailScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { marginLeft: 4, marginTop:20 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop:20 },
     editIconBtn: { marginRight: 4 },
     content: { padding: 20, paddingBottom: 40 },
     previewWrap: { alignItems: 'center', marginBottom: 18, marginTop: 4 },
