@@ -18,7 +18,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/userService';
 
-// Helper for initials
 const getInitials = (name: string) => {
     return name
         .split(' ')
@@ -30,14 +29,13 @@ const getInitials = (name: string) => {
 
 export default function EditProfileScreen() {
     const router = useRouter();
-    const { user } = useAuth(); // Assuming this context provides user data
+    const { user } = useAuth();
 
     const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
     const [phone, setPhone] = useState(user?.phone || '');
     const [isLoading, setIsLoading] = useState(false);
 
-    // OTP Modal State
     const [isOtpModalVisible, setIsOtpModalVisible] = useState(false);
     const [otp, setOtp] = useState('');
     const [pendingEmail, setPendingEmail] = useState('');
@@ -51,17 +49,14 @@ export default function EditProfileScreen() {
         setIsLoading(true);
 
         try {
-            // 1. Check if Email changed
             if (email !== user?.email) {
-                // Initiate Email Update Flow
                 await userService.initiateEmailUpdate(user?.userId || '', email);
                 setPendingEmail(email);
                 setIsOtpModalVisible(true);
-                setIsLoading(false); // Stop loading to let user enter OTP
-                return; // Stop here, wait for OTP
+                setIsLoading(false);
+                return;
             }
 
-            // 2. If valid or no email change, update profile (Name, Phone)
             await updateProfileData();
 
         } catch (error: any) {
@@ -79,7 +74,7 @@ export default function EditProfileScreen() {
             await userService.updateProfile({
                 userId: user?.userId,
                 name,
-                email: user?.email, // Send OLD email for profile update to avoid "verification required" error if applicable
+                email: user?.email,
                 phone
             });
             Alert.alert('Success', 'Profile updated successfully', [
@@ -91,19 +86,15 @@ export default function EditProfileScreen() {
     };
 
     const handleVerifyOtp = async () => {
-        if (!otp || otp.length < 4) { // Assuming OTP is at least 4 digits
+        if (!otp || otp.length < 4) {
             Alert.alert('Error', 'Please enter a valid OTP');
             return;
         }
 
         setIsLoading(true);
         try {
-            // 1. Verify Email
             await userService.verifyEmailUpdate(user?.userId || '', pendingEmail, otp);
-
-            // 2. After verified, update other profile details too
             await updateProfileData();
-
             setIsOtpModalVisible(false);
         } catch (error: any) {
             console.error('OTP Verify error:', error);
@@ -116,24 +107,17 @@ export default function EditProfileScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Stack.Screen
-                options={{
-                    headerShown: true,
-                    title: 'Edit Profile',
-                    headerTitleStyle: {
-                        fontSize: 20,
-                        fontWeight: '600',
-                        color: '#333',
-                    },
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: -8 }}>
-                            <Ionicons name="chevron-back" size={28} color="#333" />
-                        </TouchableOpacity>
-                    ),
-                    headerShadowVisible: false,
-                    headerStyle: { backgroundColor: '#F9FAFB' }, // Light gray background to match screen
-                }}
-            />
+            {/* Hide default Stack header */}
+            <Stack.Screen options={{ headerShown: false }} />
+
+            {/* Custom Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="chevron-back" size={28} color="#333" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Edit Profile</Text>
+                <View style={{ width: 28 }} />
+            </View>
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -262,6 +246,25 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F9FAFB',
     },
+    // Custom Header
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        marginTop: 10, 
+        backgroundColor: '#F9FAFB',
+    },
+    backButton: {
+        padding: 4,
+        marginLeft: -4,
+        marginRight: 4, 
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#333',
+    },
     scrollContent: {
         padding: 20,
         alignItems: 'center',
@@ -276,7 +279,7 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
@@ -327,7 +330,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     saveButton: {
-        backgroundColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
         borderRadius: 25,
         width: '100%',
         paddingVertical: 16,
@@ -343,7 +346,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '600',
     },
-    // Modal Styles
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.5)',
@@ -399,7 +401,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F5F5',
     },
     verifyButton: {
-        backgroundColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
     },
     cancelButtonText: {
         color: '#666',

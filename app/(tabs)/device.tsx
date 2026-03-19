@@ -202,10 +202,11 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
     },
     headerTitle: {
-        fontSize: 28,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#201d1d',
-        marginBottom: 4,
+        marginBottom: 20,
+        marginTop: 10,
     },
     headerRow: {
         flexDirection: 'row',
@@ -242,6 +243,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.15,
         shadowRadius: 4,
         marginBottom: 12,
+        marginTop: 10,
     },
     scanningButton: {
         backgroundColor: '#0288D1',
@@ -351,6 +353,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 40,
         paddingTop: 60,
+        marginTop: -150,
     },
     emptyIconContainer: {
         width: 120,

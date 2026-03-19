@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
         flex: 1, // Ensure it fills the parent
     },
     innerSurface: {
-        backgroundColor: '#f2f3f7',
+        backgroundColor: '#ffffff',
         borderRadius: 20, // Increased to match new standard
         flex: 1, // Ensure it fills the shadow containers
         // Ensure inner surface fills the shadow containers

@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   } as ViewStyle,
 
   pillButtonActive: {
-    backgroundColor: '#8FD9E5',
+    backgroundColor: '#91D7E4',
     elevation: 2,
     shadowOpacity: 0.15,
   } as ViewStyle,

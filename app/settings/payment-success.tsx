@@ -16,10 +16,10 @@ const CONFIG: Record<SuccessType, {
     icon: string; color: string; bgColor: string;
     title: string; body: (bankName?: string, last4?: string) => string;
 }> = {
-    added:   { icon: 'checkmark', color: '#8FD9E5', bgColor: 'rgba(143,217,229,0.1)',
+    added:   { icon: 'checkmark', color: '#91D7E4', bgColor: 'rgba(143,217,229,0.1)',
                title: 'Card Added!',
                body: (bankName, last4) => `Your ${bankName ?? 'card'} ending in ${last4 ?? '····'} has been successfully added.` },
-    updated: { icon: 'checkmark', color: '#8FD9E5', bgColor: 'rgba(143,217,229,0.1)',
+    updated: { icon: 'checkmark', color: '#91D7E4', bgColor: 'rgba(143,217,229,0.1)',
                title: 'Card Updated!',
                body: () => 'Your card details have been updated successfully.' },
     removed: { icon: 'trash-outline', color: '#FF6B6B', bgColor: 'rgba(255,107,107,0.08)',
@@ -112,8 +112,8 @@ export default function PaymentSuccessScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { marginLeft: 4, marginTop: 20 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop: 20 },
     content: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28 },
     ringOuter: { width: 124, height: 124, borderRadius: 62, borderWidth: 2,
         alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
@@ -133,11 +133,11 @@ const styles = StyleSheet.create({
     bankMiniName: { fontSize: 11, fontWeight: '800' },
     summaryLast4: { fontSize: 13, fontWeight: '700', color: '#333' },
     summaryExpiry: { fontSize: 11, color: '#ADB5BD', marginTop: 2 },
-    defaultBadge: { backgroundColor: '#8FD9E5', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2,
+    defaultBadge: { backgroundColor: '#91D7E4', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2,
         alignSelf: 'flex-start', marginTop: 6 },
     defaultBadgeText: { fontSize: 9, color: '#fff', fontWeight: '700' },
     actions: { width: '100%', gap: 10 },
-    primaryButton: { backgroundColor: '#8FD9E5', borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center' },
+    primaryButton: { backgroundColor: '#91D7E4', borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center' },
     primaryButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
     secondaryButton: { backgroundColor: 'rgba(0,0,0,0.04)', borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center' },
     secondaryButtonText: { color: '#ADB5BD', fontSize: 15, fontWeight: '600' },

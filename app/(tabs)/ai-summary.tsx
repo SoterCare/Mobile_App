@@ -303,19 +303,25 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     screenTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#333333',
+        marginTop: 10,
+        marginBottom: 8,
     },
     controlsRow: {
         marginBottom: 24,
-        width: '100%',
+        width: '101%',
         alignItems: 'center',
+        marginLeft: -3,
     },
     helperText: {
         fontSize: 15,
         color: '#888888',
-        marginBottom: 24,
+        marginBottom: 36,
+        marginTop: 12,
+        fontWeight: '500',
+        marginLeft: 4,
     },
     datePickerRow: {
         flexDirection: 'row',
@@ -327,6 +333,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#888888',
         fontWeight: '500',
+        marginLeft: 4,
     },
     datePill: {
         backgroundColor: '#FFFFFF',

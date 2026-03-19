@@ -328,16 +328,20 @@ export default function ExportReportScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['bottom']}>
-            <Stack.Screen
-                options={{
-                    title: 'Export Report',
-                    headerTitleStyle: { fontSize: 20, fontWeight: '600', color: '#333' },
-                    headerShadowVisible: false,
-                    headerStyle: { backgroundColor: '#f2f3f7' },
-                    headerTintColor: '#333',
-                }}
-            />
+        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+
+            {/* ── Hide the default Stack header ── */}
+            <Stack.Screen options={{ headerShown: false }} />
+
+            {/* ── Custom Header ── */}
+            <View style={styles.customHeader}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <MaterialCommunityIcons name="chevron-left" size={28} color="#333" />
+                </TouchableOpacity>
+                <Text style={styles.customHeaderTitle}>Export Report</Text>
+                {/* Spacer to keep title centered */}
+                <View style={{ width: 38 }} />
+            </View>
 
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
@@ -383,7 +387,7 @@ export default function ExportReportScreen() {
                                             {device}
                                         </Text>
                                         {selectedDevice === device && (
-                                            <IconSymbol name="checkmark" size={14} color="#8FD9E5" />
+                                            <IconSymbol name="checkmark" size={14} color="#91D7E4" />
                                         )}
                                     </TouchableOpacity>
                                 ))}
@@ -507,7 +511,7 @@ export default function ExportReportScreen() {
                                         const str = toLocalDateString(curr);
                                         marks[str] = {
                                             selected: true,
-                                            color: '#81D4FA',
+                                            color: '#91D7E4',
                                             startingDay: str === sStr,
                                             endingDay: str === eStr
                                         };
@@ -515,7 +519,7 @@ export default function ExportReportScreen() {
                                     }
                                     return marks;
                                 })()}
-                                theme={{ arrowColor: '#81D4FA', todayTextColor: '#81D4FA' }}
+                                theme={{ arrowColor: '#91D7E4', todayTextColor: '#81D4FA' }}
                             />
                         </View>
                     )}
@@ -532,7 +536,7 @@ export default function ExportReportScreen() {
 
                     {isLoadingLogs ? (
                         <View style={styles.logsStateBox}>
-                            <ActivityIndicator color="#8FD9E5" />
+                            <ActivityIndicator color="#91D7E4" />
                             <Text style={styles.helperText}>Loading logs...</Text>
                         </View>
                     ) : logsError ? (
@@ -568,7 +572,7 @@ export default function ExportReportScreen() {
                     <View style={styles.metricsRow}>
                         <MetricCard
                             icon="thermometer"
-                            color="#FFB966"
+                            color="#F9C45A"
                             bgColor="#FFF5E6"
                             label="Temperature"
                             checked={selectedMetrics.temperature}
@@ -577,7 +581,7 @@ export default function ExportReportScreen() {
                         />
                         <MetricCard
                             icon="walk"
-                            color="#4DB6E8"
+                            color="#78d6e7"
                             bgColor="#E8F6FD"
                             label="Activity"
                             checked={selectedMetrics.activity}
@@ -656,6 +660,28 @@ const styles = StyleSheet.create({
     scrollContent: { padding: 30, paddingBottom: 40 },
     section: { marginBottom: 25 },
     sectionTitle: { fontSize: 16, fontWeight: '600', color: '#B0B0B0', marginBottom: 16 },
+
+    customHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 20,       
+        paddingBottom: 1,
+        backgroundColor: '#f2f3f7',
+    },
+    backButton: {
+        width: 38,
+        height: 38,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    customHeaderTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#333',
+        marginLeft: 8,
+    },
+
     rangeModeRow: {
         flexDirection: 'row',
         gap: 10,
@@ -671,8 +697,8 @@ const styles = StyleSheet.create({
         borderColor: '#E4E7EC',
     },
     rangeModeButtonActive: {
-        backgroundColor: '#8FD9E5',
-        borderColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
+        borderColor: '#91D7E4',
     },
     rangeModeButtonText: {
         fontSize: 13,
@@ -712,7 +738,7 @@ const styles = StyleSheet.create({
 
     // Device Dropdown
     dropdownButtonBox: {
-        backgroundColor: '#A0E4EB',
+        backgroundColor: '#91D7E4',
         borderRadius: 24,
         paddingHorizontal: 20,
         paddingVertical: 14,
@@ -762,7 +788,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     dropdownItemTextActive: {
-        color: '#8FD9E5',
+        color: '#91D7E4',
         fontWeight: '600',
     },
 
@@ -798,8 +824,8 @@ const styles = StyleSheet.create({
     dateButtonDisabled: { fontSize: 15, color: '#C0C0C0', fontWeight: '500' },
     singleDateRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     checkbox: { width: 22, height: 22, borderRadius: 6, backgroundColor: '#D9D9D9', justifyContent: 'center', alignItems: 'center' },
-    checkboxChecked: { backgroundColor: '#8FD9E5' },
-    metricCheckboxChecked: { backgroundColor: '#8FD9E5' },
+    checkboxChecked: { backgroundColor: '#91D7E4' },
+    metricCheckboxChecked: { backgroundColor: '#91D7E4' },
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
     // Metrics
@@ -836,7 +862,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
     },
     formatOption: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 26 },
-    formatOptionActive: { backgroundColor: '#8FD9E5' },
+    formatOptionActive: { backgroundColor: '#91D7E4' },
     formatText: { fontSize: 16, fontWeight: '600', color: '#333333' },
     formatTextActive: { color: '#FFFFFF' },
 
@@ -883,7 +909,7 @@ const styles = StyleSheet.create({
     },
     exportButton: {
         width: '100%',
-        backgroundColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
         borderRadius: 30,
         paddingVertical: 18,
         alignItems: 'center',

@@ -84,7 +84,7 @@ export const ProfileSettingsCard: React.FC = () => {
                 <MenuItem
                     icon="thermometer-outline"
                     label="Temperature"
-                    value="°F"
+                    value="°C"
                     onPress={() => router.push('/settings/temperature' as any)}
                     showBorder={true}
                 />

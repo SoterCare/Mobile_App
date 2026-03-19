@@ -14,26 +14,27 @@ type Unit = 'F' | 'C';
 
 // Fahrenheit on top, Celsius below
 const UNITS: { key: Unit; label: string; symbol: string }[] = [
-    { key: 'F', label: 'Fahrenheit', symbol: '°F' },
     { key: 'C', label: 'Celsius',     symbol: '°C' },
+    { key: 'F', label: 'Fahrenheit',  symbol: '°F' },
 ];
 
 export default function TemperatureScreen() {
     const router = useRouter();
-    const [unit, setUnit] = useState<Unit>('F');
+    const [unit, setUnit] = useState<Unit>('C');
 
     useEffect(() => {
-        AsyncStorage.getItem('temp_unit').then((val) => {
-            if (val === 'F' || val === 'C') setUnit(val);
-        });
-    }, []);
+    AsyncStorage.getItem('temp_unit').then((val) => {
+        if (val === 'F' || val === 'C') setUnit(val);
+        else setUnit('C');
+    });
+}, []);
 
     const handleUnitChange = async (u: Unit) => {
         setUnit(u);
         await AsyncStorage.setItem('temp_unit', u);
     };
 
-    const selectedLabel = unit === 'F' ? 'Fahrenheit (°F)' : 'Celsius (°C)';
+    const selectedLabel = unit === 'C' ? 'Celsius (°C)' : 'Fahrenheit (°F)';
 
     return (
         <SafeAreaView style={styles.container}>
@@ -102,8 +103,8 @@ export default function TemperatureScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
 
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { marginLeft: 4, marginTop: 20 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop: 20 },
 
     content: { paddingHorizontal: 20, paddingTop: 20, gap: 14 },
 
@@ -131,8 +132,8 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     unitCardActive: {
-        borderColor: '#8FD9E5',
-        shadowColor: '#8FD9E5',
+        borderColor: '#91D7E4',
+        shadowColor: '#91D7E4',
         shadowOpacity: 0.18,
         shadowRadius: 12,
         elevation: 5,
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexShrink: 0,
     },
-    symbolCircleActive: { backgroundColor: '#8FD9E5' },
+    symbolCircleActive: { backgroundColor: '#91D7E4' },
     symbolText: { fontSize: 17, fontWeight: '800', color: '#ADB5BD', letterSpacing: -0.5 },
     symbolTextActive: { color: '#FFFFFF' },
 
@@ -168,8 +169,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexShrink: 0,
     },
-    radioOuterActive: { borderColor: '#8FD9E5' },
-    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#8FD9E5' },
+    radioOuterActive: { borderColor: '#91D7E4' },
+    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#91D7E4' },
 
     // ── Current setting banner ──
     previewCard: {
