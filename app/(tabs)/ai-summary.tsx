@@ -308,6 +308,7 @@ const styles = StyleSheet.create({
         color: '#333333',
         marginTop: 10,
         marginBottom: 8,
+        marginLeft: -3,
     },
     controlsRow: {
         marginBottom: 24,
