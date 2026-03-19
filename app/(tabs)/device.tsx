@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#201d1d',
         marginBottom: 20,
-        marginTop: 10,
+        marginTop: 8,
     },
     headerRow: {
         flexDirection: 'row',
