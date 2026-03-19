@@ -387,7 +387,7 @@ export default function ExportReportScreen() {
                                             {device}
                                         </Text>
                                         {selectedDevice === device && (
-                                            <IconSymbol name="checkmark" size={14} color="#8FD9E5" />
+                                            <IconSymbol name="checkmark" size={14} color="#91D7E4" />
                                         )}
                                     </TouchableOpacity>
                                 ))}
@@ -788,7 +788,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     dropdownItemTextActive: {
-        color: '#8FD9E5',
+        color: '#91D7E4',
         fontWeight: '600',
     },
 
@@ -825,7 +825,7 @@ const styles = StyleSheet.create({
     singleDateRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     checkbox: { width: 22, height: 22, borderRadius: 6, backgroundColor: '#D9D9D9', justifyContent: 'center', alignItems: 'center' },
     checkboxChecked: { backgroundColor: '#91D7E4' },
-    metricCheckboxChecked: { backgroundColor: '#8FD9E5' },
+    metricCheckboxChecked: { backgroundColor: '#91D7E4' },
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
     // Metrics

@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     },
     button: {
         height: 50,
-        backgroundColor: '#8FD9E5', // Cyan/Light Blue
+        backgroundColor: '#91D7E4', // Cyan/Light Blue
         borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
@@ -396,8 +396,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f0f0',
     },
     checkboxChecked: {
-        backgroundColor: '#8FD9E5',
-        borderColor: '#8FD9E5',
+        backgroundColor: '#91D7E4',
+        borderColor: '#91D7E4',
     },
     checkboxLabel: {
         flex: 1,
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
         lineHeight: 18,
     },
     link: {
-        color: '#8FD9E5',
+        color: '#91D7E4',
         fontWeight: '600',
     },
     signInLink: {
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
         marginTop: 30,
     },
     signInLinkHighlight: {
-        color: '#8FD9E5',
+        color: '#91D7E4',
         fontWeight: '600',
     },
 });
