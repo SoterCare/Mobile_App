@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 
@@ -12,6 +12,8 @@ export const DeviceStatusHeader = () => {
         scanAndConnect,
     } = useRaspberryPi();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [dropdownLayout, setDropdownLayout] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+    const dropdownButtonRef = React.useRef<View>(null);
 
     const selectedDevice = useMemo(
         () => devices.find((d) => d.id === selectedDeviceId) || devices[0],
@@ -25,25 +27,44 @@ export const DeviceStatusHeader = () => {
         setDropdownOpen(false);
     };
 
+    const handleDropdownPress = () => {
+        if (!dropdownOpen) {
+            dropdownButtonRef.current?.measureInWindow((x, y, width, height) => {
+                setDropdownLayout({ x, y, width, height });
+                setDropdownOpen(true);
+            });
+        } else {
+            setDropdownOpen(false);
+        }
+    };
+
     return (
         <View style={styles.wrapper}>
             <View style={styles.headerCard}>
                 <View>
                     <Text style={styles.statusLabel}>
-                        Gateway: <Text style={isConnected ? styles.statusOnline : styles.statusOffline}>{connectionState}</Text>
+                        Gateway:{' '}
+                        <Text style={isConnected ? styles.statusOnline : styles.statusOffline}>
+                            {connectionState}
+                        </Text>
                     </Text>
                 </View>
                 <View style={styles.deviceControl}>
                     <View style={styles.connectionStatus}>
                         <View style={[styles.onlineDot, !isConnected && styles.offlineDot]} />
-                        <Text style={styles.connectionText}>{isConnected ? 'Connected' : 'Disconnected'}</Text>
+                        <Text style={styles.connectionText}>
+                            {isConnected ? 'Connected' : 'Disconnected'}
+                        </Text>
                     </View>
                     <TouchableOpacity
+                        ref={dropdownButtonRef}
                         style={[styles.deviceDropdown, dropdownOpen && styles.deviceDropdownActive]}
-                        onPress={() => setDropdownOpen(!dropdownOpen)}
+                        onPress={handleDropdownPress}
                         activeOpacity={0.8}
                     >
-                        <Text style={styles.deviceDropdownText}>{selectedDevice?.name || 'No Device'}</Text>
+                        <Text style={styles.deviceDropdownText}>
+                            {selectedDevice?.name || 'No Device'}
+                        </Text>
                         <Ionicons
                             name={dropdownOpen ? 'chevron-up' : 'chevron-down'}
                             size={14}
@@ -53,42 +74,78 @@ export const DeviceStatusHeader = () => {
                 </View>
             </View>
 
-            {/* Dropdown menu */}
-            {dropdownOpen && (
-                <>
-                    {!isConnected && (
-                        <TouchableOpacity style={styles.retryButton} onPress={scanAndConnect} activeOpacity={0.8}>
-                            <Text style={styles.retryButtonText}>Connect Raspberry Pi</Text>
-                        </TouchableOpacity>
-                    )}
-
-                    <View style={styles.dropdownMenu}>
-                        {devices.map((device) => (
-                            <TouchableOpacity
-                                key={device.id}
+            {/* Floating dropdown rendered in a Modal so it overlays everything */}
+            <Modal
+                visible={dropdownOpen}
+                transparent
+                animationType="none"
+                onRequestClose={() => setDropdownOpen(false)}
+            >
+                <TouchableWithoutFeedback onPress={() => setDropdownOpen(false)}>
+                    <View style={StyleSheet.absoluteFill}>
+                        {dropdownLayout && (
+                            <View
                                 style={[
-                                    styles.dropdownItem,
-                                    selectedDevice?.id === device.id && styles.dropdownItemActive,
+                                    styles.floatingContainer,
+                                    {
+                                        top: dropdownLayout.y + dropdownLayout.height + 8,
+                                        right: 0, // align to screen right edge with padding
+                                    },
                                 ]}
-                                onPress={() => handleSelect(device.id)}
-                                activeOpacity={0.7}
                             >
-                                <Text
-                                    style={[
-                                        styles.dropdownItemText,
-                                        selectedDevice?.id === device.id && styles.dropdownItemTextActive,
-                                    ]}
-                                >
-                                    {device.name}
-                                </Text>
-                                {selectedDevice?.id === device.id && (
-                                    <Ionicons name="checkmark" size={14} color="#4DD0C4" />
+                                {!isConnected && (
+                                    <TouchableOpacity
+                                        style={styles.retryButton}
+                                        onPress={() => {
+                                            setDropdownOpen(false);
+                                            scanAndConnect();
+                                        }}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Text style={styles.retryButtonText}>
+                                            Connect Raspberry Pi
+                                        </Text>
+                                    </TouchableOpacity>
                                 )}
-                            </TouchableOpacity>
-                        ))}
+
+                                {devices.length > 0 && (
+                                    <View style={styles.dropdownMenu}>
+                                        {devices.map((device) => (
+                                            <TouchableOpacity
+                                                key={device.id}
+                                                style={[
+                                                    styles.dropdownItem,
+                                                    selectedDevice?.id === device.id &&
+                                                        styles.dropdownItemActive,
+                                                ]}
+                                                onPress={() => handleSelect(device.id)}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        styles.dropdownItemText,
+                                                        selectedDevice?.id === device.id &&
+                                                            styles.dropdownItemTextActive,
+                                                    ]}
+                                                >
+                                                    {device.name}
+                                                </Text>
+                                                {selectedDevice?.id === device.id && (
+                                                    <Ionicons
+                                                        name="checkmark"
+                                                        size={14}
+                                                        color="#4DD0C4"
+                                                    />
+                                                )}
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
+                        )}
                     </View>
-                </>
-            )}
+                </TouchableWithoutFeedback>
+            </Modal>
         </View>
     );
 };
@@ -96,7 +153,6 @@ export const DeviceStatusHeader = () => {
 const styles = StyleSheet.create({
     wrapper: {
         marginBottom: 20,
-        zIndex: 100,
     },
     headerCard: {
         backgroundColor: '#fff',
@@ -164,24 +220,25 @@ const styles = StyleSheet.create({
         color: '#333',
         fontWeight: '600',
     },
-    dropdownMenu: {
+    // Floating container positioned via Modal
+    floatingContainer: {
         position: 'absolute',
-        top: 98,
-        right: 0,
+        alignItems: 'flex-end',
+        paddingRight: 16,
+    },
+    dropdownMenu: {
         backgroundColor: '#fff',
         borderRadius: 12,
         paddingVertical: 6,
         minWidth: 130,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.10,
+        shadowOpacity: 0.1,
         shadowRadius: 12,
         elevation: 8,
-        zIndex: 200,
     },
     retryButton: {
-        marginTop: 10,
-        alignSelf: 'flex-end',
+        marginBottom: 8,
         backgroundColor: '#91D7E4',
         paddingHorizontal: 12,
         paddingVertical: 6,
