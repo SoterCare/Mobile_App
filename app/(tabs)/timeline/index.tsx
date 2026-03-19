@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   // Top Header
   topHeader: {
     alignItems: 'flex-end',
-    marginBottom: 16,
+    marginTop: 5,
   },
   exportButton: {
     flexDirection: 'row',
@@ -438,6 +438,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
+    marginHorizontal: 4,
   },
   exportButtonText: {
     fontSize: 14,
@@ -449,12 +450,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#4A4A4A',
-    marginBottom: 20,
+    marginBottom: 40,
+    marginTop: -35,
     marginLeft: 4,
   },
   // Period control
   periodControl: {
-    marginBottom: 20,
+    marginBottom: 20
   },
   // Date selector
   dateSelector: {

@@ -108,11 +108,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#4A4A4A', // Slightly darker to match "Monthly Activity" text
-    marginBottom: 16,
+    marginBottom: 30,
     marginLeft: 4,
+    marginTop: -10, // Adjusted to better align with the cards below
   },
   cardsRow: {
     flexDirection: 'row',
