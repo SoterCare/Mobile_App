@@ -303,11 +303,13 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 4,
+    marginLeft: 4,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#333333',
+    marginLeft: -4,
   },
   headerSpacer: {
     width: 32,
