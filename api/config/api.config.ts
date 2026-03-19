@@ -38,6 +38,17 @@ export const API_CONFIG = {
       EXPORT: '/reports/export',
     },
   },
+  // Raspberry Pi Gateway Configuration
+  RASPBERRY_PI: {
+    CANDIDATE_HOSTS: ['sotercare-pi.local', '192.168.1.100'],
+    HTTP_PORT: 8080,
+    HEALTH_PATH: '/health',
+    SCAN_TIMEOUT_MS: 3000,
+    WS_PORT: 8080,
+    WS_PATH: '/ws',
+    CONNECT_TIMEOUT_MS: 5000,
+    REQUEST_TIMEOUT_MS: 10000,
+  },
 };
 
 // Environment-specific configurations
