@@ -132,7 +132,17 @@ export default function SubscriptionScreen() {
                             <TouchableOpacity
                                 style={styles.subscribeButton}
                                 activeOpacity={0.8}
-                                onPress={() => Alert.alert('Subscribe', `You selected the ${plan.name} plan (${billingCycle}). This feature will be available soon!`)}
+                                onPress={() => {
+                                    if (plan.id === 'free') {
+                                        router.replace('/(tabs)');
+                                        return;
+                                    }
+                                    Alert.alert(
+                                        'Payment Successful', 
+                                        `You are now subscribed to the ${plan.name} plan!`,
+                                        [{ text: 'Continue to Dashboard', onPress: () => router.replace('/(tabs)') }]
+                                    );
+                                }}
                             >
                                 <Text style={styles.subscribeText}>
                                     {plan.id === 'free' ? 'Current Plan' : 'Subscribe'}
