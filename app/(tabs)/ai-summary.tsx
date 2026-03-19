@@ -303,9 +303,11 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     screenTitle: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#333333',
+        marginTop: 10,
+        marginBottom: 8,
     },
     controlsRow: {
         marginBottom: 24,
