@@ -44,7 +44,7 @@ interface RaspberryPiContextType {
 const RaspberryPiContext = createContext<RaspberryPiContextType | undefined>(undefined);
 
 export function RaspberryPiProvider({ children }: { children: ReactNode }) {
-  const { signOut } = useAuth();
+  const { signOut, isAuthenticated } = useAuth();
   const [connectionState, setConnectionState] = useState<PiConnectionState>('disconnected');
   const [devices, setDevices] = useState<PiDevice[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
@@ -110,6 +110,11 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
   }, [toDeviceLog]);
 
   const refreshDevices = useCallback(async () => {
+    if (!isAuthenticated) {
+      setDevices([]);
+      return;
+    }
+
     try {
       const list = await deviceDataService.getDevices({ includeStatus: true });
       setDevices(list);
@@ -124,10 +129,10 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
       setConnectionState('disconnected');
       setLastError(parseApiError(error, 'Failed to load devices'));
     }
-  }, [parseApiError, selectedDeviceId]);
+  }, [isAuthenticated, parseApiError, selectedDeviceId]);
 
   const refreshLatestVitals = useCallback(async () => {
-    if (!selectedDeviceId) return;
+    if (!selectedDeviceId || !isAuthenticated) return;
     try {
       const vitals = await deviceDataService.getLatestVitals(selectedDeviceId);
       setLatestVitals(vitals);
@@ -135,10 +140,10 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
       setLatestVitals(null);
       setLastError(parseApiError(error, 'Failed to load latest vitals'));
     }
-  }, [parseApiError, selectedDeviceId]);
+  }, [isAuthenticated, parseApiError, selectedDeviceId]);
 
   const refreshRecentAlerts = useCallback(async () => {
-    if (!selectedDeviceId) return;
+    if (!selectedDeviceId || !isAuthenticated) return;
     try {
       const alerts = await deviceDataService.getRecentAlerts({ deviceId: selectedDeviceId, limit: 20 });
       setRecentAlerts(alerts);
@@ -146,7 +151,7 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
       setRecentAlerts([]);
       setLastError(parseApiError(error, 'Failed to load recent alerts'));
     }
-  }, [parseApiError, selectedDeviceId]);
+  }, [isAuthenticated, parseApiError, selectedDeviceId]);
 
   const claimDevice = useCallback(async (deviceId: string) => {
     try {
@@ -161,6 +166,11 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
   }, [parseApiError, refreshDevices]);
 
   const loadAvailableLogDates = useCallback(async () => {
+    if (!isAuthenticated) {
+      setAvailableLogDates([]);
+      return;
+    }
+
     try {
       setLastError(null);
       setLogsError(null);
@@ -172,9 +182,15 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
       setLogsError(message);
       setAvailableLogDates([]);
     }
-  }, [parseApiError]);
+  }, [isAuthenticated, parseApiError]);
 
   const loadLogsByRange = useCallback(async (startDate: string, endDate: string) => {
+    if (!isAuthenticated) {
+      setHistoricalLogs([]);
+      setLiveLogs([]);
+      return;
+    }
+
     try {
       setIsLoadingLogs(true);
       setLogsError(null);
@@ -196,12 +212,17 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoadingLogs(false);
     }
-  }, [dedupeLogs, parseApiError, selectedDeviceId, toDeviceLog]);
+  }, [dedupeLogs, isAuthenticated, parseApiError, selectedDeviceId, toDeviceLog]);
 
   const scanAndConnect = useCallback(async () => {
+    if (!isAuthenticated) {
+      setConnectionState('disconnected');
+      return;
+    }
+
     setConnectionState('connecting');
     await refreshDevices();
-  }, [refreshDevices]);
+  }, [isAuthenticated, refreshDevices]);
 
   const disconnect = () => {
     setConnectionState('disconnected');
@@ -209,19 +230,33 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setConnectionState('disconnected');
+      setDevices([]);
+      setSelectedDeviceId(null);
+      setLatestVitals(null);
+      setRecentAlerts([]);
+      setAvailableLogDates([]);
+      setHistoricalLogs([]);
+      setLiveLogs([]);
+      return;
+    }
+
     scanAndConnect();
-  }, [scanAndConnect]);
+  }, [isAuthenticated, scanAndConnect]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const interval = setInterval(() => {
       refreshDevices();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [refreshDevices]);
+  }, [isAuthenticated, refreshDevices]);
 
   useEffect(() => {
-    if (!selectedDeviceId) {
+    if (!isAuthenticated || !selectedDeviceId) {
       setLiveLogs([]);
       setHistoricalLogs([]);
       return;
@@ -243,7 +278,7 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
     }, 15000);
 
     return () => clearInterval(interval);
-  }, [selectedDeviceId, connectionState, refreshLatestVitals, refreshRecentAlerts, loadAvailableLogDates, loadLogsByRange]);
+  }, [isAuthenticated, selectedDeviceId, connectionState, refreshLatestVitals, refreshRecentAlerts, loadAvailableLogDates, loadLogsByRange]);
 
   const value = useMemo<RaspberryPiContextType>(
     () => ({
