@@ -104,8 +104,8 @@ export default function PaymentDeleteScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F8F9FA' },
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { marginLeft: 4, marginTop: 20 },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop: 20 },
     content: { flex: 1, padding: 20 },
     previewWrap: { alignItems: 'center', marginBottom: 24, marginTop: 4 },
     dangerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,

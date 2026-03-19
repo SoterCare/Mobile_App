@@ -135,8 +135,18 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F7F7F7',
     },
-    headerBackBtn: { marginLeft: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
+    headerBackBtn: { 
+        marginLeft: 4,
+        marginTop: 20,
+        },  
+
+    headerTitle: { 
+        fontSize: 20, 
+        fontWeight: '700', 
+        color: '#333', 
+        marginLeft: 12, 
+        marginTop: 20 },
+
     scrollContent: {
         padding: 20,
         paddingBottom: 48,

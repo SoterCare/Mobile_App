@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         marginTop: 30, // More space at the top to accommodate the higher avatar
         position: 'relative',
-        paddingHorizontal: 1, // Fixes slight shadow clipping
+        paddingHorizontal: -1, // Fixes slight shadow clipping
     },
     cardContainer: {
         backgroundColor: '#FFFFFF',

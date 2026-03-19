@@ -109,8 +109,8 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
             style={[
               styles.verticalLine,
               {
-                height: lineHeight + (ICON_SIZE / 2), // Draw past the last icon to mirror image
-                top: CARD_HEIGHT / 2,
+                height: lineHeight + (ICON_SIZE / 1), // Draw past the last icon to mirror image
+                top: CARD_HEIGHT / 1.1,
                 left: ICON_SIZE / 2 - 2, // 2 is half of the border width of 4
               }
             ]}
@@ -188,20 +188,24 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
+    paddingHorizontal: 4,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    paddingHorizontal: 4
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#4A4A4A',
+    marginTop: 10,
   },
   filterButton: {
     padding: 4,
+    marginTop: 10,
   },
   timeline: {
     position: 'relative',
