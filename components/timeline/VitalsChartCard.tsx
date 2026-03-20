@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   expandButtonAbsolute: {
     position: 'absolute',
-    bottom: -6,
+    bottom: 0,
     right: 4,
     padding: 6,
     zIndex: 10,

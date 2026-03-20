@@ -25,13 +25,13 @@ import {
 import { TimelineColors } from '../../../theme/colors';
 import { Shadows } from '../../../theme/shadows';
 import {
-  getVitalData,
   vitalYAxisConfig,
   VitalType,
   PeriodType,
   ActivityEvent,
 } from '../../../data/mockVitals';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
+import { timelineService } from '@/services/timelineService';
 
 const BACKGROUND_COLOR = '#F6F6F6';
 
@@ -49,12 +49,10 @@ export default function TimelineScreen() {
   const router = useRouter();
   const {
     selectedDeviceId,
-    availableLogDates,
     historicalLogs,
     liveLogs,
     logsError,
     isLoadingLogs,
-    loadAvailableLogDates,
     loadLogsByRange,
     connectionState,
   } = useRaspberryPi();
@@ -71,12 +69,13 @@ export default function TimelineScreen() {
   const [chartExpandedVisible, setChartExpandedVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
+  const [timelineDateOptions, setTimelineDateOptions] = useState<string[]>([]);
+
   const toDayDisplay = useCallback((iso: string) => iso.replace(/-/g, '/').slice(0, 10), []);
 
   const dayOptions = useMemo(() => {
-    if (!availableLogDates.length) return [];
-    return availableLogDates.map(toDayDisplay);
-  }, [availableLogDates, toDayDisplay]);
+    return Array.isArray(timelineDateOptions) ? timelineDateOptions.map(toDayDisplay) : [];
+  }, [timelineDateOptions, toDayDisplay]);
 
   const monthOptions = useMemo(() => {
     const unique = new Set(dayOptions.map((day) => day.slice(0, 7)));
@@ -91,8 +90,12 @@ export default function TimelineScreen() {
   }, [dayOptions]);
 
   React.useEffect(() => {
-    loadAvailableLogDates();
-  }, [loadAvailableLogDates]);
+    if (!selectedDeviceId) return;
+    // Always fetch timelineDateOptions using 'day' period so monthOptions and customRangeOptions can be correctly derived from it.
+    timelineService.getDateOptions(selectedDeviceId, 'day').then(res => {
+      setTimelineDateOptions(res.options || []);
+    }).catch(e => console.error('Failed to load date options:', e));
+  }, [selectedDeviceId]);
 
   React.useEffect(() => {
     if (!selectedDay && dayOptions.length > 0) {
@@ -106,38 +109,68 @@ export default function TimelineScreen() {
     }
   }, [dayOptions, monthOptions, customRangeOptions, selectedDay, selectedMonth, selectedRange]);
 
-  const fetchLogsForSelection = useCallback(async (mode: PeriodType, option: string) => {
-    if (!option) return;
+  const [vitalsData, setVitalsData] = useState<any>(null);
+  const [timelineEvents, setTimelineEvents] = useState<ActivityEvent[]>([]);
+  const [stats, setStats] = useState<any>(null);
 
-    const toIsoStart = (value: string) => new Date(`${value.replace(/\//g, '-')}T00:00:00.000Z`);
-    const toIsoEnd = (value: string) => new Date(`${value.replace(/\//g, '-')}T23:59:59.999Z`);
+  const fetchTimelineData = useCallback(async () => {
+    if (!selectedDeviceId) return;
+    
+    const dateQuery = period === 'day' ? selectedDay : (period === 'month' ? selectedMonth : selectedRange);
+    
+    // Disable fetching initially until a date is resolved from the options array
+    if (!dateQuery) return;
+    if (period === 'month' && !selectedMonth) return;
+    
+    // Format dates for backend expectations (YYYY-MM-DD)
+    const rawFormattedDate = dateQuery ? dateQuery.replace(/\//g, '-') : '';
+    const formattedMonth = selectedMonth ? selectedMonth.replace(/\//g, '-') : '';
+    
+    let apiDate = rawFormattedDate;
+    let apiStartDate;
+    let apiEndDate;
 
-    if (mode === 'day') {
-      const start = toIsoStart(option);
-      const end = toIsoEnd(option);
-      await loadLogsByRange(start.toISOString(), end.toISOString());
-      return;
+    if (period === 'custom' && rawFormattedDate.includes(' - ')) {
+      const [start, end] = rawFormattedDate.split(' - ');
+      apiStartDate = start;
+      apiEndDate = end;
+      apiDate = '';
+    } else if (period === 'month' && rawFormattedDate.length === 7) {
+      apiDate = `${rawFormattedDate}-01`;
     }
 
-    if (mode === 'month') {
-      const [year, month] = option.split('/').map((v) => Number(v));
-      const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
-      const end = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
-      await loadLogsByRange(start.toISOString(), end.toISOString());
-      return;
-    }
+    // Map vital type to backend metric
+    const metricMap: Record<string, string> = { temp: 'temperature', heart: 'heart_rate', spo2: 'spo2' };
+    const apiMetric = metricMap[vital] || vital;
+    
+    // Map UI filter to backend expected filter
+    const filterMap: Record<string, string> = { All: 'all', Movements: 'movement', Falls: 'fall', Urine: 'urine' };
+    const apiFilter = filterMap[activeFilter] || 'all';
 
-    const [rawStart, rawEnd] = option.split(' - ');
-    const start = toIsoStart(rawStart);
-    const end = toIsoEnd(rawEnd || rawStart);
-    await loadLogsByRange(start.toISOString(), end.toISOString());
-  }, [loadLogsByRange]);
+    setIsLoading(true);
+
+    try {
+      const [vitalsResponse, eventsResponse, statsResponse] = await Promise.all([
+        timelineService.getVitalsTimeline(selectedDeviceId, apiMetric, period, apiDate, apiStartDate, apiEndDate),
+        timelineService.getEventsTimeline(selectedDeviceId, period, apiDate, apiFilter, apiStartDate, apiEndDate),
+        period === 'month' ? timelineService.getTimelineStats(selectedDeviceId, period, apiDate, formattedMonth) : Promise.resolve(null)
+      ]);
+      
+      setVitalsData(vitalsResponse);
+      setTimelineEvents(eventsResponse?.events || []);
+      if (statsResponse) {
+        setStats(statsResponse);
+      }
+    } catch (e) {
+      console.error('Failed to fetch timeline data', e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedDeviceId, period, selectedDay, selectedMonth, selectedRange, activeFilter, vital]);
 
   React.useEffect(() => {
-    const selection = period === 'day' ? selectedDay : period === 'month' ? selectedMonth : selectedRange;
-    if (!selection || !selectedDeviceId) return;
-    fetchLogsForSelection(period, selection);
-  }, [period, selectedDay, selectedMonth, selectedRange, selectedDeviceId, fetchLogsForSelection]);
+    fetchTimelineData();
+  }, [fetchTimelineData]);
 
   // Get current date display text based on period
   const dateDisplayText = useMemo(() => {
@@ -163,72 +196,32 @@ export default function TimelineScreen() {
     }
   }, [period, dayOptions, monthOptions, customRangeOptions]);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   // Get vital data for chart
   const chartData = useMemo(() => {
-    const points = historicalLogs
-      .filter((log) => typeof log.temperature === 'number' || (log.data as any)?.temperature)
-      .slice(0, 24)
-      .map((log) => {
-        const ts = String(log.timestamp || '');
-        const label = ts ? new Date(ts).toISOString().slice(11, 16) : '--:--';
-        const value = Number(log.temperature ?? (log.data as any)?.temperature ?? 0);
-        return { xLabel: label, value };
-      })
-      .reverse();
-
-    return points.length > 0 ? points : getVitalData(vital, period);
-  }, [historicalLogs, vital, period]);
+    if (vitalsData?.points) return vitalsData.points;
+    return [];
+  }, [vitalsData]);
 
   // Get y-axis config for current vital
   const yAxisConfig = useMemo(() => {
+    if (vitalsData?.yAxis) return vitalsData.yAxis;
     return vitalYAxisConfig[vital];
-  }, [vital]);
+  }, [vital, vitalsData]);
 
   // Get filtered activity events
-  const filteredEvents = useMemo((): ActivityEvent[] => {
-    const sourceLogs = [...liveLogs, ...historicalLogs].slice(0, 40);
-    const mapped: ActivityEvent[] = sourceLogs.map((log, index) => {
-      const rawType = String(log.type || log.eventType || '').toLowerCase();
-      const type: ActivityEvent['type'] = rawType.includes('fall')
-        ? 'fall'
-        : rawType.includes('connect')
-          ? 'connected'
-          : rawType.includes('disconnect')
-            ? 'disconnected'
-            : 'movement';
-
-      return {
-        id: String(log.id || `${log.timestamp}-${index}`),
-        type,
-        label: String(log.title || log.type || 'Activity Detected'),
-        time: log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : '--:--',
-      };
-    });
-
-    if (mapped.length === 0 && activeFilter === 'All') {
-      return [];
-    }
-
-    if (activeFilter === 'All') {
-      return mapped;
-    }
-    const filterMap: Record<string, ActivityEvent['type']> = {
-      Movements: 'movement',
-      Falls: 'fall',
-      Urine: 'movement',
-    };
-    const filterType = filterMap[activeFilter];
-    return mapped.filter((event) => event.type === filterType);
-  }, [activeFilter, historicalLogs, liveLogs]);
+  const filteredEvents = timelineEvents;
 
   // Get activity stats based on period
   const activityStats = useMemo(() => {
+    if (stats) return stats;
     return {
-      movements: filteredEvents.filter((event) => event.type === 'movement').length,
-      falls: filteredEvents.filter((event) => event.type === 'fall').length,
-      urine: filteredEvents.filter((event) => event.label.toLowerCase().includes('urine')).length,
+      movements: 0,
+      falls: 0,
+      urine: 0,
     };
-  }, [filteredEvents]);
+  }, [stats]);
 
   // Get activity section title based on period
   const activityTitle = useMemo(() => {
@@ -260,11 +253,9 @@ export default function TimelineScreen() {
           setSelectedRange(option);
           break;
       }
-
-      await fetchLogsForSelection(period, option);
       setDatePickerVisible(false);
     },
-    [period, fetchLogsForSelection]
+    [period]
   );
 
   const handleExportReport = useCallback(() => {
@@ -335,7 +326,7 @@ export default function TimelineScreen() {
 
           <View style={styles.statusRow}>
             <Text style={styles.statusText}>Backend Sync: {connectionState}</Text>
-            {isLoadingLogs ? <Text style={styles.statusText}>Loading logs...</Text> : null}
+            {isLoading ? <Text style={styles.statusText}>Loading timeline...</Text> : null}
             {logsError ? <Text style={styles.statusError}>{logsError}</Text> : null}
           </View>
 
@@ -383,7 +374,7 @@ export default function TimelineScreen() {
           style={styles.modalOverlay}
           onPress={() => setDatePickerVisible(false)}
         >
-          <View style={[styles.modalContent, Shadows.card]}>
+          <Pressable style={[styles.modalContent, Shadows.card]}>
             <Text style={styles.modalTitle}>Select Date</Text>
             {datePickerOptions.map((option) => (
               <TouchableOpacity
@@ -406,7 +397,7 @@ export default function TimelineScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </Pressable>
         </Pressable>
       </Modal>
 
