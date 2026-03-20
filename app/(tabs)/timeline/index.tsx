@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Calendar } from 'react-native-calendars';
 import {
   SegmentedControl,
   VitalsChartCard,
@@ -59,8 +60,8 @@ export default function TimelineScreen() {
 
   const [period, setPeriod] = useState<PeriodType>('day');
   const [vital, setVital] = useState<VitalType>('temp'); // Defaulting to temp
-  const [selectedDay, setSelectedDay] = useState<string>('');
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedDay, setSelectedDay] = useState<string>(new Date().toISOString().slice(0, 10).replace(/-/g, '/'));
+  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7).replace(/-/g, '/'));
   const [selectedRange, setSelectedRange] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState('All');
 
@@ -140,7 +141,7 @@ export default function TimelineScreen() {
     }
 
     // Map vital type to backend metric
-    const metricMap: Record<string, string> = { temp: 'temperature', heart: 'heart_rate', spo2: 'spo2' };
+    const metricMap: Record<string, string> = { heart: 'heart_rate', spo2: 'spo2' };
     const apiMetric = metricMap[vital] || vital;
     
     // Map UI filter to backend expected filter
@@ -200,9 +201,12 @@ export default function TimelineScreen() {
 
   // Get vital data for chart
   const chartData = useMemo(() => {
+    console.log('--- DEBUG VITALS ---');
+    console.log('Vital Type:', vital, 'Period:', period);
+    console.log('Response Payload Points:', vitalsData?.points);
     if (vitalsData?.points) return vitalsData.points;
     return [];
-  }, [vitalsData]);
+  }, [vitalsData, vital, period]);
 
   // Get y-axis config for current vital
   const yAxisConfig = useMemo(() => {
@@ -375,28 +379,44 @@ export default function TimelineScreen() {
           onPress={() => setDatePickerVisible(false)}
         >
           <Pressable style={[styles.modalContent, Shadows.card]}>
-            <Text style={styles.modalTitle}>Select Date</Text>
-            {datePickerOptions.map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={styles.modalOption}
-                onPress={() => handleDateSelect(option)}
-              >
-                <Text
-                  style={[
-                    styles.modalOptionText,
-                    option ===
-                    (period === 'day'
-                      ? selectedDay
-                      : period === 'month'
+            <Text style={styles.modalTitle}>Select {period === 'day' ? 'Date' : 'Period'}</Text>
+            
+            {period === 'day' ? (
+              <Calendar
+                current={selectedDay.replace(/\//g, '-')}
+                onDayPress={(day: any) => {
+                  handleDateSelect(day.dateString.replace(/-/g, '/'));
+                }}
+                markedDates={{
+                  [selectedDay.replace(/\//g, '-')]: { selected: true, selectedColor: TimelineColors.primaryCyan }
+                }}
+                theme={{
+                  arrowColor: TimelineColors.primaryCyan,
+                  todayTextColor: TimelineColors.primaryCyan,
+                  selectedDayBackgroundColor: TimelineColors.primaryCyan,
+                }}
+              />
+            ) : (
+              datePickerOptions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={styles.modalOption}
+                  onPress={() => handleDateSelect(option)}
+                >
+                  <Text
+                    style={[
+                      styles.modalOptionText,
+                      option ===
+                      (period === 'month'
                         ? selectedMonth
                         : selectedRange) && styles.modalOptionTextActive,
-                  ]}
-                >
-                  {option}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                    ]}
+                  >
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              ))
+            )}
           </Pressable>
         </Pressable>
       </Modal>
