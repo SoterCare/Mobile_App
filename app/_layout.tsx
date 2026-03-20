@@ -8,8 +8,8 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { VitalsProvider } from '@/contexts/VitalsContext';
 import { RaspberryPiProvider } from '@/contexts/RaspberryPiContext';
 import { reportError } from '@/services/crashReportService';
+import { authService } from '@/services/authService'; // Note: Adjust if authService import was originally here, wait, let me look at the exact text.
 import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
-import { initDatabase } from '@/database/db';
 
 export const unstable_settings = {
   initialRouteName: '(tabs)',
@@ -23,8 +23,7 @@ function RootLayoutNav() {
   const [isSplashAnimationFinished, setIsSplashAnimationFinished] = useState(false);
 
   useEffect(() => {
-    // Initialize Database
-    initDatabase();
+    // Database initialization has been removed
   }, []);
 
   useEffect(() => {
