@@ -69,6 +69,7 @@ export const API_CONFIG = {
   RASPBERRY_PI: {
     // Candidate hosts to scan for Raspberry Pi (in order)
     CANDIDATE_HOSTS: [
+      'sotercare-pi.local',
       'raspberrypi.local',
       '192.168.1.100',
       '192.168.0.100',
@@ -86,6 +87,8 @@ export const API_CONFIG = {
     SCAN_TIMEOUT_MS: 5000,
     // Timeout for WebSocket connection attempt (milliseconds)
     CONNECT_TIMEOUT_MS: 10000,
+    // Request timeout for specific gateway commands
+    REQUEST_TIMEOUT_MS: 10000,
   },
 };
 

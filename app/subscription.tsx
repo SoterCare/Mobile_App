@@ -6,7 +6,6 @@ import {
     TouchableOpacity,
     ScrollView,
     Dimensions,
-    SafeAreaView,
     Platform,
     Alert,
 } from 'react-native';
@@ -55,7 +54,7 @@ export default function SubscriptionScreen() {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <Stack.Screen
                 options={{
                     headerLeft: () => (
@@ -108,7 +107,7 @@ export default function SubscriptionScreen() {
                     const periodLabel = billingCycle === 'monthly' ? plan.monthlyLabel : plan.yearlyLabel;
 
                     return (
-                        <View key={plan.id} style={styles.card}>
+                        <View key={plan.id} style={styles.card as any}>
                             <Text style={styles.planName}>{plan.name}</Text>
 
                             <View style={styles.priceRow}>
@@ -133,7 +132,17 @@ export default function SubscriptionScreen() {
                             <TouchableOpacity
                                 style={styles.subscribeButton}
                                 activeOpacity={0.8}
-                                onPress={() => Alert.alert('Subscribe', `You selected the ${plan.name} plan (${billingCycle}). This feature will be available soon!`)}
+                                onPress={() => {
+                                    if (plan.id === 'free') {
+                                        router.replace('/(tabs)');
+                                        return;
+                                    }
+                                    Alert.alert(
+                                        'Payment Successful', 
+                                        `You are now subscribed to the ${plan.name} plan!`,
+                                        [{ text: 'Continue to Dashboard', onPress: () => router.replace('/(tabs)') }]
+                                    );
+                                }}
                             >
                                 <Text style={styles.subscribeText}>
                                     {plan.id === 'free' ? 'Current Plan' : 'Subscribe'}
@@ -145,7 +154,7 @@ export default function SubscriptionScreen() {
                     );
                 })}
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -202,11 +211,12 @@ const styles = StyleSheet.create({
     },
     card: {
         width: CARD_WIDTH,
-        minHeight: 540,
+        minHeight: 480,
         backgroundColor: '#FFF',
         borderRadius: 30,
-        padding: 30,
+        padding: 24,
         marginRight: CARD_MARGIN,
+        justifyContent: 'space-between',
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
