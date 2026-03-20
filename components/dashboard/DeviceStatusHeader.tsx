@@ -2,15 +2,17 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
+import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
 export const DeviceStatusHeader = () => {
     const {
         devices,
         selectedDeviceId,
         setSelectedDeviceId,
-        connectionState,
         scanAndConnect,
     } = useRaspberryPi();
+    
+    const { isConnected: isRealtimeConnected, reconnect } = useRealtimeVitals(selectedDeviceId || undefined);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const selectedDevice = useMemo(
@@ -18,8 +20,9 @@ export const DeviceStatusHeader = () => {
         [devices, selectedDeviceId]
     );
 
-    const isConnected = connectionState === 'connected';
-    const isReconnecting = connectionState === 'reconnecting' || connectionState === 'connecting';
+    const isConnected = isRealtimeConnected;
+    const connectionState = isConnected ? 'connected' : 'disconnected';
+    const isReconnecting = false;
 
     const handleSelect = (deviceId: string) => {
         setSelectedDeviceId(deviceId);
@@ -58,7 +61,7 @@ export const DeviceStatusHeader = () => {
             {dropdownOpen && (
                 <>
                     {!isConnected && (
-                        <TouchableOpacity style={styles.retryButton} onPress={scanAndConnect} activeOpacity={0.8}>
+                        <TouchableOpacity style={styles.retryButton} onPress={reconnect} activeOpacity={0.8}>
                             <Text style={styles.retryButtonText}>{isReconnecting ? 'Reconnecting...' : 'Reconnect Realtime'}</Text>
                         </TouchableOpacity>
                     )}

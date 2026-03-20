@@ -5,6 +5,7 @@
 export const API_CONFIG = {
   // Base URL - Update this with your backend API URL
   BASE_URL: 'https://unlikely-caryn-sotercare-873e6112.koyeb.app', // Production
+  REALTIME_URL: 'wss://backend.sotercare.com/realtime',
 
   // Request timeout (milliseconds)
   TIMEOUT: 1000000,

@@ -248,11 +248,13 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const interval = setInterval(() => {
-      refreshDevices();
-    }, 30000);
+    // NOTE: Devices polling is disabled to prevent unnecessary HTTPS calls.
+    // refreshDevices will only be called on authentication/mount.
+    // const interval = setInterval(() => {
+    //   refreshDevices();
+    // }, 30000);
 
-    return () => clearInterval(interval);
+    return () => {};
   }, [isAuthenticated, refreshDevices]);
 
   useEffect(() => {
@@ -271,13 +273,9 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
     start.setDate(end.getDate() - 1);
     loadLogsByRange(start.toISOString(), end.toISOString());
 
-    const interval = setInterval(() => {
-      refreshLatestVitals();
-      refreshRecentAlerts();
-      loadLogsByRange(start.toISOString(), end.toISOString());
-    }, 15000);
-
-    return () => clearInterval(interval);
+    // NOTE: The 15-second polling interval was removed in favor of the real-time websocket connection.
+    
+    return () => {};
   }, [isAuthenticated, selectedDeviceId, connectionState, refreshLatestVitals, refreshRecentAlerts, loadAvailableLogDates, loadLogsByRange]);
 
   const value = useMemo<RaspberryPiContextType>(
