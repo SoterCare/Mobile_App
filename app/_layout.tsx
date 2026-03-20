@@ -8,7 +8,6 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { VitalsProvider } from '@/contexts/VitalsContext';
 import { RaspberryPiProvider } from '@/contexts/RaspberryPiContext';
 import { reportError } from '@/services/crashReportService';
-import { authService } from '@/services/authService'; // Note: Adjust if authService import was originally here, wait, let me look at the exact text.
 import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
 
 export const unstable_settings = {
