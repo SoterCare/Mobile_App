@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 import {
   SegmentedControl,
@@ -290,7 +290,7 @@ export default function TimelineScreen() {
           <View style={styles.topHeader}>
             <TouchableOpacity
               style={[styles.exportButton]}
-              onPress={handleExportReport}
+              onPress={() => router.push('/export-report' as any)}
               activeOpacity={0.7}
             >
               <Text style={styles.exportButtonText}>Export Report</Text>

@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
 
@@ -14,6 +14,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import apiClient from '@/api/client';
 import { API_CONFIG } from '@/api/config/api.config';
 import { HealthLogItem, healthLogsService } from '@/services/healthLogsService';
+import { cleanSummaryText } from '@/services/summaryService';
 
 export default function ExportReportScreen() {
     const router = useRouter();
@@ -214,8 +215,9 @@ export default function ExportReportScreen() {
             csvContent += rowStr + "\n";
         });
 
-        const fileUri = FileSystem.documentDirectory + `SoterCare_Report_${Date.now()}.csv`;
-        await FileSystem.writeAsStringAsync(fileUri, csvContent, { encoding: FileSystem.EncodingType.UTF8 });
+        const LegacyFS = FileSystem as any;
+        const fileUri = LegacyFS.documentDirectory + `SoterCare_Report_${Date.now()}.csv`;
+        await LegacyFS.writeAsStringAsync(fileUri, csvContent, { encoding: LegacyFS.EncodingType.UTF8 });
 
         if (await Sharing.isAvailableAsync()) {
             await Sharing.shareAsync(fileUri);
@@ -226,20 +228,48 @@ export default function ExportReportScreen() {
 
     const generateAndSharePDF = async (data: any) => {
         const isNewFormat = data.meta && data.report;
-        const dataPoints = isNewFormat ? [] : data;
+        const dataPoints = isNewFormat ? (data.logs || []) : data;
 
-        let headers = "<th>Timestamp</th>";
-        if (selectedMetrics.temperature) headers += "<th>Temperature (°C)</th>";
-        if (selectedMetrics.activity) headers += "<th>Activity</th>";
+        const parseDate = (ts: any) => {
+            if (!ts) return "N/A";
+            if (typeof ts === 'object' && ts.low !== undefined && ts.high !== undefined) {
+                return new Date(ts.high * 4294967296 + (ts.low >>> 0)).toLocaleString();
+            }
+            if (typeof ts === 'number') {
+                return new Date(ts > 100000000000 ? ts : ts * 1000).toLocaleString();
+            }
+            return String(ts);
+        };
+
+        let headers = "<th>Time</th>";
+        headers += "<th>Skin Temp (°C)</th>";
+        headers += "<th>Room Temp (°C)</th>";
+        headers += "<th>Moisture (%)</th>";
+        headers += "<th>Activity</th>";
+        headers += "<th>Alerts</th>";
 
         let rows = '';
-        if (!isNewFormat && Array.isArray(dataPoints)) {
+        if (Array.isArray(dataPoints) && dataPoints.length > 0) {
             rows = dataPoints.map((row: any) => {
-                let r = `<tr><td>${row.timestamp}</td>`;
-                if (selectedMetrics.temperature) r += `<td>${row.temperature}</td>`;
-                if (selectedMetrics.activity) r += `<td>${row.activity}</td>`;
-                r += "</tr>";
-                return r;
+                const time = parseDate(row.timestamp || row.createdAt);
+                const temp = row.temperature ?? row.temp ?? 'N/A';
+                const ambient = row.ambient_temp ?? row.ambientTemp ?? 'N/A';
+                const moist = row.moisture ?? 'N/A';
+                const activity = row.gait_label ?? row.gaitLabel ?? row.activity ?? 'N/A';
+                
+                const alerts = [];
+                if (row.fall_alert || row.fallAlert) alerts.push("FALL");
+                if (row.sos) alerts.push("SOS");
+                const alertStr = alerts.length > 0 ? alerts.join(", ") : "None";
+
+                return `<tr>
+                    <td>${time}</td>
+                    <td>${temp !== 'N/A' ? Number(temp).toFixed(1) : 'N/A'}</td>
+                    <td>${ambient !== 'N/A' ? Number(ambient).toFixed(1) : 'N/A'}</td>
+                    <td>${moist !== 'N/A' ? Number(moist).toFixed(0) : 'N/A'}</td>
+                    <td>${activity}</td>
+                    <td style="color: ${alerts.length > 0 ? '#C53030' : '#4A5568'}; font-weight: ${alerts.length > 0 ? 'bold' : 'normal'}">${alertStr}</td>
+                </tr>`;
             }).join('');
         }
 
@@ -260,7 +290,7 @@ export default function ExportReportScreen() {
         const aiReportHTML = isNewFormat && data.report
             ? `<div class="ai-report">
                 <h2 style="color: #2c5282; border-bottom: 2px solid #2c5282; padding-bottom: 10px; margin-top: 30px;">AI Clinical Analysis</h2>
-                <div class="report-content">${convertMarkdownToHTML(data.report)}</div>
+                <div class="report-content">${convertMarkdownToHTML(cleanSummaryText(data.report))}</div>
                </div>`
             : '';
 
@@ -292,7 +322,7 @@ export default function ExportReportScreen() {
                     <p><strong>Device:</strong> ${selectedDevice}</p>
                     <p><strong>Date Range:</strong> ${startDate.toLocaleDateString()} - ${(isSingleDate ? startDate : endDate).toLocaleDateString()}</p>
                     ${metaSummary}
-                    ${!isNewFormat ? `<table><tr>${headers}</tr>${rows}</table>` : ''}
+                    ${rows ? `<table><tr>${headers}</tr>${rows}</table>` : ''}
                     ${aiReportHTML}
                 </body>
             </html>
