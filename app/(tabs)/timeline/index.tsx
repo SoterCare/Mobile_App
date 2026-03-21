@@ -298,6 +298,9 @@ export default function TimelineScreen() {
                 name="chevron-forward"
                 size={14}
                 color={TimelineColors.textMedium}
+                marginTop={3} 
+                marginRight={-4} 
+                marginLeft={2}
               />
             </TouchableOpacity>
           </View>

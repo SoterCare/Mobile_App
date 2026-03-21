@@ -110,6 +110,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.05,
         shadowRadius: 10,
+        width: '102%',
+        marginLeft: -4,
     },
     cardContent: {
         paddingHorizontal: 20,

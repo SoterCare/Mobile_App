@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.82; 
+const CARD_WIDTH = width - 40;
 const CARD_MARGIN = 16;
 
 const PLANS = [
@@ -70,7 +70,7 @@ export default function SubscriptionScreen() {
                 }}
             />
 
-            {/* ── Monthly / Yearly toggle (White with shadow) ── */}
+            {/* ── Monthly / Yearly toggle ── */}
             <View style={styles.toggleContainer}>
                 <View style={styles.toggleBg}>
                     <TouchableOpacity
@@ -94,7 +94,7 @@ export default function SubscriptionScreen() {
                 </View>
             </View>
 
-            {/* ── Horizontal scrolling for all three cards ── */}
+            {/* ── Horizontal scrolling cards ── */}
             <ScrollView
                 horizontal
                 snapToInterval={CARD_WIDTH + CARD_MARGIN}
@@ -154,13 +154,22 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F8F9FA',
     },
-    // Spacing matched to Temperature and Language screens
-    headerBackBtn: { marginLeft: 4 }, 
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12 },
-
+    headerBackBtn: {
+        marginLeft: -4,
+        marginTop: 20,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#333',
+        marginLeft: 12,
+        marginTop: 20,
+    },
     toggleContainer: {
         alignItems: 'center',
         paddingVertical: 25,
+        width: '119%',
+        marginLeft: -40,
     },
     toggleBg: {
         flexDirection: 'row',
@@ -195,9 +204,9 @@ const styles = StyleSheet.create({
     activeTabText: {
         color: '#FFF',
     },
-
     scrollArea: {
-        paddingHorizontal: 20,
+        paddingLeft: 20,
+        paddingRight: 20,
         paddingBottom: 60,
     },
     card: {

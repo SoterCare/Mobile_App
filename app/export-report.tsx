@@ -22,7 +22,7 @@ export default function ExportReportScreen() {
     const [showDeviceDropdown, setShowDeviceDropdown] = useState(false);
     const devices = ['Device 01', 'Device 02'];
 
-    const [rangeMode, setRangeMode] = useState<'day' | 'week' | 'month'>('day');
+    const [isSingleDate, setIsSingleDate] = useState(false);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [hasSelectedDate, setHasSelectedDate] = useState(false);
@@ -53,37 +53,12 @@ export default function ExportReportScreen() {
         return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999));
     };
 
-    const getRangeFromMode = (baseDate: Date) => {
-        const dayStart = toUtcStartOfDay(baseDate);
-        const dayEnd = toUtcEndOfDay(baseDate);
-
-        if (rangeMode === 'day') {
-            return { start: dayStart, end: dayEnd };
-        }
-
-        if (rangeMode === 'week') {
-            const weekStart = new Date(baseDate);
-            const diffToMonday = (weekStart.getDay() + 6) % 7;
-            weekStart.setDate(weekStart.getDate() - diffToMonday);
-
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
-
-            return {
-                start: toUtcStartOfDay(weekStart),
-                end: toUtcEndOfDay(weekEnd),
-            };
-        }
-
-        const monthStart = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
-        const monthEnd = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+    const effectiveRange = useMemo(() => {
         return {
-            start: toUtcStartOfDay(monthStart),
-            end: toUtcEndOfDay(monthEnd),
+            start: toUtcStartOfDay(startDate),
+            end: isSingleDate ? toUtcEndOfDay(startDate) : toUtcEndOfDay(endDate),
         };
-    };
-
-    const effectiveRange = useMemo(() => getRangeFromMode(startDate), [startDate, rangeMode]);
+    }, [startDate, endDate, isSingleDate]);
 
     React.useEffect(() => {
         const fetchDates = async () => {
@@ -177,7 +152,7 @@ export default function ExportReportScreen() {
                 device: selectedDevice,
                 startDate: effectiveRange.start.toISOString(),
                 endDate: effectiveRange.end.toISOString(),
-                isSingleDate: rangeMode === 'day',
+                isSingleDate: isSingleDate,
                 metrics: {
                     heartRate: false,
                     spo2: false,
@@ -315,7 +290,7 @@ export default function ExportReportScreen() {
                 <body>
                     <h1>SoterCare Medical Report</h1>
                     <p><strong>Device:</strong> ${selectedDevice}</p>
-                    <p><strong>Date Range:</strong> ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</p>
+                    <p><strong>Date Range:</strong> ${startDate.toLocaleDateString()} - ${(isSingleDate ? startDate : endDate).toLocaleDateString()}</p>
                     ${metaSummary}
                     ${!isNewFormat ? `<table><tr>${headers}</tr>${rows}</table>` : ''}
                     ${aiReportHTML}
@@ -399,19 +374,6 @@ export default function ExportReportScreen() {
                 {/* Select Date */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Select Date</Text>
-                    <View style={styles.rangeModeRow}>
-                        {(['day', 'week', 'month'] as const).map((mode) => (
-                            <TouchableOpacity
-                                key={mode}
-                                style={[styles.rangeModeButton, rangeMode === mode && styles.rangeModeButtonActive]}
-                                onPress={() => setRangeMode(mode)}
-                            >
-                                <Text style={[styles.rangeModeButtonText, rangeMode === mode && styles.rangeModeButtonTextActive]}>
-                                    {mode.toUpperCase()}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
 
                     <View style={styles.statusRow}>
                         {isLoadingDates ? (
@@ -431,6 +393,7 @@ export default function ExportReportScreen() {
                                             if (sorted.length > 0) {
                                                 const latestDate = new Date(sorted[sorted.length - 1]);
                                                 setStartDate(latestDate);
+                                                setEndDate(latestDate);
                                                 setHasSelectedDate(true);
                                             }
                                         } catch (error) {
@@ -453,7 +416,9 @@ export default function ExportReportScreen() {
                         )}
                     </View>
 
+                    {/* Start / End Date row */}
                     <View style={styles.dateRow}>
+                        {/* Start Date */}
                         <TouchableOpacity
                             onPress={() => setShowPicker('start')}
                             activeOpacity={0.8}
@@ -468,26 +433,62 @@ export default function ExportReportScreen() {
                                 <IconSymbol name="chevron.right" size={18} color="#bbb" style={styles.dateButtonChevron} />
                             </View>
                         </TouchableOpacity>
+
+                        {/* End Date — disabled when isSingleDate */}
                         <TouchableOpacity
-                            activeOpacity={1}
+                            onPress={() => { if (!isSingleDate) setShowPicker('end'); }}
+                            activeOpacity={isSingleDate ? 1 : 0.8}
                             style={styles.dateButton}
                         >
-                            <View style={styles.dateButtonContentDisabled as any}>
-                                <Text style={!hasSelectedDate ? styles.dateButtonPlaceholder : styles.dateButtonDisabled}>
+                            <View style={(isSingleDate ? styles.dateButtonContentDisabled : styles.dateButtonContent) as any}>
+                                <Text style={
+                                    !hasSelectedDate
+                                        ? styles.dateButtonPlaceholder
+                                        : isSingleDate
+                                            ? styles.dateButtonDisabled
+                                            : styles.dateButtonText
+                                }>
                                     {hasSelectedDate
-                                        ? effectiveRange.end.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-                                        : 'Range End'}
+                                        ? (isSingleDate ? startDate : endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                                        : 'End Date'}
                                 </Text>
-                                <IconSymbol name="chevron.right" size={18} color={'#ddd'} style={styles.dateButtonChevron} />
+                                <IconSymbol
+                                    name="chevron.right"
+                                    size={18}
+                                    color={isSingleDate ? '#ddd' : '#bbb'}
+                                    style={styles.dateButtonChevron}
+                                />
                             </View>
                         </TouchableOpacity>
                     </View>
 
+                    {/* Single Date checkbox */}
+                    <TouchableOpacity
+                        style={styles.singleDateRow}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                            setIsSingleDate(prev => {
+                                if (!prev) setEndDate(startDate);
+                                return !prev;
+                            });
+                        }}
+                    >
+                        <View style={[styles.checkbox, isSingleDate && styles.checkboxChecked]}>
+                            {isSingleDate && <IconSymbol name="checkmark" size={14} color="#FFF" />}
+                        </View>
+                        <Text style={styles.checkboxLabel}>Single Date</Text>
+                    </TouchableOpacity>
+
+                    {/* Calendar Picker */}
                     {showPicker && (
                         <View style={{ backgroundColor: '#fff', borderRadius: 20, padding: 10, marginTop: 10 }}>
                             <Calendar
                                 current={toLocalDateString(showPicker === 'start' ? startDate : endDate)}
-                                minDate={minDate ? toLocalDateString(minDate) : undefined}
+                                minDate={
+                                    showPicker === 'end'
+                                        ? toLocalDateString(startDate)
+                                        : (minDate ? toLocalDateString(minDate) : undefined)
+                                }
                                 maxDate={maxDate ? toLocalDateString(maxDate) : undefined}
                                 onDayPress={(day: any) => {
                                     const date = new Date(day.dateString);
@@ -495,25 +496,35 @@ export default function ExportReportScreen() {
 
                                     setHasSelectedDate(true);
 
-                                    const range = getRangeFromMode(date);
-                                    setStartDate(date);
-                                    setEndDate(range.end);
+                                    if (showPicker === 'start') {
+                                        setStartDate(date);
+                                        if (isSingleDate) {
+                                            setEndDate(date);
+                                        } else if (date > endDate) {
+                                            setEndDate(date);
+                                        }
+                                    } else {
+                                        if (date >= startDate) setEndDate(date);
+                                    }
+
                                     setShowPicker(null);
                                 }}
                                 markingType={'period'}
                                 markedDates={(() => {
                                     const marks: any = {};
-                                    const sStr = toLocalDateString(effectiveRange.start);
-                                    const eStr = toLocalDateString(effectiveRange.end);
+                                    const rangeStart = toUtcStartOfDay(startDate);
+                                    const rangeEnd = isSingleDate ? toUtcEndOfDay(startDate) : toUtcEndOfDay(endDate);
+                                    const sStr = toLocalDateString(rangeStart);
+                                    const eStr = toLocalDateString(rangeEnd);
 
-                                    let curr = new Date(effectiveRange.start);
-                                    while (curr <= effectiveRange.end) {
+                                    let curr = new Date(rangeStart);
+                                    while (curr <= rangeEnd) {
                                         const str = toLocalDateString(curr);
                                         marks[str] = {
                                             selected: true,
                                             color: '#91D7E4',
                                             startingDay: str === sStr,
-                                            endingDay: str === eStr
+                                            endingDay: str === eStr,
                                         };
                                         curr.setDate(curr.getDate() + 1);
                                     }
@@ -665,7 +676,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingTop: 20,       
+        paddingTop: 20,
         paddingBottom: 1,
         backgroundColor: '#f2f3f7',
     },
@@ -674,40 +685,15 @@ const styles = StyleSheet.create({
         height: 38,
         alignItems: 'center',
         justifyContent: 'center',
+        marginLeft: -4,
     },
     customHeaderTitle: {
         fontSize: 20,
         fontWeight: '600',
         color: '#333',
-        marginLeft: 8,
+        marginLeft: 4,
     },
 
-    rangeModeRow: {
-        flexDirection: 'row',
-        gap: 10,
-        marginBottom: 12,
-    },
-    rangeModeButton: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 18,
-        paddingVertical: 10,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E4E7EC',
-    },
-    rangeModeButtonActive: {
-        backgroundColor: '#91D7E4',
-        borderColor: '#91D7E4',
-    },
-    rangeModeButtonText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#566074',
-    },
-    rangeModeButtonTextActive: {
-        color: '#FFFFFF',
-    },
     statusRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -751,6 +737,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 6,
+        marginLeft: -4,
     },
     dropdownButtonText: { fontSize: 16, color: '#333333', fontWeight: '500' },
     dropdownMenu: {
@@ -767,6 +754,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.12,
         shadowRadius: 10,
         overflow: 'hidden',
+        marginLeft: -4,
     },
     dropdownItem: {
         flexDirection: 'row',
@@ -793,7 +781,7 @@ const styles = StyleSheet.create({
     },
 
     // Date
-    dateRow: { flexDirection: 'row', gap: 16, marginBottom: 16 },
+    dateRow: { flexDirection: 'row', gap: 26, marginBottom: 16 },
     dateButton: { flex: 1 },
     dateButtonContent: {
         backgroundColor: '#FFFFFF',
@@ -802,12 +790,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 16,
+        paddingRight: 30,
         paddingVertical: 14,
         elevation: 4,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.08,
         shadowRadius: 6,
+        marginLeft: -4,
+        marginRight: -4,
     },
     dateButtonContentDisabled: {
         backgroundColor: '#FCFCFC',
@@ -818,12 +809,29 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 14,
     },
-    dateButtonChevron: { position: 'absolute', right: 16 },
-    dateButtonText: { fontSize: 15, color: '#333333', fontWeight: '500' },
-    dateButtonPlaceholder: { fontSize: 15, color: '#333333', fontWeight: '500' },
-    dateButtonDisabled: { fontSize: 15, color: '#C0C0C0', fontWeight: '500' },
-    singleDateRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    checkbox: { width: 22, height: 22, borderRadius: 6, backgroundColor: '#D9D9D9', justifyContent: 'center', alignItems: 'center' },
+    dateButtonChevron: { position: 'absolute', right: 24 },
+    dateButtonText: { fontSize: 15, color: '#333333', fontWeight: '500', textAlign: 'center' },
+    dateButtonPlaceholder: { fontSize: 15, color: '#AAAAAA', fontWeight: '500', textAlign: 'center' },
+    dateButtonDisabled: { fontSize: 15, color: '#C0C0C0', fontWeight: '500', textAlign: 'center' },
+
+    // Single Date checkbox row
+    singleDateRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        marginTop: 4,
+        marginBottom: 4,
+        marginLeft: -4,
+    },
+    checkbox: {
+        width: 22,
+        height: 22,
+        borderRadius: 6,
+        backgroundColor: '#D9D9D9',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 4,
+    },
     checkboxChecked: { backgroundColor: '#91D7E4' },
     metricCheckboxChecked: { backgroundColor: '#91D7E4' },
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
@@ -860,14 +868,13 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.08,
         shadowRadius: 8,
+        marginLeft: -4,
+        marginRight: -4,
     },
     formatOption: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 26 },
     formatOptionActive: { backgroundColor: '#91D7E4' },
     formatText: { fontSize: 16, fontWeight: '600', color: '#333333' },
     formatTextActive: { color: '#FFFFFF' },
-
-    activityReportRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 20 },
-    activityReportText: { fontSize: 16, fontWeight: '600', color: '#555555' },
 
     // Footer
     footer: { marginTop: 10, alignItems: 'center', gap: 12 },
@@ -876,6 +883,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 12,
+        marginLeft: -4,
+        marginRight: -4,
     },
     logsStateBox: {
         minHeight: 72,
@@ -886,6 +895,8 @@ const styles = StyleSheet.create({
         padding: 14,
         justifyContent: 'center',
         gap: 10,
+        marginLeft: -4,
+        marginRight: -4,
     },
     logsList: {
         gap: 10,
@@ -908,7 +919,7 @@ const styles = StyleSheet.create({
         color: '#334155',
     },
     exportButton: {
-        width: '100%',
+        width: '102%',
         backgroundColor: '#91D7E4',
         borderRadius: 30,
         paddingVertical: 18,
@@ -919,6 +930,10 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 10,
+        marginTop: -20,
+        marginRight: -4,
+        marginLeft: -4,
+
     },
     exportButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 18 },
     footerText: { fontSize: 14, color: '#888888', fontWeight: '500' },

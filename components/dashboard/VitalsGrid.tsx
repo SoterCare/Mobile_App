@@ -35,20 +35,30 @@ export const VitalsGrid = () => {
 
     return (
         <View style={styles.gridContainer}>
-            {/* Row 1: Skin Temp + Moisture */}
+            {/* Row 1: Skin Temp + Room Temp */}
             <View style={styles.gridRow}>
-                {/* Thermometer icon to match Image 2 */}
                 <VitalCard
                     icon="thermometer-outline"
                     iconColor="#f9c45a"
                     backgroundColor="#FFF1D9"
                     value={skinTemp.toFixed(1)}
                     unit="°C"
-                    label="Patient Skin"
-                    sublabel={`Room : ${roomTemp} °C`}
+                    label="Body Temp"
                     valueColor="#f9c45a"
                 />
-                {/* Water drop icon, teal */}
+                <VitalCard
+                    icon="home"
+                    iconColor="#FFAB66"
+                    backgroundColor="#FFF1E0"
+                    value={roomTemp}
+                    unit="°C"
+                    label="Room Temp"
+                    valueColor="#FFAB66"
+                />
+            </View>
+
+            {/* Row 2: Moisture + Gait Analysis */}
+            <View style={styles.gridRow}>
                 <VitalCard
                     icon="water"
                     iconColor="#91D7E4"
@@ -58,10 +68,6 @@ export const VitalsGrid = () => {
                     label="Moisture · Dry"
                     valueColor="#91D7E4"
                 />
-            </View>
-
-            {/* Row 2: Gait Analysis */}
-            <View style={styles.gridRow}>
                 <GaitAnalysisCard value={gaitValue} />
             </View>
         </View>
@@ -94,11 +100,10 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     gaitIconCircle: {
-        width: 54,
-        height: 54,
+        width: 46,
+        height: 46,
         borderRadius: 27,
-        // Soft blue-grey background matching Image 2
-        backgroundColor: '#daeffd',
+        backgroundColor: '#dff1fd',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
