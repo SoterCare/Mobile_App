@@ -5,14 +5,13 @@ import { VitalCard } from './VitalCard';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
-// Gait Analysis card — blue-tinted circle with pulse/activity icon, grey N/A text
 const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
     <View style={styles.gaitCard}>
         <View style={styles.gaitIconCircle}>
             <Ionicons name="pulse-outline" size={24} color="#6BA8C4" />
         </View>
-        <View>
-            <Text style={styles.gaitValue}>{value}</Text>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Text style={styles.gaitValue} numberOfLines={2}>{value}</Text>
             <Text style={styles.gaitLabel}>Gait Analysis</Text>
         </View>
     </View>
@@ -34,7 +33,13 @@ export const VitalsGrid = () => {
             ? roomTempVal.toFixed(1)
             : (skinTemp - 0.5).toFixed(1);
 
-    const gaitValue = realtimeVitals?.gaitAnalysis ?? contextVitals?.gaitAnalysis ?? 'N/A';
+    const gaitRaw = realtimeVitals?.gaitAnalysis ?? contextVitals?.gaitAnalysis ?? 'N/A';
+    const gaitValue = typeof gaitRaw === 'string'
+        ? gaitRaw
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join('\n')
+        : String(gaitRaw);
 
     return (
         <View style={styles.gridContainer}>
@@ -112,14 +117,19 @@ const styles = StyleSheet.create({
         flexShrink: 0,
     },
     gaitValue: {
-        fontSize: 26,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#b3aeae',
-        lineHeight: 32,
+        lineHeight: 24,
+        flexShrink: 1,
+        flexWrap: 'wrap',
+        width: '100%',
+        marginTop: 3,
     },
     gaitLabel: {
         fontSize: 13,
         fontWeight: '400',
         color: '#858282',
+        marginTop: 3,
     },
 });
