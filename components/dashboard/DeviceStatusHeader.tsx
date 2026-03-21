@@ -206,6 +206,8 @@ const styles = StyleSheet.create({
     connectionText: {
         fontSize: 11,
         color: '#999',
+        marginLeft: 2,
+        marginRight: 20,
     },
     deviceDropdown: {
         backgroundColor: '#91D7E4',
