@@ -148,13 +148,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#4A4A4A',
-        marginTop: 2,
+        marginTop: 5,
     },
     timeAndChevron: {
         alignItems: 'flex-end',
         justifyContent: 'center',
-        marginTop: -20,
-        gap: 6,
+        marginTop: -10,
+        gap: 4,
     },
     alertTime: {
         fontSize: 12,
