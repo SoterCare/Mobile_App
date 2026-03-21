@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -14,12 +14,12 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     movement: {
         icon: 'walk',
         iconColor: '#ffffff',
-        bgColor: '#42dfdf', // Cyan
+        bgColor: '#42dfdf',
     },
     fall: {
         icon: 'warning',
         iconColor: '#ffffff',
-        bgColor: '#FF9D93', // Light Red Pastel
+        bgColor: '#FF9D93',
     },
     urine: {
         icon: 'water',
@@ -28,9 +28,30 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     },
 };
 
+const getRelativeTime = (timestamp: string): string => {
+    const now = new Date();
+    const alertTime = new Date(timestamp);
+    const diffMs = now.getTime() - alertTime.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSeconds < 60) return `${diffSeconds}s ago`;
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+};
+
 export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) => {
     const [expanded, setExpanded] = useState(false);
+    const [, forceUpdate] = useState(0);
     const config = ALERT_CONFIG[type];
+
+    useEffect(() => {
+        const interval = setInterval(() => forceUpdate(n => n + 1), 30000); // refresh every 30s
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <TouchableOpacity
@@ -50,7 +71,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
                     <View style={styles.titleRow}>
                         <Text style={styles.alertText}>{title}</Text>
                         <View style={styles.timeAndChevron}>
-                            <Text style={styles.alertTime}>{timestamp}</Text>
+                            <Text style={styles.alertTime}>{getRelativeTime(timestamp)}</Text>
                             {!expanded && (
                                 <Ionicons
                                     name="chevron-down"
@@ -69,7 +90,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
                                 style={[styles.actionBtn, styles.actionBtnPrimary]}
                                 onPress={(e) => { e.stopPropagation?.(); }}
                             >
-                                <Text style={styles.actionBtnTextPrimary}>Attented</Text>
+                                <Text style={styles.actionBtnTextPrimary}>Attended</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.actionBtn, styles.actionBtnSecondary]}
@@ -88,8 +109,8 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
 const styles = StyleSheet.create({
     alertCard: {
         backgroundColor: '#fff',
-        borderRadius: 24,
-        paddingVertical: 18,
+        borderRadius: 30,
+        paddingVertical: 15,
         paddingHorizontal: 16,
         marginBottom: 12,
         shadowColor: '#000',
@@ -98,7 +119,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 3,
         borderWidth: 1,
-        borderColor: '#F0F0F0', // Slight border to match the clean look
+        borderColor: '#F0F0F0',
     },
     cardContent: {
         flexDirection: 'row',
@@ -127,11 +148,13 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#4A4A4A',
-        marginTop: 2, // Slight adjustment for the larger text
+        marginTop: 2,
     },
     timeAndChevron: {
         alignItems: 'flex-end',
         justifyContent: 'center',
+        marginTop: -20,
+        gap: 6,
     },
     alertTime: {
         fontSize: 12,
