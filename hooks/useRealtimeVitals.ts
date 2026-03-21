@@ -65,17 +65,28 @@ export function useRealtimeVitals(deviceId?: string) {
 
             // If payload has no explicit deviceId, assume it's for the current device
             if (!deviceId || logDeviceId === deviceId) {
-              setVitals({
+              const rawTimestamp = latestLog.timestamp || (latestLog.ts ? latestLog.ts * 1000 : null);
+              const timestampStr = rawTimestamp ? new Date(rawTimestamp).toISOString() : new Date().toISOString();
+
+              const tempVal = latestLog.temperature ?? latestLog.temp;
+              const ambientTempVal = latestLog.ambient_temp ?? latestLog.ambientTemp;
+              const moistureVal = latestLog.moisture;
+              const gaitLabelVal = latestLog.gait_label ?? latestLog.gaitLabel;
+              const fallAlertVal = latestLog.fall_alert ?? latestLog.fallAlert;
+              const sosVal = latestLog.sos;
+
+              setVitals((prev) => ({
+                ...(prev || {}),
                 deviceId: logDeviceId,
-                timestamp: latestLog.timestamp ? new Date(latestLog.timestamp).toISOString() : new Date().toISOString(),
-                temperature: latestLog.temperature,
-                roomTemperature: latestLog.ambient_temp,
-                moisture: latestLog.moisture,
-                gaitAnalysis: latestLog.gait_label,
-              } as DashboardVitals);
+                timestamp: timestampStr,
+                ...(tempVal !== undefined && { temperature: Number(tempVal) }),
+                ...(ambientTempVal !== undefined && { roomTemperature: Number(ambientTempVal) }),
+                ...(moistureVal !== undefined && { moisture: Number(moistureVal) }),
+                ...(gaitLabelVal !== undefined && { gaitAnalysis: String(gaitLabelVal) }),
+              }) as DashboardVitals);
 
               const newAlerts: RecentAlert[] = [];
-              if (latestLog.fall_alert) {
+              if (fallAlertVal && String(fallAlertVal) !== '0' && String(fallAlertVal) !== 'false') {
                 newAlerts.push({
                   id: `rt_fall_${Date.now()}`,
                   deviceId: logDeviceId,
@@ -84,7 +95,7 @@ export function useRealtimeVitals(deviceId?: string) {
                   timestamp: new Date().toISOString(),
                 } as RecentAlert);
               }
-              if (latestLog.sos) {
+              if (sosVal && String(sosVal) !== '0' && String(sosVal) !== 'false') {
                 newAlerts.push({
                   id: `rt_sos_${Date.now()}`,
                   deviceId: logDeviceId,

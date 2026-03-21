@@ -22,16 +22,19 @@ export const VitalsGrid = () => {
     const { latestVitals: contextVitals, selectedDeviceId } = useRaspberryPi();
     const { vitals: realtimeVitals } = useRealtimeVitals(selectedDeviceId || undefined);
 
-    const latestVitals = realtimeVitals || contextVitals;
+    const skinTempVal = realtimeVitals?.temperature ?? contextVitals?.temperature;
+    const skinTemp = typeof skinTempVal === 'number' ? skinTempVal : 30.4;
 
-    const skinTemp = typeof latestVitals?.temperature === 'number' ? latestVitals.temperature : 30.4;
-    const moisture = typeof latestVitals?.moisture === 'number' ? latestVitals.moisture : 0;
+    const moistureVal = realtimeVitals?.moisture ?? contextVitals?.moisture;
+    const moisture = typeof moistureVal === 'number' ? moistureVal : 0;
+
+    const roomTempVal = realtimeVitals?.roomTemperature ?? contextVitals?.roomTemperature;
     const roomTemp =
-        typeof latestVitals?.roomTemperature === 'number'
-            ? latestVitals.roomTemperature.toFixed(1)
+        typeof roomTempVal === 'number'
+            ? roomTempVal.toFixed(1)
             : (skinTemp - 0.5).toFixed(1);
 
-    const gaitValue = latestVitals?.gaitAnalysis || 'N/A';
+    const gaitValue = realtimeVitals?.gaitAnalysis ?? contextVitals?.gaitAnalysis ?? 'N/A';
 
     return (
         <View style={styles.gridContainer}>
