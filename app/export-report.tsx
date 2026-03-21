@@ -31,6 +31,8 @@ export default function ExportReportScreen() {
 
     const [selectedMetrics, setSelectedMetrics] = useState({
         temperature: false,
+        ambientTemp: false,
+        moisture: false,
         activity: false,
     });
 
@@ -133,7 +135,7 @@ export default function ExportReportScreen() {
         try {
             setIsExporting(true);
 
-            if (!selectedMetrics.temperature && !selectedMetrics.activity) {
+            if (!selectedMetrics.temperature && !selectedMetrics.ambientTemp && !selectedMetrics.moisture && !selectedMetrics.activity) {
                 Alert.alert('Selection Error', 'Please select at least one metric to export.');
                 return;
             }
@@ -155,9 +157,9 @@ export default function ExportReportScreen() {
                 endDate: effectiveRange.end.toISOString(),
                 isSingleDate: isSingleDate,
                 metrics: {
-                    heartRate: false,
-                    spo2: false,
                     temperature: selectedMetrics.temperature,
+                    ambientTemp: selectedMetrics.ambientTemp,
+                    moisture: selectedMetrics.moisture,
                 },
                 format: exportFormat,
                 includeActivity: selectedMetrics.activity,
@@ -615,10 +617,31 @@ export default function ExportReportScreen() {
                             icon="thermometer"
                             color="#F9C45A"
                             bgColor="#FFF5E6"
-                            label="Temperature"
+                            label="Skin Temp"
                             checked={selectedMetrics.temperature}
                             onPress={() => toggleMetric('temperature')}
                             iconSize={32}
+                            useMatIcon
+                        />
+                        <MetricCard
+                            icon="thermometer-lines"
+                            color="#ED8936"
+                            bgColor="#FFFAF0"
+                            label="Room Temp"
+                            checked={selectedMetrics.ambientTemp}
+                            onPress={() => toggleMetric('ambientTemp')}
+                            iconSize={32}
+                            useMatIcon
+                        />
+                        <MetricCard
+                            icon="water-percent"
+                            color="#4299E1"
+                            bgColor="#EBF8FF"
+                            label="Moisture"
+                            checked={selectedMetrics.moisture}
+                            onPress={() => toggleMetric('moisture')}
+                            iconSize={32}
+                            useMatIcon
                         />
                         <MetricCard
                             icon="walk"
@@ -867,8 +890,8 @@ const styles = StyleSheet.create({
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
     // Metrics
-    metricsRow: { flexDirection: 'row', gap: 20, justifyContent: 'center' },
-    metricCardWrapper: { width: 140 },
+    metricsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, justifyContent: 'center' },
+    metricCardWrapper: { width: '45%', minWidth: 140 },
     metricCardContent: {
         alignItems: 'center',
         justifyContent: 'center',
