@@ -3,6 +3,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { VitalCard } from './VitalCard';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
+import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
 // Gait Analysis card — blue-tinted circle with pulse/activity icon, grey N/A text
 const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
@@ -18,7 +19,10 @@ const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
 );
 
 export const VitalsGrid = () => {
-    const { latestVitals } = useRaspberryPi();
+    const { latestVitals: contextVitals, selectedDeviceId } = useRaspberryPi();
+    const { vitals: realtimeVitals } = useRealtimeVitals(selectedDeviceId || undefined);
+
+    const latestVitals = realtimeVitals || contextVitals;
 
     const skinTemp = typeof latestVitals?.temperature === 'number' ? latestVitals.temperature : 30.4;
     const moisture = typeof latestVitals?.moisture === 'number' ? latestVitals.moisture : 0;

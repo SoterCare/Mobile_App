@@ -4,9 +4,8 @@
 
 export const API_CONFIG = {
   // Base URL - Update this with your backend API URL
-  BASE_URL: __DEV__
-    ? 'http://172.20.10.2:3000' // Localhost (Dev) - If logic fails, use: 'https://backend.sotercare.com/'
-    : 'https://unlikely-caryn-sotercare-873e6112.koyeb.app', // Production
+  BASE_URL: 'https://unlikely-caryn-sotercare-873e6112.koyeb.app', // Production
+  REALTIME_URL: 'wss://backend.sotercare.com/realtime',
 
   // Request timeout (milliseconds)
   TIMEOUT: 1000000,
@@ -29,15 +28,39 @@ export const API_CONFIG = {
       EMAIL_VERIFY: '/user/email/verify',
     },
     SUMMARY: {
-      GENERATE: '/summary/generate',
+      GENERATE: '/summary',
       HISTORY: '/summary/history',
+      UPLOAD_PRESCRIPTION: '/summary/upload_prescription',
+      QUERY_PRESCRIPTION: '/summary/query_prescription',
     },
     LOGS: {
+      SYNC: '/logs/sync',
       DATES: '/logs/dates',
       RANGE: '/logs/range',
     },
+    DEVICES: {
+      LIST: '/devices',
+      CLAIM: '/devices/claim',
+      STATUS: (deviceId: string) => `/devices/${deviceId}/status`,
+    },
+    DASHBOARD: {
+      LATEST_VITALS: '/dashboard/vitals/latest',
+    },
+    ALERTS: {
+      RECENT: '/alerts/recent',
+    },
     REPORTS: {
       EXPORT: '/reports/export',
+      DEVICES: '/reports/devices',
+    },
+    TIMELINE: {
+      VITALS: '/timeline/vitals',
+      EVENTS: '/timeline/events',
+      STATS: '/timeline/stats',
+      DATE_OPTIONS: '/timeline/date-options',
+      DISMISSED: '/timeline/dismissed',
+      RESTORE: '/timeline/restore',
+      DISMISS: '/timeline/dismiss',
     },
   },
 

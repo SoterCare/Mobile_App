@@ -5,7 +5,6 @@ import { bleService } from '../services/bleService';
 import { BLE_CONFIG } from '../constants/bleConfig';
 import { useVitals } from '../contexts/VitalsContext';
 import { Buffer } from 'buffer';
-import { insertLog } from '../database/db';
 
 export interface BluetoothDevice {
     id: string;
@@ -219,7 +218,6 @@ export function useBLE() {
                         const decodedValue = Buffer.from(characteristic.value, 'base64');
                         const heartRate = decodedValue.readUInt8(0);
                         updateVitals({ heartRate });
-                        insertLog({ type: 'heartRate', value: heartRate, deviceId });
                     }
                 }
             );
@@ -238,7 +236,6 @@ export function useBLE() {
                         const decodedValue = Buffer.from(characteristic.value, 'base64');
                         const spO2 = decodedValue.readUInt8(0);
                         updateVitals({ spO2 });
-                        insertLog({ type: 'spO2', value: spO2, deviceId });
                     }
                 }
             );

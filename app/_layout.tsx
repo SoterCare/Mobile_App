@@ -9,7 +9,6 @@ import { VitalsProvider } from '@/contexts/VitalsContext';
 import { RaspberryPiProvider } from '@/contexts/RaspberryPiContext';
 import { reportError } from '@/services/crashReportService';
 import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
-import { initDatabase } from '@/database/db';
 
 export const unstable_settings = {
   initialRouteName: '(tabs)',
@@ -23,8 +22,7 @@ function RootLayoutNav() {
   const [isSplashAnimationFinished, setIsSplashAnimationFinished] = useState(false);
 
   useEffect(() => {
-    // Initialize Database
-    initDatabase();
+    // Database initialization has been removed
   }, []);
 
   useEffect(() => {

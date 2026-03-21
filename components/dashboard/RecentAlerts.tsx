@@ -10,14 +10,20 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { AlertCard } from './AlertCard';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
+import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
 // Height of one expanded alert card is slightly more, so just set a standard max height
 const SCROLL_HEIGHT = 280;
 
 export const RecentAlerts = () => {
-    const { recentAlerts } = useRaspberryPi();
+    const { recentAlerts: contextAlerts, selectedDeviceId } = useRaspberryPi();
+    const { recentAlerts: realtimeAlerts } = useRealtimeVitals(selectedDeviceId || undefined);
 
-    const alertsToRender = recentAlerts.map((a, index) => ({
+    const allAlerts = [...realtimeAlerts, ...contextAlerts];
+    const uniqueAlerts = Array.from(new Map(allAlerts.map(item => [item.id, item])).values());
+    const sortedAlerts = uniqueAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 20);
+
+    const alertsToRender = sortedAlerts.map((a, index) => ({
         id: a.id || `alert_${index}`,
         type: (a.type as 'movement' | 'fall' | 'urine') || 'movement',
         title: a.title,

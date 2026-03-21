@@ -2,15 +2,17 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
+import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
 export const DeviceStatusHeader = () => {
     const {
         devices,
         selectedDeviceId,
         setSelectedDeviceId,
-        connectionState,
         scanAndConnect,
     } = useRaspberryPi();
+    
+    const { isConnected: isRealtimeConnected, reconnect } = useRealtimeVitals(selectedDeviceId || undefined);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [dropdownLayout, setDropdownLayout] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
     const dropdownButtonRef = React.useRef<View>(null);
@@ -20,7 +22,9 @@ export const DeviceStatusHeader = () => {
         [devices, selectedDeviceId]
     );
 
-    const isConnected = connectionState === 'connected';
+    const isConnected = isRealtimeConnected;
+    const connectionState = isConnected ? 'connected' : 'disconnected';
+    const isReconnecting = false;
 
     const handleSelect = (deviceId: string) => {
         setSelectedDeviceId(deviceId);

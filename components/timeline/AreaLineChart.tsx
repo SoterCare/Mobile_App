@@ -13,6 +13,7 @@ import Svg, {
   G,
   Text as SvgText,
   Line,
+  Circle,
 } from 'react-native-svg';
 import { line, area, curveMonotoneX } from 'd3-shape';
 import { TimelineColors } from '../../theme/colors';
@@ -54,38 +55,51 @@ const AreaLineChart: React.FC<AreaLineChartProps> = ({
   const contentWidth = chartWidth - PADDING.left - PADDING.right;
   const contentHeight = height - PADDING.top - PADDING.bottom;
 
+  // Calculate dynamic max and min to prevent SVG values shooting out of bounds
+  const validValues = data.filter(d => d.value !== null && d.value !== undefined).map(d => Number(d.value));
+  const actualMaxValue = validValues.length > 0 ? Math.max(maxValue, ...validValues) : maxValue;
+  const actualMinValue = validValues.length > 0 ? Math.min(minValue, ...validValues) : minValue;
+
   // Scale functions
   const xScale = (index: number): number => {
     return PADDING.left + (index / (data.length - 1)) * contentWidth;
   };
 
   const yScale = (value: number): number => {
-    const normalized = (value - minValue) / (maxValue - minValue);
+    // Prevent division by zero if max and min are equal
+    const range = actualMaxValue - actualMinValue;
+    const safeRange = range === 0 ? 1 : range;
+    const normalized = (value - actualMinValue) / safeRange;
     return PADDING.top + contentHeight * (1 - normalized);
   };
 
-  // Generate line path
-  const lineGenerator = line<VitalDataPoint>()
-    .x((_, i) => xScale(i))
-    .y((d) => yScale(d.value))
+  // Generate a valid subset of data to bridge gaps where telemetry nulls appear (interpolates curve over blanks)
+  const validData = data
+    .map((d, index) => ({ ...d, originalIndex: index }))
+    .filter(d => d.value !== null && d.value !== undefined);
+
+  // Generate line path connecting valid points
+  const lineGenerator = line<typeof validData[0]>()
+    .x((d) => xScale(d.originalIndex))
+    .y((d) => yScale(Number(d.value)))
     .curve(curveMonotoneX);
 
-  const linePath = lineGenerator(data) || '';
+  const linePath = lineGenerator(validData) || '';
 
-  // Generate area path
-  const areaGenerator = area<VitalDataPoint>()
-    .x((_, i) => xScale(i))
+  // Generate area path connecting valid points
+  const areaGenerator = area<typeof validData[0]>()
+    .x((d) => xScale(d.originalIndex))
     .y0(PADDING.top + contentHeight)
-    .y1((d) => yScale(d.value))
+    .y1((d) => yScale(Number(d.value)))
     .curve(curveMonotoneX);
 
-  const areaPath = areaGenerator(data) || '';
+  const areaPath = areaGenerator(validData) || '';
 
   // Y-axis labels (3 values: min, mid, max)
   const yAxisValues = [
-    maxValue,
-    (maxValue + minValue) / 2,
-    minValue,
+    actualMaxValue,
+    (actualMaxValue + actualMinValue) / 2,
+    actualMinValue,
   ];
 
   // Calculate x positions for time labels
@@ -144,6 +158,22 @@ const AreaLineChart: React.FC<AreaLineChartProps> = ({
           strokeWidth={2.5}
           fill="none"
         />
+
+        {/* Data Point Markers */}
+        <G>
+          {data.map((d, i) => {
+            if (d.value === null || d.value === undefined) return null;
+            return (
+              <Circle
+                key={`point-${i}`}
+                cx={xScale(i)}
+                cy={yScale(d.value)}
+                r={3}
+                fill={TimelineColors.chartLineRed}
+              />
+            );
+          })}
+        </G>
 
         {/* Y-axis values */}
         <G>
