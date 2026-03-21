@@ -17,7 +17,7 @@ export default function HomeScreen() {
       {/* Fixed Background Image */}
       <View style={styles.backgroundContainer}>
         <Image
-          source={require('@/assets/images/final-gen.png')}
+          source={require('@/assets/images/man.png')}
           style={styles.backgroundImage}
           resizeMode="cover"
         />
@@ -57,7 +57,8 @@ const styles = StyleSheet.create({
   backgroundImage: {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
-    transform: [{ scale: 1.0 }],
+    transform: [{ scale: 1 }],
+    marginTop: -40,
   },
   topContent: {
     flex: 1,
