@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     },
     devicePillText: {
         fontSize: 13,
-        color: '#333',
+        color: '#ffffff',
         fontWeight: '600',
     },
 });

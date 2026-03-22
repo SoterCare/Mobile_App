@@ -109,7 +109,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
 const styles = StyleSheet.create({
     alertCard: {
         backgroundColor: '#fff',
-        borderRadius: 30,
+        borderRadius: 25,
         paddingVertical: 15,
         paddingHorizontal: 16,
         marginBottom: 12,
@@ -120,6 +120,8 @@ const styles = StyleSheet.create({
         elevation: 3,
         borderWidth: 1,
         borderColor: '#F0F0F0',
+        width: '98%',
+        marginLeft: '0.9%',
     },
     cardContent: {
         flexDirection: 'row',
@@ -176,7 +178,7 @@ const styles = StyleSheet.create({
         borderRadius: 24,
     },
     actionBtnPrimary: {
-        backgroundColor: '#40DFDF',
+        backgroundColor: '#91D7E4',
     },
     actionBtnSecondary: {
         backgroundColor: '#E0E0E0',
