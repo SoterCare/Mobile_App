@@ -31,7 +31,7 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
 const getRelativeTime = (timestamp: string): string => {
     const now = new Date();
     const alertTime = new Date(timestamp);
-    const diffMs = now.getTime() - alertTime.getTime();
+    const diffMs = Math.max(0, now.getTime() - alertTime.getTime());
     const diffSeconds = Math.floor(diffMs / 1000);
     const diffMinutes = Math.floor(diffSeconds / 60);
     const diffHours = Math.floor(diffMinutes / 60);
@@ -49,7 +49,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
     const config = ALERT_CONFIG[type];
 
     useEffect(() => {
-        const interval = setInterval(() => forceUpdate(n => n + 1), 30000); // refresh every 30s
+        const interval = setInterval(() => forceUpdate(n => n + 1), 1000); // refresh every 1s
         return () => clearInterval(interval);
     }, []);
 
