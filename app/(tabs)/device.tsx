@@ -219,13 +219,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     bluetoothStatus: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 15,
         paddingVertical: 4,
         borderRadius: 20,
-        marginLeft: 8,
+        marginLeft: 10,
     },
     bluetoothStatusText: {
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: '800',
         color: '#fff',
     },
@@ -356,12 +356,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         color: '#1e293b',
-        marginBottom: 2,
+        marginBottom: 6,
     },
     deviceId: {
-        fontSize: 11,
+        fontSize: 13,
         color: '#94a3b8',
-        marginBottom: 4,
+        marginBottom: 8,
     },
     signalContainer: {
         flexDirection: 'row',
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
         marginRight: 6,
     },
     deviceRssi: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#64748b',
     },
     statusBadge: {

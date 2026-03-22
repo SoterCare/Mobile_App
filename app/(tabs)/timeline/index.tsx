@@ -36,14 +36,12 @@ import { timelineService } from '@/services/timelineService';
 
 const BACKGROUND_COLOR = '#F6F6F6';
 
-// Period options for segmented control
 const PERIOD_OPTIONS = [
   { key: 'day', label: 'Day' },
   { key: 'month', label: 'Month' },
   { key: 'custom', label: 'Custom' },
 ];
 
-// Filter options for activity timeline
 const FILTER_OPTIONS = ['All', 'Movements', 'Falls', 'Urine'];
 
 export default function TimelineScreen() {
@@ -59,13 +57,12 @@ export default function TimelineScreen() {
   } = useRaspberryPi();
 
   const [period, setPeriod] = useState<PeriodType>('day');
-  const [vital, setVital] = useState<VitalType>('temp'); // Defaulting to temp
+  const [vital, setVital] = useState<VitalType>('temp');
   const [selectedDay, setSelectedDay] = useState<string>(new Date().toISOString().slice(0, 10).replace(/-/g, '/'));
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7).replace(/-/g, '/'));
   const [selectedRange, setSelectedRange] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState('All');
 
-  // Modal states
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [chartExpandedVisible, setChartExpandedVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -92,7 +89,6 @@ export default function TimelineScreen() {
 
   React.useEffect(() => {
     if (!selectedDeviceId) return;
-    // Always fetch timelineDateOptions using 'day' period so monthOptions and customRangeOptions can be correctly derived from it.
     timelineService.getDateOptions(selectedDeviceId, 'day').then(res => {
       setTimelineDateOptions(res.options || []);
     }).catch(e => console.error('Failed to load date options:', e));
@@ -116,17 +112,15 @@ export default function TimelineScreen() {
 
   const fetchTimelineData = useCallback(async () => {
     if (!selectedDeviceId) return;
-    
+
     const dateQuery = period === 'day' ? selectedDay : (period === 'month' ? selectedMonth : selectedRange);
-    
-    // Disable fetching initially until a date is resolved from the options array
+
     if (!dateQuery) return;
     if (period === 'month' && !selectedMonth) return;
-    
-    // Format dates for backend expectations (YYYY-MM-DD)
+
     const rawFormattedDate = dateQuery ? dateQuery.replace(/\//g, '-') : '';
     const formattedMonth = selectedMonth ? selectedMonth.replace(/\//g, '-') : '';
-    
+
     let apiDate = rawFormattedDate;
     let apiStartDate;
     let apiEndDate;
@@ -140,11 +134,9 @@ export default function TimelineScreen() {
       apiDate = `${rawFormattedDate}-01`;
     }
 
-    // Map vital type to backend metric
     const metricMap: Record<string, string> = { heart: 'heart_rate', spo2: 'spo2' };
     const apiMetric = metricMap[vital] || vital;
-    
-    // Map UI filter to backend expected filter
+
     const filterMap: Record<string, string> = { All: 'all', Movements: 'movement', Falls: 'fall', Urine: 'urine' };
     const apiFilter = filterMap[activeFilter] || 'all';
 
@@ -156,7 +148,7 @@ export default function TimelineScreen() {
         timelineService.getEventsTimeline(selectedDeviceId, period, apiDate, apiFilter, apiStartDate, apiEndDate),
         period === 'month' ? timelineService.getTimelineStats(selectedDeviceId, period, apiDate, formattedMonth) : Promise.resolve(null)
       ]);
-      
+
       setVitalsData(vitalsResponse);
       setTimelineEvents(eventsResponse?.events || []);
       if (statsResponse) {
@@ -173,94 +165,61 @@ export default function TimelineScreen() {
     fetchTimelineData();
   }, [fetchTimelineData]);
 
-  // Get current date display text based on period
   const dateDisplayText = useMemo(() => {
     switch (period) {
-      case 'day':
-        return selectedDay || 'No date';
-      case 'month':
-        return selectedMonth || 'No month';
-      case 'custom':
-        return selectedRange || 'No range';
+      case 'day': return selectedDay || 'No date';
+      case 'month': return selectedMonth || 'No month';
+      case 'custom': return selectedRange || 'No range';
     }
   }, [period, selectedDay, selectedMonth, selectedRange]);
 
-  // Get date picker options based on period
   const datePickerOptions = useMemo(() => {
     switch (period) {
-      case 'day':
-        return dayOptions;
-      case 'month':
-        return monthOptions;
-      case 'custom':
-        return customRangeOptions;
+      case 'day': return dayOptions;
+      case 'month': return monthOptions;
+      case 'custom': return customRangeOptions;
     }
   }, [period, dayOptions, monthOptions, customRangeOptions]);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // Get vital data for chart
   const chartData = useMemo(() => {
-    console.log('--- DEBUG VITALS ---');
-    console.log('Vital Type:', vital, 'Period:', period);
-    console.log('Response Payload Points:', vitalsData?.points);
     if (vitalsData?.points) return vitalsData.points;
     return [];
   }, [vitalsData, vital, period]);
 
-  // Get y-axis config for current vital
   const yAxisConfig = useMemo(() => {
     if (vitalsData?.yAxis) return vitalsData.yAxis;
     return vitalYAxisConfig[vital];
   }, [vital, vitalsData]);
 
-  // Get filtered activity events
   const filteredEvents = timelineEvents;
 
-  // Get activity stats based on period
   const activityStats = useMemo(() => {
     if (stats) return stats;
-    return {
-      movements: 0,
-      falls: 0,
-      urine: 0,
-    };
+    return { movements: 0, falls: 0, urine: 0 };
   }, [stats]);
 
-  // Get activity section title based on period
   const activityTitle = useMemo(() => {
     switch (period) {
-      case 'day':
-        return 'Activity Timeline';
-      case 'month':
-        return 'Monthly Activity';
-      case 'custom':
-        return 'Custom Activity';
+      case 'day': return 'Activity Timeline';
+      case 'month': return 'Monthly Activity';
+      case 'custom': return 'Custom Activity';
     }
   }, [period]);
 
-  // Handlers
   const handlePeriodChange = useCallback((key: string) => {
     setPeriod(key as PeriodType);
   }, []);
 
-  const handleDateSelect = useCallback(
-    async (option: string) => {
-      switch (period) {
-        case 'day':
-          setSelectedDay(option);
-          break;
-        case 'month':
-          setSelectedMonth(option);
-          break;
-        case 'custom':
-          setSelectedRange(option);
-          break;
-      }
-      setDatePickerVisible(false);
-    },
-    [period]
-  );
+  const handleDateSelect = useCallback(async (option: string) => {
+    switch (period) {
+      case 'day': setSelectedDay(option); break;
+      case 'month': setSelectedMonth(option); break;
+      case 'custom': setSelectedRange(option); break;
+    }
+    setDatePickerVisible(false);
+  }, [period]);
 
   const handleExportReport = useCallback(() => {
     router.push('/export-report');
@@ -286,10 +245,9 @@ export default function TimelineScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.mainContent}>
-          {/* Top Header - Export Button */}
           <View style={styles.topHeader}>
             <TouchableOpacity
-              style={[styles.exportButton]}
+              style={styles.exportButton}
               onPress={handleExportReport}
               activeOpacity={0.7}
             >
@@ -298,17 +256,15 @@ export default function TimelineScreen() {
                 name="chevron-forward"
                 size={14}
                 color={TimelineColors.textMedium}
-                marginTop={3} 
-                marginRight={-4} 
+                marginTop={3}
+                marginRight={-4}
                 marginLeft={2}
               />
             </TouchableOpacity>
           </View>
 
-          {/* Dashboard Title */}
           <Text style={styles.headerTitle}>Temperature Statistics</Text>
 
-          {/* Period Segmented Control */}
           <SegmentedControl
             options={PERIOD_OPTIONS}
             activeKey={period}
@@ -317,18 +273,13 @@ export default function TimelineScreen() {
             style={styles.periodControl}
           />
 
-          {/* Date Selector */}
           <TouchableOpacity
             style={styles.dateSelector}
             onPress={() => setDatePickerVisible(true)}
             activeOpacity={0.7}
           >
             <Text style={styles.dateSelectorText}>{dateDisplayText}</Text>
-            <Ionicons
-              name="caret-down"
-              size={16}
-              color={"#666"}
-            />
+            <Ionicons name="caret-down" size={16} color={"#666"} />
           </TouchableOpacity>
 
           <View style={styles.statusRow}>
@@ -337,9 +288,7 @@ export default function TimelineScreen() {
             {logsError ? <Text style={styles.statusError}>{logsError}</Text> : null}
           </View>
 
-          {/* Flex container for bottom alignment */}
           <View style={styles.flexContainer}>
-            {/* Chart Card */}
             <VitalsChartCard
               data={chartData}
               yAxisLabel={yAxisConfig.label}
@@ -349,7 +298,6 @@ export default function TimelineScreen() {
               style={styles.chartCard}
             />
 
-            {/* Activity Section (varies by period) */}
             <View style={[styles.bottomSection, { marginTop: 12 }]}>
               {period === 'day' ? (
                 <ActivityTimeline
@@ -381,9 +329,11 @@ export default function TimelineScreen() {
           style={styles.modalOverlay}
           onPress={() => setDatePickerVisible(false)}
         >
-          <Pressable style={[styles.modalContent, Shadows.card]}>
-            <Text style={styles.modalTitle}>Select {period === 'day' ? 'Date' : 'Period'}</Text>
-            
+          <Pressable style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              Select {period === 'day' ? 'Date' : 'Period'}
+            </Text>
+
             {period === 'day' ? (
               <Calendar
                 current={selectedDay.replace(/\//g, '-')}
@@ -391,7 +341,10 @@ export default function TimelineScreen() {
                   handleDateSelect(day.dateString.replace(/-/g, '/'));
                 }}
                 markedDates={{
-                  [selectedDay.replace(/\//g, '-')]: { selected: true, selectedColor: TimelineColors.primaryCyan }
+                  [selectedDay.replace(/\//g, '-')]: {
+                    selected: true,
+                    selectedColor: TimelineColors.primaryCyan,
+                  },
                 }}
                 theme={{
                   arrowColor: TimelineColors.primaryCyan,
@@ -409,10 +362,8 @@ export default function TimelineScreen() {
                   <Text
                     style={[
                       styles.modalOptionText,
-                      option ===
-                      (period === 'month'
-                        ? selectedMonth
-                        : selectedRange) && styles.modalOptionTextActive,
+                      option === (period === 'month' ? selectedMonth : selectedRange) &&
+                        styles.modalOptionTextActive,
                     ]}
                   >
                     {option}
@@ -434,18 +385,12 @@ export default function TimelineScreen() {
         <View style={styles.expandedModalContainer}>
           <SafeAreaView style={styles.expandedModalSafeArea}>
             <View style={styles.expandedModalHeader}>
-              <Text style={styles.expandedModalTitle}>
-                {yAxisConfig.label}
-              </Text>
+              <Text style={styles.expandedModalTitle}>{yAxisConfig.label}</Text>
               <TouchableOpacity
                 onPress={() => setChartExpandedVisible(false)}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Ionicons
-                  name="close"
-                  size={24}
-                  color={TimelineColors.textDark}
-                />
+                <Ionicons name="close" size={24} color={TimelineColors.textDark} />
               </TouchableOpacity>
             </View>
             <View style={styles.expandedChartContainer}>
@@ -471,7 +416,7 @@ export default function TimelineScreen() {
           style={styles.modalOverlay}
           onPress={() => setFilterModalVisible(false)}
         >
-          <View style={[styles.modalContent, Shadows.card]}>
+          <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Filter Activities</Text>
             {FILTER_OPTIONS.map((option) => (
               <TouchableOpacity
@@ -488,11 +433,7 @@ export default function TimelineScreen() {
                   {option}
                 </Text>
                 {option === activeFilter && (
-                  <Ionicons
-                    name="checkmark"
-                    size={18}
-                    color={TimelineColors.primaryCyan}
-                  />
+                  <Ionicons name="checkmark" size={18} color={TimelineColors.primaryCyan} />
                 )}
               </TouchableOpacity>
             ))}
@@ -510,7 +451,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 110, // Original padding for tab bar safety
+    paddingBottom: 110,
   },
   mainContent: {
     paddingHorizontal: 16,
@@ -522,9 +463,8 @@ const styles = StyleSheet.create({
   bottomSection: {
     flex: 1,
     justifyContent: 'flex-end',
-    paddingBottom: 16, // Extra padding as requested
+    paddingBottom: 16,
   },
-  // Top Header
   topHeader: {
     alignItems: 'flex-end',
     marginTop: 5,
@@ -549,7 +489,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#333',
   },
-  // Dashboard Title
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
@@ -558,11 +497,9 @@ const styles = StyleSheet.create({
     marginTop: -35,
     marginLeft: 4,
   },
-  // Period control
   periodControl: {
-    marginBottom: 20
+    marginBottom: 20,
   },
-  // Date selector
   dateSelector: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -592,19 +529,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  // Vital control
   vitalControl: {
     display: 'none',
   },
-  // Chart card
   chartCard: {
     marginTop: 16,
   },
-  // Activity section
-  activitySection: {
-    // marginBottom and marginTop managed by parent container
-  },
-  // Modals
+  activitySection: {},
+  // Modal styles matching AI Summary screen
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
@@ -612,11 +544,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: TimelineColors.cardBackground,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
-    minWidth: 280,
-    maxWidth: '80%',
+    width: '90%',
   },
   modalTitle: {
     fontSize: 18,
@@ -641,7 +572,6 @@ const styles = StyleSheet.create({
     color: TimelineColors.primaryCyan,
     fontWeight: '600',
   },
-  // Expanded modal
   expandedModalContainer: {
     flex: 1,
     backgroundColor: TimelineColors.background,

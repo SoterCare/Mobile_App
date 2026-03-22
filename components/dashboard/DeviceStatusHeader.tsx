@@ -13,7 +13,7 @@ export const DeviceStatusHeader = () => {
     );
 
     const isConnected = isRealtimeConnected;
-    const connectionState = isConnected ? 'online' : 'offline';
+    const connectionState = isConnected ? 'Online' : 'Offline';
 
     return (
         <View style={styles.wrapper}>
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     statusOnline: {
-        color: '#91D7E4',
+        color: '#2ee134',
         fontWeight: '600',
     },
     statusOffline: {
