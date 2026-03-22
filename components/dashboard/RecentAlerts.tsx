@@ -16,17 +16,19 @@ import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 const SCROLL_HEIGHT = 280;
 
 export const RecentAlerts = () => {
-    const { recentAlerts: contextAlerts, selectedDeviceId } = useRaspberryPi();
-    const { recentAlerts: realtimeAlerts } = useRealtimeVitals(selectedDeviceId || undefined);
-    const [resolvedIds, setResolvedIds] = React.useState<string[]>([]);
+    const { recentAlerts: contextAlerts, selectedDeviceId, refreshRecentAlerts } = useRaspberryPi();
+    const { recentAlerts: realtimeAlerts, removeAlert } = useRealtimeVitals(selectedDeviceId || undefined);
 
-    const allAlerts = [...realtimeAlerts, ...contextAlerts].filter(a => !resolvedIds.includes(a.id));
+    const handleAlertDismissed = (id: string) => {
+        // Refresh backend alerts
+        refreshRecentAlerts();
+        // Remove from realtime state (if it was from there)
+        removeAlert(id);
+    };
+
+    const allAlerts = [...realtimeAlerts, ...contextAlerts];
     const uniqueAlerts = Array.from(new Map(allAlerts.map(item => [item.id, item])).values());
     const sortedAlerts = uniqueAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 20);
-
-    const handleResolve = (id: string) => {
-        setResolvedIds(prev => [...prev, id]);
-    };
 
     const alertsToRender = sortedAlerts.map((a, index) => ({
         id: a.id || `alert_${index}`,
@@ -59,7 +61,7 @@ export const RecentAlerts = () => {
                         type={alert.type}
                         title={alert.title}
                         timestamp={alert.timestamp}
-                        onResolve={handleResolve}
+                        onDismiss={handleAlertDismissed}
                     />
                 ))}
                 {alertsToRender.length === 0 && (

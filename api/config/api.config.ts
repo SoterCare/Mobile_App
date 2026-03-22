@@ -5,7 +5,7 @@
 export const API_CONFIG = {
   // Base URL - Update this with your backend API URL
   BASE_URL: 'https://unlikely-caryn-sotercare-873e6112.koyeb.app', // Production
-  REALTIME_URL: 'wss://backend.sotercare.com/realtime',
+  REALTIME_URL: 'wss://unlikely-caryn-sotercare-873e6112.koyeb.app/realtime',
 
   // Request timeout (milliseconds)
   TIMEOUT: 1000000,
@@ -48,6 +48,8 @@ export const API_CONFIG = {
     },
     ALERTS: {
       RECENT: '/alerts/recent',
+      ATTEND: (id: string) => `/alerts/${id}/attend`,
+      FALSE_ALARM: (id: string) => `/alerts/${id}/false-alarm`,
     },
     REPORTS: {
       EXPORT: '/reports/export',

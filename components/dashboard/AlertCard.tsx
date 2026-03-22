@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { alertService } from '@/services/alertService';
 
 type AlertType = 'movement' | 'fall' | 'urine';
 
 interface AlertCardProps {
-    id: string; // Ensure id is passed for API calls
+    id: string;
     type: AlertType;
     title: string;
     timestamp: string;
-    onResolve?: (id: string) => void;
+    onDismiss?: (id: string) => void;
 }
 
 const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; iconColor: string; bgColor: string }> = {
@@ -45,52 +46,51 @@ const getRelativeTime = (timestamp: string): string => {
     return `${diffDays}d ago`;
 };
 
-import { alertService } from '@/services/alertService';
-import { ActivityIndicator, Alert } from 'react-native';
-
-export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp, onResolve }) => {
+export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp, onDismiss }) => {
     const [expanded, setExpanded] = useState(false);
-    const [isResolving, setIsResolving] = useState<'attend' | 'false' | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [, forceUpdate] = useState(0);
     const config = ALERT_CONFIG[type];
 
     useEffect(() => {
-        const interval = setInterval(() => forceUpdate(n => n + 1), 1000); // refresh every 1s
+        const interval = setInterval(() => forceUpdate((n: number) => n + 1), 1000); // refresh every 1s
         return () => clearInterval(interval);
     }, []);
 
     const handleAttend = async () => {
         try {
-            setIsResolving('attend');
-            await alertService.attendAlert(id);
-            onResolve?.(id);
-        } catch (err: any) {
-            console.error('Failed to attend alert:', err);
-            Alert.alert('Error', 'Could not update alert. Please try again.');
-        } finally {
-            setIsResolving(null);
+            setIsProcessing(true);
+            // All alerts (both persistent and real-time) should be registered on the backend
+            if (id) {
+                await alertService.attendAlert(id);
+            }
+            onDismiss?.(id);
+        } catch (error) {
+            console.error('Failed to attend alert:', error);
+            setIsProcessing(false);
         }
     };
 
     const handleFalseAlarm = async () => {
         try {
-            setIsResolving('false');
-            await alertService.markFalseAlarm(id);
-            onResolve?.(id);
-        } catch (err: any) {
-            console.error('Failed to mark false alarm:', err);
-            Alert.alert('Error', 'Could not update alert. Please try again.');
-        } finally {
-            setIsResolving(null);
+            setIsProcessing(true);
+            // All alerts (both persistent and real-time) should be registered on the backend
+            if (id) {
+                await alertService.falseAlarmAlert(id);
+            }
+            onDismiss?.(id);
+        } catch (error) {
+            console.error('Failed to mark false alarm:', error);
+            setIsProcessing(false);
         }
     };
 
     return (
         <TouchableOpacity
             style={styles.alertCard}
-            onPress={() => !isResolving && setExpanded(!expanded)}
+            onPress={() => !isProcessing && setExpanded(!expanded)}
             activeOpacity={0.85}
-            disabled={!!isResolving}
+            disabled={isProcessing}
         >
             <View style={[styles.cardContent, !expanded && { alignItems: 'center' }]}>
                 {/* Icon */}
@@ -105,7 +105,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
                         <Text style={styles.alertText}>{title}</Text>
                         <View style={styles.timeAndChevron}>
                             <Text style={styles.alertTime}>{getRelativeTime(timestamp)}</Text>
-                            {!expanded && (
+                            {!expanded && !isProcessing && (
                                 <Ionicons
                                     name="chevron-down"
                                     size={16}
@@ -113,31 +113,26 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
                                     style={styles.chevron}
                                 />
                             )}
+                            {isProcessing && (
+                                <ActivityIndicator size="small" color="#91D7E4" style={styles.chevron} />
+                            )}
                         </View>
                     </View>
 
                     {/* Expandable action buttons */}
-                    {expanded && (
+                    {expanded && !isProcessing && (
                         <View style={styles.alertActions}>
                             <TouchableOpacity
-                                style={[styles.actionBtn, styles.actionBtnPrimary, isResolving === 'attend' && { opacity: 0.7 }]}
-                                onPress={(e) => { e.stopPropagation(); handleAttend(); }}
-                                disabled={!!isResolving}
+                                style={[styles.actionBtn, styles.actionBtnPrimary]}
+                                onPress={(e) => { e.stopPropagation?.(); handleAttend(); }}
                             >
-                                {isResolving === 'attend' 
-                                    ? <ActivityIndicator size="small" color="#fff" />
-                                    : <Text style={styles.actionBtnTextPrimary}>Attended</Text>
-                                }
+                                <Text style={styles.actionBtnTextPrimary}>Attended</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.actionBtn, styles.actionBtnSecondary, isResolving === 'false' && { opacity: 0.7 }]}
-                                onPress={(e) => { e.stopPropagation(); handleFalseAlarm(); }}
-                                disabled={!!isResolving}
+                                style={[styles.actionBtn, styles.actionBtnSecondary]}
+                                onPress={(e) => { e.stopPropagation?.(); handleFalseAlarm(); }}
                             >
-                                {isResolving === 'false'
-                                    ? <ActivityIndicator size="small" color="#666" />
-                                    : <Text style={styles.actionBtnTextSecondary}>False</Text>
-                                }
+                                <Text style={styles.actionBtnTextSecondary}>False</Text>
                             </TouchableOpacity>
                         </View>
                     )}
