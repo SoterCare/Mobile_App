@@ -28,7 +28,6 @@ interface AreaLineChartProps {
 }
 
 const PADDING = { top: 20, right: 20, bottom: 30, left: 45 };
-const X_AXIS_LABELS = ['00:00', '06:00', '12:00', '18:00', '24:00'];
 
 const AreaLineChart: React.FC<AreaLineChartProps> = ({
   data,
@@ -62,6 +61,7 @@ const AreaLineChart: React.FC<AreaLineChartProps> = ({
 
   // Scale functions
   const xScale = (index: number): number => {
+    if (data.length <= 1) return PADDING.left + contentWidth / 2;
     return PADDING.left + (index / (data.length - 1)) * contentWidth;
   };
 
@@ -102,17 +102,19 @@ const AreaLineChart: React.FC<AreaLineChartProps> = ({
     actualMinValue,
   ];
 
-  // Calculate x positions for time labels
-  const getXLabelPosition = (label: string): number => {
-    const labelMap: Record<string, number> = {
-      '00:00': 0,
-      '06:00': 0.25,
-      '12:00': 0.5,
-      '18:00': 0.75,
-      '24:00': 1,
-    };
-    const ratio = labelMap[label] ?? 0;
-    return PADDING.left + ratio * contentWidth;
+  // Dynamically calculate X-axis labels based on data length
+  const getXAxisLabels = () => {
+    if (data.length === 0) return [];
+    if (data.length === 1) return [{ label: data[0].xLabel, index: 0 }];
+    if (data.length <= 5) return data.map((d, i) => ({ label: d.xLabel, index: i }));
+    
+    const labels = [];
+    const step = (data.length - 1) / 4;
+    for (let i = 0; i <= 4; i++) {
+        const idx = Math.round(i * step);
+        labels.push({ label: data[idx]?.xLabel || '', index: idx });
+    }
+    return labels;
   };
 
   return (
@@ -197,18 +199,22 @@ const AreaLineChart: React.FC<AreaLineChartProps> = ({
 
         {/* X-axis labels */}
         <G>
-          {X_AXIS_LABELS.map((label, index) => {
-            const x = getXLabelPosition(label);
+          {getXAxisLabels().map(({ label, index }, i, arr) => {
+            const x = xScale(index);
+            // Dynamic text anchoring to prevent edge clipping
+            const anchor = i === 0 ? "start" : i === arr.length - 1 ? "end" : "middle";
+            const adjustedX = i === 0 ? x - 10 : i === arr.length - 1 ? x + 10 : x;
+            
             return (
               <SvgText
-                key={`x-label-${index}`}
-                x={x}
+                key={`x-label-${i}`}
+                x={adjustedX}
                 y={height - 8}
                 fontSize={10}
                 fill={TimelineColors.textLight}
-                textAnchor="middle"
+                textAnchor={anchor}
               >
-                {label === '24:00' ? '24:00' : label}
+                {label}
               </SvgText>
             );
           })}

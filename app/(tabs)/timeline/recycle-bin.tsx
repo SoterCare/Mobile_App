@@ -127,8 +127,6 @@ export default function RecycleBinScreen() {
             try {
               await recycleBinService.restore({
                 id: activity.id,
-                deviceId: activity.deviceId,
-                type: 'alert',
               });
               setRemovedActivities((prev) =>
                 prev.filter((item) => item.id !== activity.id)

@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
 
@@ -14,6 +14,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import apiClient from '@/api/client';
 import { API_CONFIG } from '@/api/config/api.config';
 import { HealthLogItem, healthLogsService } from '@/services/healthLogsService';
+import { cleanSummaryText } from '@/services/summaryService';
 
 export default function ExportReportScreen() {
     const router = useRouter();
@@ -30,6 +31,8 @@ export default function ExportReportScreen() {
 
     const [selectedMetrics, setSelectedMetrics] = useState({
         temperature: false,
+        ambientTemp: false,
+        moisture: false,
         activity: false,
     });
 
@@ -132,7 +135,7 @@ export default function ExportReportScreen() {
         try {
             setIsExporting(true);
 
-            if (!selectedMetrics.temperature && !selectedMetrics.activity) {
+            if (!selectedMetrics.temperature && !selectedMetrics.ambientTemp && !selectedMetrics.moisture && !selectedMetrics.activity) {
                 Alert.alert('Selection Error', 'Please select at least one metric to export.');
                 return;
             }
@@ -154,9 +157,9 @@ export default function ExportReportScreen() {
                 endDate: effectiveRange.end.toISOString(),
                 isSingleDate: isSingleDate,
                 metrics: {
-                    heartRate: false,
-                    spo2: false,
                     temperature: selectedMetrics.temperature,
+                    ambientTemp: selectedMetrics.ambientTemp,
+                    moisture: selectedMetrics.moisture,
                 },
                 format: exportFormat,
                 includeActivity: selectedMetrics.activity,
@@ -214,8 +217,9 @@ export default function ExportReportScreen() {
             csvContent += rowStr + "\n";
         });
 
-        const fileUri = FileSystem.documentDirectory + `SoterCare_Report_${Date.now()}.csv`;
-        await FileSystem.writeAsStringAsync(fileUri, csvContent, { encoding: FileSystem.EncodingType.UTF8 });
+        const LegacyFS = FileSystem as any;
+        const fileUri = LegacyFS.documentDirectory + `SoterCare_Report_${Date.now()}.csv`;
+        await LegacyFS.writeAsStringAsync(fileUri, csvContent, { encoding: LegacyFS.EncodingType.UTF8 });
 
         if (await Sharing.isAvailableAsync()) {
             await Sharing.shareAsync(fileUri);
@@ -226,20 +230,48 @@ export default function ExportReportScreen() {
 
     const generateAndSharePDF = async (data: any) => {
         const isNewFormat = data.meta && data.report;
-        const dataPoints = isNewFormat ? [] : data;
+        const dataPoints = isNewFormat ? (data.logs || []) : data;
 
-        let headers = "<th>Timestamp</th>";
-        if (selectedMetrics.temperature) headers += "<th>Temperature (°C)</th>";
-        if (selectedMetrics.activity) headers += "<th>Activity</th>";
+        const parseDate = (ts: any) => {
+            if (!ts) return "N/A";
+            if (typeof ts === 'object' && ts.low !== undefined && ts.high !== undefined) {
+                return new Date(ts.high * 4294967296 + (ts.low >>> 0)).toLocaleString();
+            }
+            if (typeof ts === 'number') {
+                return new Date(ts > 100000000000 ? ts : ts * 1000).toLocaleString();
+            }
+            return String(ts);
+        };
+
+        let headers = "<th>Time</th>";
+        headers += "<th>Skin Temp (°C)</th>";
+        headers += "<th>Room Temp (°C)</th>";
+        headers += "<th>Moisture (%)</th>";
+        headers += "<th>Activity</th>";
+        headers += "<th>Alerts</th>";
 
         let rows = '';
-        if (!isNewFormat && Array.isArray(dataPoints)) {
+        if (Array.isArray(dataPoints) && dataPoints.length > 0) {
             rows = dataPoints.map((row: any) => {
-                let r = `<tr><td>${row.timestamp}</td>`;
-                if (selectedMetrics.temperature) r += `<td>${row.temperature}</td>`;
-                if (selectedMetrics.activity) r += `<td>${row.activity}</td>`;
-                r += "</tr>";
-                return r;
+                const time = parseDate(row.timestamp || row.createdAt);
+                const temp = row.temperature ?? row.temp ?? 'N/A';
+                const ambient = row.ambient_temp ?? row.ambientTemp ?? 'N/A';
+                const moist = row.moisture ?? 'N/A';
+                const activity = row.gait_label ?? row.gaitLabel ?? row.activity ?? 'N/A';
+                
+                const alerts = [];
+                if (row.fall_alert || row.fallAlert) alerts.push("FALL");
+                if (row.sos) alerts.push("SOS");
+                const alertStr = alerts.length > 0 ? alerts.join(", ") : "None";
+
+                return `<tr>
+                    <td>${time}</td>
+                    <td>${temp !== 'N/A' ? Number(temp).toFixed(1) : 'N/A'}</td>
+                    <td>${ambient !== 'N/A' ? Number(ambient).toFixed(1) : 'N/A'}</td>
+                    <td>${moist !== 'N/A' ? Number(moist).toFixed(0) : 'N/A'}</td>
+                    <td>${activity}</td>
+                    <td style="color: ${alerts.length > 0 ? '#C53030' : '#4A5568'}; font-weight: ${alerts.length > 0 ? 'bold' : 'normal'}">${alertStr}</td>
+                </tr>`;
             }).join('');
         }
 
@@ -260,7 +292,7 @@ export default function ExportReportScreen() {
         const aiReportHTML = isNewFormat && data.report
             ? `<div class="ai-report">
                 <h2 style="color: #2c5282; border-bottom: 2px solid #2c5282; padding-bottom: 10px; margin-top: 30px;">AI Clinical Analysis</h2>
-                <div class="report-content">${convertMarkdownToHTML(data.report)}</div>
+                <div class="report-content">${convertMarkdownToHTML(cleanSummaryText(data.report))}</div>
                </div>`
             : '';
 
@@ -292,7 +324,7 @@ export default function ExportReportScreen() {
                     <p><strong>Device:</strong> ${selectedDevice}</p>
                     <p><strong>Date Range:</strong> ${startDate.toLocaleDateString()} - ${(isSingleDate ? startDate : endDate).toLocaleDateString()}</p>
                     ${metaSummary}
-                    ${!isNewFormat ? `<table><tr>${headers}</tr>${rows}</table>` : ''}
+                    ${rows ? `<table><tr>${headers}</tr>${rows}</table>` : ''}
                     ${aiReportHTML}
                 </body>
             </html>
@@ -585,10 +617,31 @@ export default function ExportReportScreen() {
                             icon="thermometer"
                             color="#F9C45A"
                             bgColor="#FFF5E6"
-                            label="Temperature"
+                            label="Skin Temp"
                             checked={selectedMetrics.temperature}
                             onPress={() => toggleMetric('temperature')}
                             iconSize={32}
+                            useMatIcon
+                        />
+                        <MetricCard
+                            icon="thermometer-lines"
+                            color="#ED8936"
+                            bgColor="#FFFAF0"
+                            label="Room Temp"
+                            checked={selectedMetrics.ambientTemp}
+                            onPress={() => toggleMetric('ambientTemp')}
+                            iconSize={32}
+                            useMatIcon
+                        />
+                        <MetricCard
+                            icon="water-percent"
+                            color="#4299E1"
+                            bgColor="#EBF8FF"
+                            label="Moisture"
+                            checked={selectedMetrics.moisture}
+                            onPress={() => toggleMetric('moisture')}
+                            iconSize={32}
+                            useMatIcon
                         />
                         <MetricCard
                             icon="walk"
@@ -647,18 +700,20 @@ export default function ExportReportScreen() {
 }
 
 // ── MetricCard ──────────────────────────────────────────────────────────────
-function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 40, useMatIcon = false }: any) {
+function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 34, useMatIcon = false }: any) {
     return (
-        <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.metricCardWrapper}>
-            <View style={styles.metricCardContent}>
+        <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={styles.metricCardWrapper}>
+            <View style={[styles.metricCardContent, checked && styles.metricCardActive]}>
                 <View style={[styles.iconCircle, { backgroundColor: bgColor }]}>
                     {useMatIcon
-                        ? <MaterialCommunityIcons name={icon} size={iconSize} color={color} />
-                        : <IconSymbol name={icon} size={iconSize} color={color} />
+                        ? <MaterialCommunityIcons name={icon} size={iconSize} color={checked ? color : '#A0AEC0'} />
+                        : <IconSymbol name={icon} size={iconSize} color={checked ? color : '#A0AEC0'} />
                     }
                 </View>
-                <Text style={styles.metricLabel}>{label}</Text>
-                <View style={[styles.checkbox, checked && styles.metricCheckboxChecked, { borderRadius: 6, width: 22, height: 22 }]}>
+                <Text style={[styles.metricLabel, checked && styles.metricLabelActive]} numberOfLines={1}>
+                    {label}
+                </Text>
+                <View style={[styles.checkbox, checked && styles.metricCheckboxChecked]}>
                     {checked && <IconSymbol name="checkmark" size={14} color="#FFF" />}
                 </View>
             </View>
@@ -837,47 +892,57 @@ const styles = StyleSheet.create({
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
     // Metrics
-    metricsRow: { flexDirection: 'row', gap: 20, justifyContent: 'center' },
-    metricCardWrapper: { width: 140 },
+    metricsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 16 },
+    metricCardWrapper: { width: '48%' },
     metricCardContent: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 24,
-        paddingHorizontal: 10,
+        paddingVertical: 22,
+        paddingHorizontal: 12,
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        height: 150,
-        elevation: 4,
+        borderRadius: 24,
+        minHeight: 145,
+        borderWidth: 1.5,
+        borderColor: '#F0F3F6',
+        elevation: 3,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.05,
         shadowRadius: 10,
     },
-    iconCircle: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-    metricLabel: { fontSize: 13, color: '#888888', textAlign: 'center', fontWeight: '500', marginBottom: 10 },
+    metricCardActive: {
+        borderColor: '#91D7E4',
+        backgroundColor: '#FCFFFF',
+    },
+    iconCircle: { 
+        width: 58, height: 58, 
+        borderRadius: 29, 
+        justifyContent: 'center', alignItems: 'center', 
+        marginBottom: 14 
+    },
+    metricLabel: { fontSize: 14, color: '#A0AEC0', textAlign: 'center', fontWeight: '500', marginBottom: 12 },
+    metricLabelActive: { color: '#2D3748', fontWeight: '600' },
 
     // Format Toggle
-    formatToggleContainer: { width: '100%', marginBottom: 10 },
+    formatToggleContainer: { width: '100%', marginBottom: 10, paddingHorizontal: 2 },
     formatToggleContent: {
         flexDirection: 'row',
-        padding: 4,
+        padding: 6,
         borderRadius: 30,
         backgroundColor: '#FFFFFF',
-        elevation: 4,
+        elevation: 3,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
+        shadowOpacity: 0.06,
         shadowRadius: 8,
-        marginLeft: -4,
-        marginRight: -4,
     },
-    formatOption: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 26 },
-    formatOptionActive: { backgroundColor: '#91D7E4' },
-    formatText: { fontSize: 16, fontWeight: '600', color: '#333333' },
+    formatOption: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 24 },
+    formatOptionActive: { backgroundColor: '#91D7E4', elevation: 2, shadowColor: '#91D7E4', shadowOpacity: 0.3, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4 },
+    formatText: { fontSize: 16, fontWeight: '600', color: '#94A3B8' },
     formatTextActive: { color: '#FFFFFF' },
 
     // Footer
-    footer: { marginTop: 10, alignItems: 'center', gap: 12 },
+    footer: { marginTop: 20, alignItems: 'center', gap: 16 },
     logsHeaderRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -919,22 +984,18 @@ const styles = StyleSheet.create({
         color: '#334155',
     },
     exportButton: {
-        width: '102%',
+        width: '100%',
         backgroundColor: '#91D7E4',
-        borderRadius: 30,
+        borderRadius: 32,
         paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        elevation: 6,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        marginTop: -20,
-        marginRight: -4,
-        marginLeft: -4,
-
+        elevation: 8,
+        shadowColor: '#91D7E4',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
     },
-    exportButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 18 },
-    footerText: { fontSize: 14, color: '#888888', fontWeight: '500' },
+    exportButtonText: { color: '#FFFFFF', fontWeight: '700', fontSize: 18, letterSpacing: 0.5 },
+    footerText: { fontSize: 14, color: '#A0AEC0', fontWeight: '500' },
 });

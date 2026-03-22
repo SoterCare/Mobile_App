@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { alertService } from '@/services/alertService';
+import { recycleBinService } from '@/services/recycleBinService';
 
 type AlertType = 'movement' | 'fall' | 'urine';
 
 interface AlertCardProps {
+    id: string;
     type: AlertType;
     title: string;
     timestamp: string;
+    onDismiss?: (id: string) => void;
 }
 
 const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; iconColor: string; bgColor: string }> = {
@@ -31,7 +35,7 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
 const getRelativeTime = (timestamp: string): string => {
     const now = new Date();
     const alertTime = new Date(timestamp);
-    const diffMs = now.getTime() - alertTime.getTime();
+    const diffMs = Math.max(0, now.getTime() - alertTime.getTime());
     const diffSeconds = Math.floor(diffMs / 1000);
     const diffMinutes = Math.floor(diffSeconds / 60);
     const diffHours = Math.floor(diffMinutes / 60);
@@ -43,21 +47,57 @@ const getRelativeTime = (timestamp: string): string => {
     return `${diffDays}d ago`;
 };
 
-export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) => {
+export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp, onDismiss }) => {
     const [expanded, setExpanded] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [, forceUpdate] = useState(0);
     const config = ALERT_CONFIG[type];
 
     useEffect(() => {
-        const interval = setInterval(() => forceUpdate(n => n + 1), 30000); // refresh every 30s
+        const interval = setInterval(() => forceUpdate((n: number) => n + 1), 1000); // refresh every 1s
         return () => clearInterval(interval);
     }, []);
+
+    const handleAttend = async () => {
+        try {
+            setIsProcessing(true);
+            // All alerts (both persistent and real-time) should be registered on the backend
+            if (id) {
+                await Promise.all([
+                    alertService.attendAlert(id),
+                    recycleBinService.dismiss({ id })
+                ]);
+            }
+            onDismiss?.(id);
+        } catch (error) {
+            console.error('Failed to attend alert:', error);
+            setIsProcessing(false);
+        }
+    };
+
+    const handleFalseAlarm = async () => {
+        try {
+            setIsProcessing(true);
+            // All alerts (both persistent and real-time) should be registered on the backend
+            if (id) {
+                await Promise.all([
+                    alertService.falseAlarmAlert(id),
+                    recycleBinService.dismiss({ id })
+                ]);
+            }
+            onDismiss?.(id);
+        } catch (error) {
+            console.error('Failed to mark false alarm:', error);
+            setIsProcessing(false);
+        }
+    };
 
     return (
         <TouchableOpacity
             style={styles.alertCard}
-            onPress={() => setExpanded(!expanded)}
+            onPress={() => !isProcessing && setExpanded(!expanded)}
             activeOpacity={0.85}
+            disabled={isProcessing}
         >
             <View style={[styles.cardContent, !expanded && { alignItems: 'center' }]}>
                 {/* Icon */}
@@ -72,7 +112,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
                         <Text style={styles.alertText}>{title}</Text>
                         <View style={styles.timeAndChevron}>
                             <Text style={styles.alertTime}>{getRelativeTime(timestamp)}</Text>
-                            {!expanded && (
+                            {!expanded && !isProcessing && (
                                 <Ionicons
                                     name="chevron-down"
                                     size={16}
@@ -80,21 +120,24 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
                                     style={styles.chevron}
                                 />
                             )}
+                            {isProcessing && (
+                                <ActivityIndicator size="small" color="#91D7E4" style={styles.chevron} />
+                            )}
                         </View>
                     </View>
 
                     {/* Expandable action buttons */}
-                    {expanded && (
+                    {expanded && !isProcessing && (
                         <View style={styles.alertActions}>
                             <TouchableOpacity
                                 style={[styles.actionBtn, styles.actionBtnPrimary]}
-                                onPress={(e) => { e.stopPropagation?.(); }}
+                                onPress={(e) => { e.stopPropagation?.(); handleAttend(); }}
                             >
                                 <Text style={styles.actionBtnTextPrimary}>Attended</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.actionBtn, styles.actionBtnSecondary]}
-                                onPress={(e) => { e.stopPropagation?.(); }}
+                                onPress={(e) => { e.stopPropagation?.(); handleFalseAlarm(); }}
                             >
                                 <Text style={styles.actionBtnTextSecondary}>False</Text>
                             </TouchableOpacity>

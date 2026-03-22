@@ -11,41 +11,27 @@ export interface SummaryResponse {
 
 const SUMMARY_HISTORY_KEY = '@summary_history';
 
-const cleanSummaryText = (rawStr: string): string => {
-    let extractedText = '';
+export const cleanSummaryText = (rawStr: string): string => {
+    // Attempt to match both single-quoted and double-quoted text blocks within the array format
+    const match = rawStr.match(/\[\s*\{\s*['"]type['"]\s*:\s*['"]text['"]\s*,\s*['"]text['"]\s*:\s*(['"])(.*?)\1(?:\s*,\s*['"]extras['"]|\s*\})/s);
     
-    // Attempt 1: Single quotes format (Python dict style)
-    const sqStart = rawStr.indexOf("[{'type': 'text', 'text': '");
-    if (sqStart !== -1) {
-        const contentStart = sqStart + "[{'type': 'text', 'text': '".length;
-        const extrasMarker = "', 'extras': {";
-        const sqEnd = rawStr.lastIndexOf(extrasMarker);
-        if (sqEnd > contentStart) {
-            extractedText = rawStr.substring(contentStart, sqEnd).replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\'/g, "'").replace(/\\"/g, '"');
-        }
-    }
-    
-    // Attempt 2: Double quotes format (JSON style)
-    if (!extractedText) {
-        const dqStart = rawStr.indexOf('[{"type": "text", "text": "');
-        if (dqStart !== -1) {
-            const contentStart = dqStart + '[{"type": "text", "text": "'.length;
-            const extrasMarker = '", "extras": {';
-            const dqEnd = rawStr.lastIndexOf(extrasMarker);
-            if (dqEnd > contentStart) {
-                extractedText = rawStr.substring(contentStart, dqEnd).replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"');
-            }
-        }
-    }
-    
-    if (extractedText) {
-        const startIndex = sqStart !== -1 ? sqStart : rawStr.indexOf('[{"type": "text", "text": "');
-        // Get prefix before the array and remove trailing formatting marks like '---'
-        const baseContent = rawStr.substring(0, startIndex).replace(/---\s*$/, '').trim();
+    if (match && match[2]) {
+        let extractedText = match[2];
+        
+        // Remove python/json serialization escapes
+        extractedText = extractedText
+            .replace(/\\n/g, '\n')
+            .replace(/\\t/g, '\t')
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'");
+            
+        // Extract the prefix before the array if any
+        const baseContent = rawStr.substring(0, match.index).replace(/---\s*$/, '').trim();
         return baseContent ? `${baseContent}\n\n${extractedText}` : extractedText;
     }
     
-    return rawStr;
+    // Fallback unescape for everything
+    return rawStr.replace(/\\n/g, '\n');
 };
 
 const normalizeSummaryText = (data: any): string => {

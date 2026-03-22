@@ -88,7 +88,7 @@ export function useRealtimeVitals(deviceId?: string) {
               const newAlerts: RecentAlert[] = [];
               if (fallAlertVal && String(fallAlertVal) !== '0' && String(fallAlertVal) !== 'false') {
                 newAlerts.push({
-                  id: `rt_fall_${Date.now()}`,
+                  id: `fall_${logDeviceId}_${rawTimestamp || Date.now()}`,
                   deviceId: logDeviceId,
                   type: 'fall',
                   title: 'Fall Detected',
@@ -97,7 +97,7 @@ export function useRealtimeVitals(deviceId?: string) {
               }
               if (sosVal && String(sosVal) !== '0' && String(sosVal) !== 'false') {
                 newAlerts.push({
-                  id: `rt_sos_${Date.now()}`,
+                  id: `sos_${logDeviceId}_${rawTimestamp || Date.now()}`,
                   deviceId: logDeviceId,
                   type: 'movement',
                   title: 'SOS Emergency',
@@ -105,8 +105,34 @@ export function useRealtimeVitals(deviceId?: string) {
                 } as RecentAlert);
               }
 
+              if (moistureVal !== undefined && Number(moistureVal) > 25) {
+                newAlerts.push({
+                  id: `urine_${logDeviceId}_${rawTimestamp || Date.now()}`,
+                  deviceId: logDeviceId,
+                  type: 'urine',
+                  title: 'High Moisture Detected',
+                  timestamp: new Date().toISOString(),
+                } as RecentAlert);
+              }
+
               if (newAlerts.length > 0) {
-                setRecentAlerts((prev) => [...newAlerts, ...prev].slice(0, 10));
+                setRecentAlerts((prev) => {
+                  let filteredNew = [...newAlerts];
+                  
+                  // Anti-spam: prevent duplicate continuous analogue alerts like moisture
+                  const moistureAlert = filteredNew.find(a => a.type === 'urine');
+                  if (moistureAlert) {
+                      const lastMoisture = prev.find(a => a.type === 'urine');
+                      if (lastMoisture) {
+                          const timeSinceLast = Date.now() - new Date(lastMoisture.timestamp).getTime();
+                          if (timeSinceLast < 5 * 60 * 1000) { // 5 minutes cooldown
+                              filteredNew = filteredNew.filter(a => a.type !== 'urine');
+                          }
+                      }
+                  }
+                  
+                  return [...filteredNew, ...prev].slice(0, 10);
+                });
               }
             }
           }
@@ -126,10 +152,11 @@ export function useRealtimeVitals(deviceId?: string) {
     };
   }, [deviceId]);
 
-  const reconnect = () => {
-    // Relying on component remount or we can just let Socket.IO auto-reconnect
-    // If needed, we'll return a function that can toggle state or call socket.connect()
+  const removeAlert = (id: string) => {
+    setRecentAlerts((prev) => prev.filter((a) => a.id !== id));
   };
 
-  return { vitals, recentAlerts, isConnected, error, reconnect };
+  const reconnect = () => {};
+
+  return { vitals, recentAlerts, isConnected, error, reconnect, removeAlert };
 }

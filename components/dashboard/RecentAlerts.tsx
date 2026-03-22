@@ -16,8 +16,15 @@ import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 const SCROLL_HEIGHT = 280;
 
 export const RecentAlerts = () => {
-    const { recentAlerts: contextAlerts, selectedDeviceId } = useRaspberryPi();
-    const { recentAlerts: realtimeAlerts } = useRealtimeVitals(selectedDeviceId || undefined);
+    const { recentAlerts: contextAlerts, selectedDeviceId, refreshRecentAlerts } = useRaspberryPi();
+    const { recentAlerts: realtimeAlerts, removeAlert } = useRealtimeVitals(selectedDeviceId || undefined);
+
+    const handleAlertDismissed = (id: string) => {
+        // Refresh backend alerts
+        refreshRecentAlerts();
+        // Remove from realtime state (if it was from there)
+        removeAlert(id);
+    };
 
     const allAlerts = [...realtimeAlerts, ...contextAlerts];
     const uniqueAlerts = Array.from(new Map(allAlerts.map(item => [item.id, item])).values());
@@ -50,9 +57,11 @@ export const RecentAlerts = () => {
                 {alertsToRender.map((alert) => (
                     <AlertCard
                         key={alert.id}
+                        id={alert.id}
                         type={alert.type}
                         title={alert.title}
                         timestamp={alert.timestamp}
+                        onDismiss={handleAlertDismissed}
                     />
                 ))}
                 {alertsToRender.length === 0 && (
