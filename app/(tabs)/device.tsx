@@ -66,11 +66,11 @@ export default function DeviceScreen() {
                 activeOpacity={0.7}
             >
                 <View style={styles.deviceInfo}>
-                    <View style={[styles.iconContainer, { backgroundColor: isSelected ? '#E8F5E9' : '#E3F2FD' }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: isSelected ? '#ffffff' : '#E3F2FD' }]}>
                         <Ionicons
                             name="bluetooth"
                             size={28}
-                            color={isSelected ? '#4CAF50' : '#91D7E4'}
+                            color={isSelected ? '#91D7E4' : '#91D7E4'}
                         />
                     </View>
                     <View style={styles.deviceDetails}>
@@ -84,7 +84,7 @@ export default function DeviceScreen() {
                             <View
                                 style={[
                                     styles.signalDot,
-                                    { backgroundColor: item.status === 'online' ? '#4CAF50' : '#FF5722' },
+                                    { backgroundColor: item.status === 'online' ? '#91D7E4' : '#FF5722' },
                                 ]}
                             />
                             <Text style={styles.deviceRssi}>
@@ -112,7 +112,7 @@ export default function DeviceScreen() {
                     <Text style={styles.headerSubtitle}>{connectionLabel}</Text>
                     <View style={[
                         styles.bluetoothStatus,
-                        { backgroundColor: connectionState === 'connected' ? '#4CAF50' : '#F44336' }
+                        { backgroundColor: connectionState === 'connected' ? '#91D7E4' : '#F44336' }
                     ]}>
                         <Text style={styles.bluetoothStatusText}>
                             {connectionState === 'connected' ? 'LIVE' : 'DOWN'}
@@ -248,8 +248,15 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
         marginBottom: 12,
         backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 12,
+        borderRadius: 16,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
     },
     claimRow: {
         flexDirection: 'row',
@@ -339,9 +346,9 @@ const styles = StyleSheet.create({
         shadowRadius: 3,
     },
     connectedCard: {
-        backgroundColor: '#E8F5E9',
+        backgroundColor: '#E3F2FD',
         borderWidth: 2,
-        borderColor: '#4CAF50',
+        borderColor: '#91D7E4',
     },
     deviceInfo: {
         flexDirection: 'row',
@@ -392,15 +399,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#E3F2FD',
     },
     connectedBadge: {
-        backgroundColor: '#C8E6C9',
+        backgroundColor: '#91D7E4',
     },
     statusText: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#03A9F4',
+        color: '#E3F2FD',
     },
     connectedText: {
-        color: '#4CAF50',
+        color: '#fbfeff',
     },
     emptyState: {
         flex: 1,
@@ -434,8 +441,15 @@ const styles = StyleSheet.create({
     liveSection: {
         marginTop: 10,
         backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 14,
+        borderRadius: 16,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
     },
     sectionTitle: {
         fontSize: 14,

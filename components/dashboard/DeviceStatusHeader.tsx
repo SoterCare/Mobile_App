@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     statusOnline: {
-        color: '#47f503',
+        color: '#91D7E4',
         fontWeight: '600',
     },
     statusOffline: {
