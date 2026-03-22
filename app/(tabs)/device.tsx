@@ -70,7 +70,7 @@ export default function DeviceScreen() {
                         <Ionicons
                             name="bluetooth"
                             size={28}
-                            color={isSelected ? '#4CAF50' : '#03A9F4'}
+                            color={isSelected ? '#4CAF50' : '#91D7E4'}
                         />
                     </View>
                     <View style={styles.deviceDetails}>
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
         color: '#1f2937',
     },
     claimButton: {
-        backgroundColor: '#03A9F4',
+        backgroundColor: '#91D7E4',
         borderRadius: 10,
         paddingHorizontal: 14,
         height: 44,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     },
     scanButton: {
         flexDirection: 'row',
-        backgroundColor: '#03A9F4',
+        backgroundColor: '#91D7E4',
         marginHorizontal: 20,
         paddingVertical: 14,
         borderRadius: 12,
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     scanningButton: {
-        backgroundColor: '#0288D1',
+        backgroundColor: '#91D7E4',
     },
     scanIcon: {
         marginRight: 8,
