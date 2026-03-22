@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { alertService } from '@/services/alertService';
+import { recycleBinService } from '@/services/recycleBinService';
 
 type AlertType = 'movement' | 'fall' | 'urine';
 
@@ -62,7 +63,10 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
             setIsProcessing(true);
             // All alerts (both persistent and real-time) should be registered on the backend
             if (id) {
-                await alertService.attendAlert(id);
+                await Promise.all([
+                    alertService.attendAlert(id),
+                    recycleBinService.dismiss({ id })
+                ]);
             }
             onDismiss?.(id);
         } catch (error) {
@@ -76,7 +80,10 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
             setIsProcessing(true);
             // All alerts (both persistent and real-time) should be registered on the backend
             if (id) {
-                await alertService.falseAlarmAlert(id);
+                await Promise.all([
+                    alertService.falseAlarmAlert(id),
+                    recycleBinService.dismiss({ id })
+                ]);
             }
             onDismiss?.(id);
         } catch (error) {

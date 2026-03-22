@@ -9,6 +9,9 @@ export const recycleBinService = {
 
     const data = res.data;
 
+    // ✅ Match { success: true, data: { items: [...] } }
+    if (data?.data?.items && Array.isArray(data.data.items)) return data.data.items;
+
     // ✅ If backend returns array directly
     if (Array.isArray(data)) return data;
 
@@ -22,18 +25,16 @@ export const recycleBinService = {
     return [];
   },
 
-  restore: async (payload: { id: string; deviceId?: string; type?: 'alert' | 'event' }): Promise<any> => {
+  restore: async (payload: { id: string }): Promise<any> => {
     const res = await apiClient.post(API_CONFIG.ENDPOINTS.TIMELINE.RESTORE, {
-      type: 'alert',
-      ...payload,
+      id: payload.id,
     });
     return res.data;
   },
 
-  dismiss: async (payload: { id: string; deviceId?: string; type?: 'alert' | 'event' }): Promise<any> => {
+  dismiss: async (payload: { id: string }): Promise<any> => {
     const res = await apiClient.post(API_CONFIG.ENDPOINTS.TIMELINE.DISMISS, {
-      type: 'alert',
-      ...payload,
+      id: payload.id,
     });
     return res.data;
   },
