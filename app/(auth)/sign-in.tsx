@@ -23,40 +23,28 @@ export default function SignInScreen() {
     // Facebook OAuth hook
     const { request: facebookRequest, response: facebookResponse, promptAsync: facebookPromptAsync } = useFacebookAuth();
 
-    // Handle Google auth response
     useEffect(() => {
-        if (googleResponse) {
-            handleGoogleResponse();
-        }
+        if (googleResponse) handleGoogleResponse();
     }, [googleResponse]);
 
-    // Handle Facebook auth response
     useEffect(() => {
-        if (facebookResponse) {
-            handleFacebookResponse();
-        }
+        if (facebookResponse) handleFacebookResponse();
     }, [facebookResponse]);
 
     const handleGoogleResponse = async () => {
         try {
             setIsSocialLoading(true);
             const result = await processGoogleAuthResponse(googleResponse);
-
-            if (result.cancelled) {
-                return;
-            }
-
+            if (result.cancelled) return;
             if (!result.success || !result.user) {
                 Alert.alert('Error', result.error || 'Google sign-in failed');
                 return;
             }
-
             const backendResult = await authService.socialLogin(result.user.providerToken, {
                 email: result.user.email,
                 name: result.user.name || result.user.email.split('@')[0],
                 userId: `google-${result.user.email}`
             });
-
             await signIn(backendResult.accessToken, backendResult.user);
             router.replace("/(tabs)");
         } catch (error: any) {
@@ -70,22 +58,16 @@ export default function SignInScreen() {
         try {
             setIsSocialLoading(true);
             const result = await processFacebookAuthResponse(facebookResponse);
-
-            if (result.cancelled) {
-                return;
-            }
-
+            if (result.cancelled) return;
             if (!result.success || !result.user) {
                 Alert.alert('Error', result.error || 'Facebook sign-in failed');
                 return;
             }
-
             const backendResult = await authService.socialLogin(result.user.providerToken, {
                 email: result.user.email || '',
                 name: result.user.name || 'Facebook User',
                 userId: `facebook-${result.user.providerToken.substring(0, 10)}`
             });
-
             await signIn(backendResult.accessToken, backendResult.user);
             router.replace("/(tabs)");
         } catch (error: any) {
@@ -100,7 +82,6 @@ export default function SignInScreen() {
             Alert.alert('Error', 'Please enter your email');
             return;
         }
-
         try {
             setIsLoading(true);
             await authService.sendLoginCode(email);
@@ -120,7 +101,7 @@ export default function SignInScreen() {
         try {
             setIsSocialLoading(true);
             await googlePromptAsync();
-        } catch (error: any) {
+        } catch (error) {
             Alert.alert('Error', 'Failed to start Google sign-in');
             setIsSocialLoading(false);
         }
@@ -131,7 +112,7 @@ export default function SignInScreen() {
         try {
             setIsSocialLoading(true);
             await facebookPromptAsync();
-        } catch (error: any) {
+        } catch (error) {
             Alert.alert('Error', 'Failed to start Facebook sign-in');
             setIsSocialLoading(false);
         }
@@ -142,22 +123,16 @@ export default function SignInScreen() {
         try {
             setIsSocialLoading(true);
             const result = await appleSignIn();
-
-            if (result.cancelled) {
-                return;
-            }
-
+            if (result.cancelled) return;
             if (!result.success || !result.user) {
                 Alert.alert('Error', result.error || 'Apple sign-in failed');
                 return;
             }
-
             const backendResult = await authService.socialLogin(result.user.providerToken, {
                 email: result.user.email || '',
                 name: result.user.name || 'Apple User',
                 userId: `apple-${result.user.providerToken.substring(0, 10)}`
             });
-
             await signIn(backendResult.accessToken, backendResult.user);
             router.replace("/(tabs)");
         } catch (error: any) {
@@ -172,7 +147,7 @@ export default function SignInScreen() {
             <View style={styles.content}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="chevron-back" size={28} color="#333" />
+                        <Ionicons name="chevron-back" size={25} color="#333" />
                     </TouchableOpacity>
                     <Text style={styles.title}>Sign In</Text>
                 </View>
@@ -215,6 +190,13 @@ export default function SignInScreen() {
                             <Ionicons name="logo-apple" size={24} color="#000" />
                         </TouchableOpacity>
                     </View>
+
+                    {/* New Sign Up Link */}
+                    <TouchableOpacity onPress={() => router.push('/(auth)/sign-up')}>
+                        <Text style={styles.signUpLink}>
+                            Don't have an account? <Text style={styles.signUpLinkHighlight}>Sign Up</Text>
+                        </Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </SafeAreaView>
@@ -222,104 +204,22 @@ export default function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    content: {
-        flex: 1,
-        paddingHorizontal: 30,
-        paddingTop: 20,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 60,
-    },
-    backButton: {
-        marginRight: 20,
-        padding: 5,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    form: {
-        gap: 30,
-    },
-    inputContainer: {
-        marginBottom: 10,
-    },
-    input: {
-        height: 50,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-        fontSize: 16,
-        color: '#333',
-        paddingVertical: 10,
-    },
-    button: {
-        height: 50,
-        backgroundColor: '#91D7E4',
-        borderRadius: 25,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 3,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 4.65,
-        elevation: 6,
-        marginTop: 10,
-    },
-    buttonDisabled: {
-        opacity: 0.7,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '700',
-    },
-    dividerContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 20,
-        marginBottom: 20,
-    },
-    dividerLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#eee',
-    },
-    dividerText: {
-        marginHorizontal: 15,
-        color: '#999',
-        fontSize: 14,
-    },
-    socialContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 20,
-    },
-    socialButton: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: '#eee',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3,
-    },
+    container: { flex: 1, backgroundColor: '#fff' },
+    content: { flex: 1, paddingHorizontal: 30, paddingTop: 20 },
+    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 60, marginTop: 10 },
+    backButton: { marginRight: 4, padding: 5, marginLeft: -15 },
+    title: { fontSize: 25, fontWeight: 'bold', color: '#333' },
+    form: { gap: 30 },
+    inputContainer: { marginBottom: 10 },
+    input: { height: 50, borderBottomWidth: 1, borderBottomColor: '#ddd', fontSize: 16, color: '#333', paddingVertical: 10 },
+    button: { height: 50, backgroundColor: '#91D7E4', borderRadius: 25, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 4.65, elevation: 6, marginTop: 10 },
+    buttonDisabled: { opacity: 0.7 },
+    buttonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
+    dividerContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 20 },
+    dividerLine: { flex: 1, height: 1, backgroundColor: '#eee' },
+    dividerText: { marginHorizontal: 15, color: '#999', fontSize: 14 },
+    socialContainer: { flexDirection: 'row', justifyContent: 'center', gap: 20 },
+    socialButton: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#eee', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+    signUpLink: { textAlign: 'center', fontSize: 14, color: '#888', marginTop: 20 },
+    signUpLinkHighlight: { color: '#91D7E4', fontWeight: '600' },
 });
