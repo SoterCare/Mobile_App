@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, FlatList, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Shadows } from '@/theme/shadows';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
 import { summaryService, SummaryResponse } from '@/services/summaryService';
 import { TimelineColors } from '@/theme/colors';
+import { Calendar } from 'react-native-calendars';
 
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
@@ -21,11 +21,6 @@ export default function AISummaryScreen() {
     const [summaryData, setSummaryData] = useState<any>(null);
 
     const handleTabToggle = (tab: 'today' | 'previous') => setActiveTab(tab);
-
-    const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
-        if (Platform.OS === 'android') setShowDatePicker(false);
-        if (date) setSelectedDate(date);
-    };
 
     const formatTime = (date: Date) => {
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -47,14 +42,12 @@ export default function AISummaryScreen() {
         }
     }, [activeTab]);
 
-    // Auto-reset loading state if it gets stuck
     useEffect(() => {
         if (isLoading) {
             const timeout = setTimeout(() => {
                 console.warn('Loading state auto-reset after 30 seconds');
                 setIsLoading(false);
-            }, 30000); // 30 second auto-reset
-
+            }, 30000);
             return () => clearTimeout(timeout);
         }
     }, [isLoading]);
@@ -76,21 +69,18 @@ export default function AISummaryScreen() {
     };
 
     const handleGenerate = async () => {
-        if (isLoading) return; // Prevent multiple clicks
-        
+        if (isLoading) return;
+
         setIsLoading(true);
-        console.log('Starting summary generation...'); // Debug log
-        
+
         try {
             let data;
-            
-            // Add timeout to prevent hanging
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Request timeout')), 15000) // 15 second timeout
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timeout')), 15000)
             );
-            
+
             if (activeTab === 'today') {
-                console.log('Generating today summary...'); // Debug log
                 data = await Promise.race([
                     summaryService.generateTodaySummary(),
                     timeoutPromise
@@ -101,7 +91,6 @@ export default function AISummaryScreen() {
                     toTime: data.to || formatTime(new Date()),
                 });
             } else {
-                console.log('Generating previous summary for:', selectedDate); // Debug log
                 data = await Promise.race([
                     summaryService.generatePreviousSummary(selectedDate),
                     timeoutPromise
@@ -111,11 +100,8 @@ export default function AISummaryScreen() {
                     date: data.date || formatDate(selectedDate),
                 });
             }
-            console.log('Summary generated successfully'); // Debug log
         } catch (error: any) {
             console.error('Generate summary error:', error);
-            
-            // Set fallback data
             if (activeTab === 'today') {
                 setSummaryData({
                     summary: 'Unable to generate summary. Please try again later.',
@@ -129,7 +115,6 @@ export default function AISummaryScreen() {
                 });
             }
         } finally {
-            console.log('Resetting loading state'); // Debug log
             setIsLoading(false);
         }
     };
@@ -188,23 +173,11 @@ export default function AISummaryScreen() {
                     </View>
                 )}
 
-                {/* Date Picker Modal */}
-                {showDatePicker && (
-                    <DateTimePicker
-                        value={selectedDate}
-                        mode="date"
-                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                        onChange={handleDateChange}
-                        maximumDate={new Date()}
-                    />
-                )}
-
                 {/* Generate Button */}
                 <View style={styles.generateButtonContainer}>
                     <GenerateButton onPress={handleGenerate} isLoading={isLoading} />
-                    {/* Debug info and manual reset */}
                     {isLoading && (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.resetButton}
                             onPress={() => {
                                 console.log('Manual reset triggered');
@@ -216,10 +189,9 @@ export default function AISummaryScreen() {
                     )}
                 </View>
 
-                {/* Summary Content - Only show after generation */}
+                {/* Summary Content */}
                 {summaryData && (
                     <View style={styles.summarySection}>
-                        {/* Report Header */}
                         <View style={styles.reportHeader}>
                             {activeTab === 'today' ? (
                                 <>
@@ -236,13 +208,11 @@ export default function AISummaryScreen() {
                             )}
                         </View>
 
-                        {/* Summary Card */}
                         <View style={[styles.summaryCard, Shadows.card]}>
                             <Text style={styles.summaryTitle}>Summary</Text>
                             <Text style={styles.summaryText}>{summaryData.summary}</Text>
                         </View>
 
-                        {/* Metric Chips */}
                         <View style={styles.metricsRow}>
                             {renderMetricChip(
                                 <View style={[styles.iconWrapper, { backgroundColor: '#FFF5E6' }]}>
@@ -260,6 +230,42 @@ export default function AISummaryScreen() {
                     </View>
                 )}
             </ScrollView>
+
+            {/* Calendar Date Picker Modal */}
+            <Modal
+                visible={showDatePicker}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowDatePicker(false)}
+            >
+                <Pressable
+                    style={styles.modalOverlay}
+                    onPress={() => setShowDatePicker(false)}
+                >
+                    <Pressable style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Select Date</Text>
+                        <Calendar
+                            current={selectedDate.toISOString().slice(0, 10)}
+                            onDayPress={(day: any) => {
+                                setSelectedDate(new Date(day.dateString));
+                                setShowDatePicker(false);
+                            }}
+                            markedDates={{
+                                [selectedDate.toISOString().slice(0, 10)]: {
+                                    selected: true,
+                                    selectedColor: '#91D7E4',
+                                },
+                            }}
+                            theme={{
+                                arrowColor: '#91D7E4',
+                                todayTextColor: '#91D7E4',
+                                selectedDayBackgroundColor: '#91D7E4',
+                            }}
+                            maxDate={new Date().toISOString().slice(0, 10)}
+                        />
+                    </Pressable>
+                </Pressable>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -438,5 +444,25 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#333333',
         fontWeight: '600',
+    },
+    // Modal styles matching Timeline screen
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 20,
+        width: '90%',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#333333',
+        marginBottom: 16,
+        textAlign: 'center',
     },
 });
