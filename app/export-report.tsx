@@ -700,18 +700,20 @@ export default function ExportReportScreen() {
 }
 
 // ── MetricCard ──────────────────────────────────────────────────────────────
-function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 40, useMatIcon = false }: any) {
+function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 34, useMatIcon = false }: any) {
     return (
-        <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.metricCardWrapper}>
-            <View style={styles.metricCardContent}>
+        <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={styles.metricCardWrapper}>
+            <View style={[styles.metricCardContent, checked && styles.metricCardActive]}>
                 <View style={[styles.iconCircle, { backgroundColor: bgColor }]}>
                     {useMatIcon
-                        ? <MaterialCommunityIcons name={icon} size={iconSize} color={color} />
-                        : <IconSymbol name={icon} size={iconSize} color={color} />
+                        ? <MaterialCommunityIcons name={icon} size={iconSize} color={checked ? color : '#A0AEC0'} />
+                        : <IconSymbol name={icon} size={iconSize} color={checked ? color : '#A0AEC0'} />
                     }
                 </View>
-                <Text style={styles.metricLabel}>{label}</Text>
-                <View style={[styles.checkbox, checked && styles.metricCheckboxChecked, { borderRadius: 6, width: 22, height: 22 }]}>
+                <Text style={[styles.metricLabel, checked && styles.metricLabelActive]} numberOfLines={1}>
+                    {label}
+                </Text>
+                <View style={[styles.checkbox, checked && styles.metricCheckboxChecked]}>
                     {checked && <IconSymbol name="checkmark" size={14} color="#FFF" />}
                 </View>
             </View>
@@ -890,47 +892,57 @@ const styles = StyleSheet.create({
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
     // Metrics
-    metricsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, justifyContent: 'center' },
-    metricCardWrapper: { width: '45%', minWidth: 140 },
+    metricsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 16 },
+    metricCardWrapper: { width: '48%' },
     metricCardContent: {
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 24,
-        paddingHorizontal: 10,
+        paddingVertical: 22,
+        paddingHorizontal: 12,
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        height: 150,
-        elevation: 4,
+        borderRadius: 24,
+        minHeight: 145,
+        borderWidth: 1.5,
+        borderColor: '#F0F3F6',
+        elevation: 3,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.05,
         shadowRadius: 10,
     },
-    iconCircle: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-    metricLabel: { fontSize: 13, color: '#888888', textAlign: 'center', fontWeight: '500', marginBottom: 10 },
+    metricCardActive: {
+        borderColor: '#91D7E4',
+        backgroundColor: '#FCFFFF',
+    },
+    iconCircle: { 
+        width: 58, height: 58, 
+        borderRadius: 29, 
+        justifyContent: 'center', alignItems: 'center', 
+        marginBottom: 14 
+    },
+    metricLabel: { fontSize: 14, color: '#A0AEC0', textAlign: 'center', fontWeight: '500', marginBottom: 12 },
+    metricLabelActive: { color: '#2D3748', fontWeight: '600' },
 
     // Format Toggle
-    formatToggleContainer: { width: '100%', marginBottom: 10 },
+    formatToggleContainer: { width: '100%', marginBottom: 10, paddingHorizontal: 2 },
     formatToggleContent: {
         flexDirection: 'row',
-        padding: 4,
+        padding: 6,
         borderRadius: 30,
         backgroundColor: '#FFFFFF',
-        elevation: 4,
+        elevation: 3,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
+        shadowOpacity: 0.06,
         shadowRadius: 8,
-        marginLeft: -4,
-        marginRight: -4,
     },
-    formatOption: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 26 },
-    formatOptionActive: { backgroundColor: '#91D7E4' },
-    formatText: { fontSize: 16, fontWeight: '600', color: '#333333' },
+    formatOption: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 24 },
+    formatOptionActive: { backgroundColor: '#91D7E4', elevation: 2, shadowColor: '#91D7E4', shadowOpacity: 0.3, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4 },
+    formatText: { fontSize: 16, fontWeight: '600', color: '#94A3B8' },
     formatTextActive: { color: '#FFFFFF' },
 
     // Footer
-    footer: { marginTop: 10, alignItems: 'center', gap: 12 },
+    footer: { marginTop: 20, alignItems: 'center', gap: 16 },
     logsHeaderRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -972,22 +984,18 @@ const styles = StyleSheet.create({
         color: '#334155',
     },
     exportButton: {
-        width: '102%',
+        width: '100%',
         backgroundColor: '#91D7E4',
-        borderRadius: 30,
+        borderRadius: 32,
         paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        elevation: 6,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        marginTop: -20,
-        marginRight: -4,
-        marginLeft: -4,
-
+        elevation: 8,
+        shadowColor: '#91D7E4',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
     },
-    exportButtonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 18 },
-    footerText: { fontSize: 14, color: '#888888', fontWeight: '500' },
+    exportButtonText: { color: '#FFFFFF', fontWeight: '700', fontSize: 18, letterSpacing: 0.5 },
+    footerText: { fontSize: 14, color: '#A0AEC0', fontWeight: '500' },
 });
