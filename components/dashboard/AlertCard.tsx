@@ -5,9 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 type AlertType = 'movement' | 'fall' | 'urine';
 
 interface AlertCardProps {
+    id: string; // Ensure id is passed for API calls
     type: AlertType;
     title: string;
     timestamp: string;
+    onResolve?: (id: string) => void;
 }
 
 const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; iconColor: string; bgColor: string }> = {
@@ -43,8 +45,12 @@ const getRelativeTime = (timestamp: string): string => {
     return `${diffDays}d ago`;
 };
 
-export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) => {
+import { alertService } from '@/services/alertService';
+import { ActivityIndicator, Alert } from 'react-native';
+
+export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp, onResolve }) => {
     const [expanded, setExpanded] = useState(false);
+    const [isResolving, setIsResolving] = useState<'attend' | 'false' | null>(null);
     const [, forceUpdate] = useState(0);
     const config = ALERT_CONFIG[type];
 
@@ -53,11 +59,38 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
         return () => clearInterval(interval);
     }, []);
 
+    const handleAttend = async () => {
+        try {
+            setIsResolving('attend');
+            await alertService.attendAlert(id);
+            onResolve?.(id);
+        } catch (err: any) {
+            console.error('Failed to attend alert:', err);
+            Alert.alert('Error', 'Could not update alert. Please try again.');
+        } finally {
+            setIsResolving(null);
+        }
+    };
+
+    const handleFalseAlarm = async () => {
+        try {
+            setIsResolving('false');
+            await alertService.markFalseAlarm(id);
+            onResolve?.(id);
+        } catch (err: any) {
+            console.error('Failed to mark false alarm:', err);
+            Alert.alert('Error', 'Could not update alert. Please try again.');
+        } finally {
+            setIsResolving(null);
+        }
+    };
+
     return (
         <TouchableOpacity
             style={styles.alertCard}
-            onPress={() => setExpanded(!expanded)}
+            onPress={() => !isResolving && setExpanded(!expanded)}
             activeOpacity={0.85}
+            disabled={!!isResolving}
         >
             <View style={[styles.cardContent, !expanded && { alignItems: 'center' }]}>
                 {/* Icon */}
@@ -87,16 +120,24 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, timestamp }) 
                     {expanded && (
                         <View style={styles.alertActions}>
                             <TouchableOpacity
-                                style={[styles.actionBtn, styles.actionBtnPrimary]}
-                                onPress={(e) => { e.stopPropagation?.(); }}
+                                style={[styles.actionBtn, styles.actionBtnPrimary, isResolving === 'attend' && { opacity: 0.7 }]}
+                                onPress={(e) => { e.stopPropagation(); handleAttend(); }}
+                                disabled={!!isResolving}
                             >
-                                <Text style={styles.actionBtnTextPrimary}>Attended</Text>
+                                {isResolving === 'attend' 
+                                    ? <ActivityIndicator size="small" color="#fff" />
+                                    : <Text style={styles.actionBtnTextPrimary}>Attended</Text>
+                                }
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.actionBtn, styles.actionBtnSecondary]}
-                                onPress={(e) => { e.stopPropagation?.(); }}
+                                style={[styles.actionBtn, styles.actionBtnSecondary, isResolving === 'false' && { opacity: 0.7 }]}
+                                onPress={(e) => { e.stopPropagation(); handleFalseAlarm(); }}
+                                disabled={!!isResolving}
                             >
-                                <Text style={styles.actionBtnTextSecondary}>False</Text>
+                                {isResolving === 'false'
+                                    ? <ActivityIndicator size="small" color="#666" />
+                                    : <Text style={styles.actionBtnTextSecondary}>False</Text>
+                                }
                             </TouchableOpacity>
                         </View>
                     )}
