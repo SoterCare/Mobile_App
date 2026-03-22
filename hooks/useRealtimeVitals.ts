@@ -105,8 +105,34 @@ export function useRealtimeVitals(deviceId?: string) {
                 } as RecentAlert);
               }
 
+              if (moistureVal !== undefined && Number(moistureVal) > 25) {
+                newAlerts.push({
+                  id: `rt_moisture_${Date.now()}`,
+                  deviceId: logDeviceId,
+                  type: 'urine',
+                  title: 'High Moisture Detected',
+                  timestamp: new Date().toISOString(),
+                } as RecentAlert);
+              }
+
               if (newAlerts.length > 0) {
-                setRecentAlerts((prev) => [...newAlerts, ...prev].slice(0, 10));
+                setRecentAlerts((prev) => {
+                  let filteredNew = [...newAlerts];
+                  
+                  // Anti-spam: prevent duplicate continuous analogue alerts like moisture
+                  const moistureAlert = filteredNew.find(a => a.type === 'urine');
+                  if (moistureAlert) {
+                      const lastMoisture = prev.find(a => a.type === 'urine');
+                      if (lastMoisture) {
+                          const timeSinceLast = Date.now() - new Date(lastMoisture.timestamp).getTime();
+                          if (timeSinceLast < 5 * 60 * 1000) { // 5 minutes cooldown
+                              filteredNew = filteredNew.filter(a => a.type !== 'urine');
+                          }
+                      }
+                  }
+                  
+                  return [...filteredNew, ...prev].slice(0, 10);
+                });
               }
             }
           }
