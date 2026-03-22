@@ -13,12 +13,21 @@ import { TimelineColors } from '@/theme/colors';
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
     const [isLoading, setIsLoading] = useState(false);
+    const [expanded, setExpanded] = useState(false);
     const [summary, setSummary] = useState<string | null>(null);
     const [historyList, setHistoryList] = useState<SummaryResponse[]>([]);
     const [selectedHistoryItem, setSelectedHistoryItem] = useState<SummaryResponse | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [summaryData, setSummaryData] = useState<any>(null);
+
+    const SUMMARY_TRUNCATE_LENGTH = 250;
+
+    const truncateSummaryText = (text?: string | null) => {
+        const safeText = text ?? '';
+        if (safeText.length <= SUMMARY_TRUNCATE_LENGTH) return safeText;
+        return `${safeText.slice(0, SUMMARY_TRUNCATE_LENGTH)}...`;
+    };
 
     const handleTabToggle = (tab: 'today' | 'previous') => setActiveTab(tab);
 
@@ -79,6 +88,7 @@ export default function AISummaryScreen() {
         if (isLoading) return; // Prevent multiple clicks
         
         setIsLoading(true);
+        setExpanded(false);
         console.log('Starting summary generation...'); // Debug log
         
         try {
@@ -239,7 +249,22 @@ export default function AISummaryScreen() {
                         {/* Summary Card */}
                         <View style={[styles.summaryCard, Shadows.card]}>
                             <Text style={styles.summaryTitle}>Summary</Text>
-                            <Text style={styles.summaryText}>{summaryData.summary}</Text>
+                            <Text style={styles.summaryText}>
+                                {expanded
+                                    ? (summaryData?.summary ?? '')
+                                    : truncateSummaryText(summaryData?.summary)}
+                            </Text>
+                            {(summaryData?.summary ?? '').length > SUMMARY_TRUNCATE_LENGTH && (
+                                <TouchableOpacity
+                                    style={styles.summaryToggleButton}
+                                    onPress={() => setExpanded((prev) => !prev)}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={styles.summaryToggleText}>
+                                        {expanded ? 'Show Less' : 'Read More'}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
 
                         {/* Metric Chips */}
@@ -405,6 +430,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#777777',
         lineHeight: 24,
+    },
+    summaryToggleButton: {
+        marginTop: 12,
+        alignSelf: 'flex-start',
+    },
+    summaryToggleText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: TimelineColors.primaryCyan,
     },
     metricsRow: {
         flexDirection: 'row',
