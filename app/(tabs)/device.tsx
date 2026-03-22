@@ -58,6 +58,7 @@ export default function DeviceScreen() {
 
     const renderDevice = ({ item }: { item: any }) => {
         const isSelected = selectedDeviceId === item.id;
+        const isOnline = item.status === 'online';
 
         return (
             <TouchableOpacity
@@ -66,11 +67,11 @@ export default function DeviceScreen() {
                 activeOpacity={0.7}
             >
                 <View style={styles.deviceInfo}>
-                    <View style={[styles.iconContainer, { backgroundColor: isSelected ? '#ffffff' : '#E3F2FD' }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: isSelected ? '#ffffff' : '#F8FAFC' }]}>
                         <Ionicons
                             name="bluetooth"
                             size={28}
-                            color={isSelected ? '#91D7E4' : '#91D7E4'}
+                            color={isSelected ? '#91D7E4' : '#CBD5E1'}
                         />
                     </View>
                     <View style={styles.deviceDetails}>
@@ -84,11 +85,16 @@ export default function DeviceScreen() {
                             <View
                                 style={[
                                     styles.signalDot,
-                                    { backgroundColor: item.status === 'online' ? '#91D7E4' : '#FF5722' },
+                                    { backgroundColor: isOnline ? '#2ee134' : '#EF4444' },
                                 ]}
                             />
                             <Text style={styles.deviceRssi}>
-                                Status: {item.status || 'unknown'}
+                                Status: <Text style={{ 
+                                    color: isOnline ? '#2ee134' : '#EF4444', 
+                                    fontWeight: '700' 
+                                }}>
+                                    {item.status || 'unknown'}
+                                </Text>
                             </Text>
                         </View>
                     </View>
@@ -112,7 +118,7 @@ export default function DeviceScreen() {
                     <Text style={styles.headerSubtitle}>{connectionLabel}</Text>
                     <View style={[
                         styles.bluetoothStatus,
-                        { backgroundColor: connectionState === 'connected' ? '#91D7E4' : '#F44336' }
+                        { backgroundColor: connectionState === 'connected' ? '#2ee134' : '#EF4444' }
                     ]}>
                         <Text style={styles.bluetoothStatusText}>
                             {connectionState === 'connected' ? 'LIVE' : 'DOWN'}
@@ -179,28 +185,7 @@ export default function DeviceScreen() {
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
-                    ListFooterComponent={
-                        <View style={styles.liveSection}>
-                            <Text style={styles.sectionTitle}>Latest Vitals</Text>
-                            <Text style={styles.vitalsText}>
-                                {latestVitals
-                                    ? `Temp ${latestVitals.temperature ?? '--'}°C · Moisture ${latestVitals.moisture ?? '--'} · ${latestVitals.timestamp}`
-                                    : 'No latest vitals available'}
-                            </Text>
 
-                            <Text style={[styles.sectionTitle, { marginTop: 14 }]}>Latest Synced Logs</Text>
-                            {liveLogs.length === 0 ? (
-                                <Text style={styles.emptySubtext}>No recent synced logs.</Text>
-                            ) : (
-                                liveLogs.slice(0, 5).map((log, idx) => (
-                                    <View key={`${log.id || idx}-${log.timestamp}`} style={styles.liveLogRow}>
-                                        <Text style={styles.liveLogTitle}>{log.title || log.type || 'Log'}</Text>
-                                        <Text style={styles.liveLogTime}>{log.timestamp}</Text>
-                                    </View>
-                                ))
-                            )}
-                        </View>
-                    }
                 />
             )}
         </SafeAreaView>
@@ -210,7 +195,7 @@ export default function DeviceScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f2f3f7',
+        backgroundColor: '#f8f9fc',
     },
     header: {
         padding: 20,
@@ -218,9 +203,9 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
-        color: '#201d1d',
-        marginBottom: 20,
+        fontWeight: '800',
+        color: '#1e293b',
+        marginBottom: 16,
         marginTop: 8,
     },
     headerRow: {
@@ -230,18 +215,18 @@ const styles = StyleSheet.create({
     },
     headerSubtitle: {
         fontSize: 14,
-        color: '#666',
+        color: '#64748b',
         flex: 1,
     },
     bluetoothStatus: {
-        paddingHorizontal: 8,
+        paddingHorizontal: 10,
         paddingVertical: 4,
-        borderRadius: 6,
+        borderRadius: 20,
         marginLeft: 8,
     },
     bluetoothStatusText: {
         fontSize: 10,
-        fontWeight: 'bold',
+        fontWeight: '800',
         color: '#fff',
     },
     claimContainer: {
@@ -256,7 +241,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 3,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
+        borderColor: '#f1f5f9',
     },
     claimRow: {
         flexDirection: 'row',
@@ -266,16 +251,17 @@ const styles = StyleSheet.create({
     claimInput: {
         flex: 1,
         height: 44,
-        borderRadius: 10,
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#d3d7de',
+        borderColor: '#e2e8f0',
         paddingHorizontal: 12,
-        color: '#1f2937',
+        color: '#1e293b',
+        backgroundColor: '#fdfdfd',
     },
     claimButton: {
         backgroundColor: '#91D7E4',
-        borderRadius: 10,
-        paddingHorizontal: 14,
+        borderRadius: 12,
+        paddingHorizontal: 16,
         height: 44,
         justifyContent: 'center',
         alignItems: 'center',
@@ -286,28 +272,25 @@ const styles = StyleSheet.create({
     },
     errorText: {
         marginTop: 8,
-        color: '#dc2626',
+        color: '#ef4444',
         fontSize: 12,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     scanButton: {
         flexDirection: 'row',
         backgroundColor: '#91D7E4',
         marginHorizontal: 20,
         paddingVertical: 14,
-        borderRadius: 12,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        marginBottom: 12,
+        elevation: 4,
+        shadowColor: '#91D7E4',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        marginBottom: 16,
         marginTop: 10,
-    },
-    scanningButton: {
-        backgroundColor: '#91D7E4',
     },
     scanIcon: {
         marginRight: 8,
@@ -315,40 +298,42 @@ const styles = StyleSheet.create({
     scanButtonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
     },
     countContainer: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 22,
         paddingBottom: 8,
     },
     countText: {
         fontSize: 13,
-        color: '#666',
-        fontWeight: '500',
+        color: '#64748b',
+        fontWeight: '600',
     },
     listContent: {
         padding: 20,
         paddingTop: 8,
-        paddingBottom: 28,
+        paddingBottom: 40,
     },
     deviceCard: {
         backgroundColor: '#fff',
-        borderRadius: 12,
+        borderRadius: 20,
         padding: 16,
         marginBottom: 12,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#f1f5f9',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
+        elevation: 2,
     },
     connectedCard: {
-        backgroundColor: '#E3F2FD',
-        borderWidth: 2,
+        backgroundColor: '#f0f9ff',
         borderColor: '#91D7E4',
+        borderWidth: 1.5,
     },
     deviceInfo: {
         flexDirection: 'row',
@@ -357,9 +342,9 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     iconContainer: {
-        width: 56,
-        height: 56,
-        borderRadius: 12,
+        width: 52,
+        height: 52,
+        borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -369,13 +354,13 @@ const styles = StyleSheet.create({
     },
     deviceName: {
         fontSize: 16,
-        fontWeight: '600',
-        color: '#201d1d',
-        marginBottom: 3,
+        fontWeight: '700',
+        color: '#1e293b',
+        marginBottom: 2,
     },
     deviceId: {
         fontSize: 11,
-        color: '#999',
+        color: '#94a3b8',
         marginBottom: 4,
     },
     signalContainer: {
@@ -390,91 +375,57 @@ const styles = StyleSheet.create({
     },
     deviceRssi: {
         fontSize: 12,
-        color: '#666',
+        color: '#64748b',
     },
     statusBadge: {
         paddingHorizontal: 14,
         paddingVertical: 8,
-        borderRadius: 8,
-        backgroundColor: '#E3F2FD',
+        borderRadius: 12,
+        backgroundColor: '#f1f5f9',
     },
     connectedBadge: {
         backgroundColor: '#91D7E4',
     },
     statusText: {
         fontSize: 13,
-        fontWeight: '600',
-        color: '#E3F2FD',
+        fontWeight: '700',
+        color: '#64748b',
     },
     connectedText: {
-        color: '#fbfeff',
+        color: '#fff',
     },
     emptyState: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 40,
-        paddingTop: 60,
-        marginTop: -150,
+        marginTop: 60,
     },
     emptyIconContainer: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: '#f8f9fa',
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: '#f1f5f9',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
     },
     emptyText: {
         fontSize: 18,
-        fontWeight: '600',
-        color: '#666',
+        fontWeight: '700',
+        color: '#475569',
         marginBottom: 8,
     },
     emptySubtext: {
         fontSize: 14,
-        color: '#999',
+        color: '#94a3b8',
         textAlign: 'center',
         lineHeight: 20,
     },
-    liveSection: {
-        marginTop: 10,
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
-    },
     sectionTitle: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#344054',
-        marginBottom: 8,
-    },
-    vitalsText: {
-        fontSize: 13,
-        color: '#4b5563',
-    },
-    liveLogRow: {
-        borderTopWidth: 1,
-        borderTopColor: '#edf2f7',
-        paddingTop: 8,
-        marginTop: 8,
-    },
-    liveLogTitle: {
-        fontSize: 13,
-        color: '#1f2937',
-        fontWeight: '600',
-    },
-    liveLogTime: {
-        marginTop: 2,
-        fontSize: 12,
-        color: '#6b7280',
+        fontSize: 15,
+        fontWeight: '800',
+        color: '#334155',
+        marginBottom: 10,
     },
 });
