@@ -22,7 +22,7 @@ interface ActivityTimelineProps {
   style?: ViewStyle;
 }
 
-const getIconConfig = (type: ActivityEvent['type']) => {
+const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call' | 'sos') => {
   switch (type) {
     case 'movement':
       return {
@@ -38,16 +38,30 @@ const getIconConfig = (type: ActivityEvent['type']) => {
         backgroundColor: '#FF9D93', // Light Red Pastel
         cardBackground: '#FFF0F0',
       };
+    case 'help_call':
+      return {
+        iconName: 'call' as const,
+        iconComponent: Ionicons,
+        backgroundColor: '#FFA94D', // Orange
+        cardBackground: '#FFF5E6',
+      };
+    case 'sos':
+      return {
+        iconName: 'alert-circle' as const,
+        iconComponent: Ionicons,
+        backgroundColor: '#FF6B6B', // Red
+        cardBackground: '#FFF0F0',
+      };
     case 'connected':
       return {
-        iconName: 'server' as const,
+        iconName: 'wifi' as const,
         iconComponent: Ionicons,
-        backgroundColor: '#9A9A9A', // Grey
-        cardBackground: '#F0F0F0',
+        backgroundColor: '#6BCB77', // Green
+        cardBackground: '#EDFBEF',
       };
     case 'disconnected':
       return {
-        iconName: 'server' as const,
+        iconName: 'wifi-outline' as const,
         iconComponent: Ionicons,
         backgroundColor: '#9A9A9A', // Grey
         cardBackground: '#F0F0F0',
@@ -115,6 +129,14 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
               }
             ]}
           />
+        )}
+
+        {/* Empty state */}
+        {displayEvents.length === 0 && (
+          <View style={styles.emptyState}>
+            <Ionicons name="calendar-outline" size={40} color="#CCCCCC" />
+            <Text style={styles.emptyStateText}>No activity recorded for this day</Text>
+          </View>
         )}
 
         {/* Timeline items */}
@@ -210,6 +232,16 @@ const styles = StyleSheet.create({
   timeline: {
     position: 'relative',
     marginTop: 8,
+  },
+  emptyState: {
+    paddingVertical: 32,
+    alignItems: 'center',
+    gap: 10,
+  },
+  emptyStateText: {
+    fontSize: 13,
+    color: '#BBBBBB',
+    fontWeight: '500',
   },
   verticalLine: {
     position: 'absolute',
