@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
+import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
 export default function DeviceScreen() {
     const {
@@ -28,6 +29,8 @@ export default function DeviceScreen() {
         lastError,
     } = useRaspberryPi();
 
+    const { isDeviceStreaming } = useRealtimeVitals(selectedDeviceId || undefined);
+
     const [claimInput, setClaimInput] = useState('');
     const [isClaiming, setIsClaiming] = useState(false);
 
@@ -36,6 +39,10 @@ export default function DeviceScreen() {
         if (connectionState === 'reconnecting' || connectionState === 'connecting') return 'Backend Sync Connecting';
         return 'Backend Sync Disconnected';
     }, [connectionState]);
+
+    // Device is live if the selected device is actively streaming via websocket
+    const deviceLiveLabel = isDeviceStreaming ? 'Device Online' : 'Device Offline';
+    const deviceLiveColor = isDeviceStreaming ? '#2ee134' : '#EF4444';
 
     const handleClaim = async () => {
         const deviceId = claimInput.trim();
@@ -58,7 +65,9 @@ export default function DeviceScreen() {
 
     const renderDevice = ({ item }: { item: any }) => {
         const isSelected = selectedDeviceId === item.id;
-        const isOnline = item.status === 'online';
+        // For the selected device, use real-time streaming status; for others fall back to API status
+        const isOnline = isSelected ? isDeviceStreaming : item.status === 'online';
+        const statusLabel = isSelected ? (isDeviceStreaming ? 'Online' : 'Offline') : (item.status || 'unknown');
 
         return (
             <TouchableOpacity
@@ -93,7 +102,7 @@ export default function DeviceScreen() {
                                     color: isOnline ? '#2ee134' : '#EF4444', 
                                     fontWeight: '700' 
                                 }}>
-                                    {item.status || 'unknown'}
+                                    {statusLabel}
                                 </Text>
                             </Text>
                         </View>
@@ -116,13 +125,22 @@ export default function DeviceScreen() {
                 <Text style={styles.headerTitle}>My Devices</Text>
                 <View style={styles.headerRow}>
                     <Text style={styles.headerSubtitle}>{connectionLabel}</Text>
-                    <View style={[
-                        styles.bluetoothStatus,
-                        { backgroundColor: connectionState === 'connected' ? '#2ee134' : '#EF4444' }
-                    ]}>
-                        <Text style={styles.bluetoothStatusText}>
-                            {connectionState === 'connected' ? 'LIVE' : 'DOWN'}
-                        </Text>
+                    <View style={styles.headerRow}>
+                        {/* Device live streaming indicator */}
+                        <View style={[styles.bluetoothStatus, { backgroundColor: deviceLiveColor, marginRight: 8 }]}>
+                            <Text style={styles.bluetoothStatusText}>
+                                {isDeviceStreaming ? 'LIVE' : 'OFFLINE'}
+                            </Text>
+                        </View>
+                        {/* Backend sync indicator */}
+                        <View style={[
+                            styles.bluetoothStatus,
+                            { backgroundColor: connectionState === 'connected' ? '#94a3b8' : '#EF4444' }
+                        ]}>
+                            <Text style={styles.bluetoothStatusText}>
+                                {connectionState === 'connected' ? 'SYNC' : 'DOWN'}
+                            </Text>
+                        </View>
                     </View>
                 </View>
             </View>
