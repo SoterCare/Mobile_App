@@ -1,9 +1,3 @@
-/**
- * Recycle Bin Screen
- * Shows activities previously marked as false positives
- * Allows restoring them back to the timeline
- */
-
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
@@ -16,15 +10,15 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { recycleBinService } from '@/services/recycleBinService';
 
-// Types
+// Types updated to match AlertCard
 interface RemovedActivity {
   id: string;
   deviceId?: string;
-  type: 'movement' | 'fall' | 'urine';
+  type: 'movement' | 'fall' | 'urine' | 'sos' | 'help_call';
   title: string;
   time: string;
 }
@@ -38,45 +32,58 @@ const mapToRemovedActivity = (item: any): RemovedActivity => ({
   time: item.time ?? item.createdAt ?? item.timestamp ?? '',
 });
 
-// Color configurations for different activity types
+/**
+ * Updated configuration to match AlertCard colors and icons
+ * iconBgColor: Matches the circle background in Recent Alerts
+ * cardBgColor: A softer, tinted version for the Recycle Bin card
+ */
 const getActivityConfig = (type: RemovedActivity['type']) => {
   switch (type) {
     case 'movement':
       return {
         iconName: 'walk' as const,
-        IconComponent: MaterialCommunityIcons,
-        iconBgColor: '#4ECDC4',
-        cardBgColor: '#D4F5F5',
-        buttonBgColor: '#4ECDC4',
+        iconBgColor: '#42dfdf',
+        cardBgColor: '#E0FBFB',
+        buttonBgColor: '#42dfdf',
       };
     case 'fall':
       return {
-        iconName: 'alert' as const,
-        IconComponent: Ionicons,
-        iconBgColor: '#F5A9A9',
-        cardBgColor: '#FFEEEE',
-        buttonBgColor: '#F5A9A9',
+        iconName: 'warning' as const,
+        iconBgColor: '#FF9D93',
+        cardBgColor: '#FFF2F1',
+        buttonBgColor: '#FF9D93',
       };
     case 'urine':
       return {
         iconName: 'water' as const,
-        IconComponent: Ionicons,
-        iconBgColor: '#87CEEB',
-        cardBgColor: '#E6F4F9',
-        buttonBgColor: '#87CEEB',
+        iconBgColor: '#91D7E4',
+        cardBgColor: '#F0F9FB',
+        buttonBgColor: '#91D7E4',
+      };
+    case 'sos':
+      return {
+        iconName: 'alert-circle' as const,
+        iconBgColor: '#FF6B6B',
+        cardBgColor: '#FFF0F0',
+        buttonBgColor: '#FF6B6B',
+      };
+    case 'help_call':
+      return {
+        iconName: 'call' as const,
+        iconBgColor: '#FFA94D',
+        cardBgColor: '#FFF5EB',
+        buttonBgColor: '#FFA94D',
       };
     default:
       return {
         iconName: 'help' as const,
-        IconComponent: Ionicons,
         iconBgColor: '#999999',
-        cardBgColor: '#F0F0F0',
+        cardBgColor: '#F5F5F5',
         buttonBgColor: '#999999',
       };
   }
 };
 
-// Constants
 const ICON_SIZE = 36;
 const CARD_MIN_HEIGHT = 72;
 const ITEM_GAP = 16;
@@ -125,9 +132,7 @@ export default function RecycleBinScreen() {
           text: 'Restore',
           onPress: async () => {
             try {
-              await recycleBinService.restore({
-                id: activity.id,
-              });
+              await recycleBinService.restore({ id: activity.id });
               setRemovedActivities((prev) =>
                 prev.filter((item) => item.id !== activity.id)
               );
@@ -141,7 +146,6 @@ export default function RecycleBinScreen() {
     );
   }, []);
 
-  // Calculate line height for connecting vertical line
   const lineHeight =
     removedActivities.length > 1
       ? (removedActivities.length - 1) * (CARD_MIN_HEIGHT + ITEM_GAP) +
@@ -150,7 +154,6 @@ export default function RecycleBinScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      {/* Header */}
       <View style={styles.header}>
         <Pressable
           onPress={handleGoBack}
@@ -162,12 +165,10 @@ export default function RecycleBinScreen() {
         <Text style={styles.headerTitle}>Recycle Bin</Text>
       </View>
 
-      {/* Description */}
       <Text style={styles.description}>
         Restore the detections that were previously marked as false positives.
       </Text>
 
-      {/* Scrollable Content */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -176,115 +177,106 @@ export default function RecycleBinScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Loading State */}
         {loading && (
           <View style={styles.emptyState}>
-            <ActivityIndicator size="large" color="#4ECDC4" />
+            <ActivityIndicator size="large" color="#42dfdf" />
           </View>
         )}
 
-        {/* Error State */}
         {!loading && error && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>{error}</Text>
             <Pressable onPress={fetchDismissed} style={{ marginTop: 12 }}>
-              <Text style={{ color: '#4ECDC4', fontWeight: '600' }}>Retry</Text>
+              <Text style={{ color: '#42dfdf', fontWeight: '600' }}>Retry</Text>
             </Pressable>
           </View>
         )}
 
         {!loading && !error && (
           <>
-        {/* Top Row: Label + Date */}
-        <View style={styles.topRow}>
-          <Text style={styles.removedLabel}>Removed Activities</Text>
-          <Text style={styles.dateLabel}>
-            {removedActivities.length > 0 && removedActivities[0].time
-              ? new Date(removedActivities[0].time).toLocaleDateString('en-CA')
-              : new Date().toLocaleDateString('en-CA')}
-          </Text>
-        </View>
+            <View style={styles.topRow}>
+              <Text style={styles.removedLabel}>Removed Activities</Text>
+              <Text style={styles.dateLabel}>
+                {removedActivities.length > 0 && removedActivities[0].time
+                  ? new Date(removedActivities[0].time).toLocaleDateString('en-CA')
+                  : new Date().toLocaleDateString('en-CA')}
+              </Text>
+            </View>
 
-        {/* Timeline */}
-        {removedActivities.length > 0 ? (
-          <View style={styles.timeline}>
-            {/* Vertical connecting line */}
-            {removedActivities.length > 1 && (
-              <View
-                style={[
-                  styles.verticalLine,
-                  {
-                    height: lineHeight,
-                    top: ICON_SIZE / 2,
-                    left: ICON_SIZE / 2 - 1,
-                  },
-                ]}
-              />
-            )}
-
-            {/* Activity Items */}
-            {removedActivities.map((activity, index) => {
-              const config = getActivityConfig(activity.type);
-              const IconComponent = config.IconComponent;
-              const isLast = index === removedActivities.length - 1;
-
-              return (
-                <View
-                  key={activity.id}
-                  style={[
-                    styles.timelineItem,
-                    !isLast && { marginBottom: ITEM_GAP },
-                  ]}
-                >
-                  {/* Icon Circle */}
-                  <View style={styles.iconWrapper}>
-                    <View
-                      style={[
-                        styles.iconCircle,
-                        { backgroundColor: config.iconBgColor },
-                      ]}
-                    >
-                      <IconComponent
-                        name={config.iconName as any}
-                        size={18}
-                        color="#FFFFFF"
-                      />
-                    </View>
-                  </View>
-
-                  {/* Activity Card */}
+            {removedActivities.length > 0 ? (
+              <View style={styles.timeline}>
+                {removedActivities.length > 1 && (
                   <View
                     style={[
-                      styles.activityCard,
-                      { backgroundColor: config.cardBgColor },
+                      styles.verticalLine,
+                      {
+                        height: lineHeight,
+                        top: ICON_SIZE / 2,
+                        left: ICON_SIZE / 2 - 1,
+                      },
                     ]}
-                  >
-                    <View style={styles.cardContent}>
-                      <Text style={styles.activityTitle}>{activity.title}</Text>
-                      <Text style={styles.activityTime}>{activity.time}</Text>
-                    </View>
-                    <Pressable
-                      style={({ pressed }) => [
-                        styles.restoreButton,
-                        { backgroundColor: config.buttonBgColor },
-                        pressed && styles.restoreButtonPressed,
+                  />
+                )}
+
+                {removedActivities.map((activity, index) => {
+                  const config = getActivityConfig(activity.type);
+                  const isLast = index === removedActivities.length - 1;
+
+                  return (
+                    <View
+                      key={activity.id}
+                      style={[
+                        styles.timelineItem,
+                        !isLast && { marginBottom: ITEM_GAP },
                       ]}
-                      onPress={() => handleRestore(activity)}
                     >
-                      <Text style={styles.restoreButtonText}>Restore</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <Ionicons name="trash-outline" size={48} color="#CCCCCC" />
-            <Text style={styles.emptyStateText}>No removed activities</Text>
-          </View>
-        )}
-        </>
+                      <View style={styles.iconWrapper}>
+                        <View
+                          style={[
+                            styles.iconCircle,
+                            { backgroundColor: config.iconBgColor },
+                          ]}
+                        >
+                          <Ionicons
+                            name={config.iconName as any}
+                            size={18}
+                            color="#FFFFFF"
+                          />
+                        </View>
+                      </View>
+
+                      <View
+                        style={[
+                          styles.activityCard,
+                          { backgroundColor: config.cardBgColor },
+                        ]}
+                      >
+                        <View style={styles.cardContent}>
+                          <Text style={styles.activityTitle}>{activity.title}</Text>
+                          <Text style={styles.activityTime}>{activity.time}</Text>
+                        </View>
+                        <Pressable
+                          style={({ pressed }) => [
+                            styles.restoreButton,
+                            { backgroundColor: config.buttonBgColor },
+                            pressed && styles.restoreButtonPressed,
+                          ]}
+                          onPress={() => handleRestore(activity)}
+                        >
+                          <Text style={styles.restoreButtonText}>Restore</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <Ionicons name="trash-outline" size={48} color="#CCCCCC" />
+                <Text style={styles.emptyStateText}>No removed activities</Text>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -296,7 +288,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F6F6F6',
   },
-  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -315,10 +306,6 @@ const styles = StyleSheet.create({
     color: '#333333',
     marginLeft: -4,
   },
-  headerSpacer: {
-    width: 32,
-  },
-  // Description
   description: {
     fontSize: 14,
     color: '#666666',
@@ -326,7 +313,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     marginBottom: 24,
   },
-  // Scroll
   scrollView: {
     flex: 1,
   },
@@ -334,7 +320,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 120,
   },
-  // Top Row
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -350,7 +335,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999999',
   },
-  // Timeline
   timeline: {
     position: 'relative',
   },
@@ -378,7 +362,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Activity Card
   activityCard: {
     flex: 1,
     marginLeft: 12,
@@ -388,7 +371,7 @@ const styles = StyleSheet.create({
     minHeight: CARD_MIN_HEIGHT,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -400,14 +383,13 @@ const styles = StyleSheet.create({
   },
   activityTitle: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333333',
   },
   activityTime: {
     fontSize: 12,
-    color: '#999999',
+    color: '#666666',
   },
-  // Restore Button
   restoreButton: {
     alignSelf: 'flex-end',
     paddingHorizontal: 16,
@@ -422,7 +404,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  // Empty State
   emptyState: {
     flex: 1,
     justifyContent: 'center',
