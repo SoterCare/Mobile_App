@@ -32,7 +32,7 @@ export const RecentAlerts = () => {
 
     const alertsToRender = sortedAlerts.map((a, index) => ({
         id: a.id || `alert_${index}`,
-        type: (a.type as 'movement' | 'fall' | 'urine') || 'movement',
+        type: (a.type as 'movement' | 'fall' | 'urine' | 'sos' | 'help_call') || 'movement',
         title: a.title,
         timestamp: a.timestamp,
     }));

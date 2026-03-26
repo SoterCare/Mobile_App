@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { alertService } from '@/services/alertService';
 import { recycleBinService } from '@/services/recycleBinService';
 
-type AlertType = 'movement' | 'fall' | 'urine';
+type AlertType = 'movement' | 'fall' | 'urine' | 'sos' | 'help_call';
 
 interface AlertCardProps {
     id: string;
@@ -30,7 +30,19 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
         iconColor: '#ffffff',
         bgColor: '#91D7E4',
     },
+    sos: {
+        icon: 'alert-circle',
+        iconColor: '#ffffff',
+        bgColor: '#FF6B6B',
+    },
+    help_call: {
+        icon: 'call',
+        iconColor: '#ffffff',
+        bgColor: '#FFA94D',
+    },
 };
+
+const DEFAULT_ALERT_CONFIG = ALERT_CONFIG.movement;
 
 const getRelativeTime = (timestamp: string): string => {
     const now = new Date();
@@ -51,7 +63,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
     const [expanded, setExpanded] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [, forceUpdate] = useState(0);
-    const config = ALERT_CONFIG[type];
+    const config = ALERT_CONFIG[type] ?? DEFAULT_ALERT_CONFIG;
 
     useEffect(() => {
         const interval = setInterval(() => forceUpdate((n: number) => n + 1), 1000); // refresh every 1s
