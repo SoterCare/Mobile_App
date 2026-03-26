@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { DashboardVitals, RecentAlert } from '@/types/raspberryPi.types';
 import { API_CONFIG } from '@/api/config/api.config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TOKEN_KEY = 'accessToken';
+// If no log arrives within this window, device is considered offline
+const DEVICE_OFFLINE_TIMEOUT_MS = 10_000;
 
 export function useRealtimeVitals(deviceId?: string) {
   const [vitals, setVitals] = useState<DashboardVitals | null>(null);
   const [recentAlerts, setRecentAlerts] = useState<RecentAlert[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isDeviceStreaming, setIsDeviceStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const offlineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let socketInstance: Socket | null = null;
@@ -41,9 +45,19 @@ export function useRealtimeVitals(deviceId?: string) {
           console.log(`[Socket Received Event]: ${eventName}`, JSON.stringify(args, null, 2));
         });
 
+        const markDeviceOnline = () => {
+          setIsDeviceStreaming(true);
+          if (offlineTimerRef.current) clearTimeout(offlineTimerRef.current);
+          offlineTimerRef.current = setTimeout(() => {
+            setIsDeviceStreaming(false);
+          }, DEVICE_OFFLINE_TIMEOUT_MS);
+        };
+
         socketInstance.on('disconnect', () => {
           console.log('[Socket] Disconnected from server');
           setIsConnected(false);
+          setIsDeviceStreaming(false);
+          if (offlineTimerRef.current) clearTimeout(offlineTimerRef.current);
         });
 
         socketInstance.on('connect_error', (err) => {
@@ -59,6 +73,8 @@ export function useRealtimeVitals(deviceId?: string) {
 
         // Backend broadcasts under 'device.logs.ingested'
         socketInstance.on('device.logs.ingested', (data: any) => {
+          // Mark device as online/streaming whenever data arrives
+          markDeviceOnline();
           if (data && data.logs && data.logs.length > 0) {
             const latestLog = data.logs[0];
             const logDeviceId = data.deviceId || data.device_id || latestLog.device_id || deviceId || 'unknown';
@@ -158,5 +174,5 @@ export function useRealtimeVitals(deviceId?: string) {
 
   const reconnect = () => {};
 
-  return { vitals, recentAlerts, isConnected, error, reconnect, removeAlert };
+  return { vitals, recentAlerts, isConnected, isDeviceStreaming, error, reconnect, removeAlert };
 }

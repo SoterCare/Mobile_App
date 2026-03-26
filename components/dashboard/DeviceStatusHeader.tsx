@@ -5,14 +5,14 @@ import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
 export const DeviceStatusHeader = () => {
     const { devices, selectedDeviceId } = useRaspberryPi();
-    const { isConnected: isRealtimeConnected } = useRealtimeVitals(selectedDeviceId || undefined);
+    const { isDeviceStreaming } = useRealtimeVitals(selectedDeviceId || undefined);
 
     const selectedDevice = useMemo(
         () => devices.find((d) => d.id === selectedDeviceId) || devices[0],
         [devices, selectedDeviceId]
     );
 
-    const isConnected = isRealtimeConnected;
+    const isConnected = isDeviceStreaming;
     const connectionState = isConnected ? 'Online' : 'Offline';
 
     return (
