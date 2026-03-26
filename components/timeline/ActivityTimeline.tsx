@@ -22,7 +22,7 @@ interface ActivityTimelineProps {
   style?: ViewStyle;
 }
 
-const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call' | 'sos') => {
+const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call') => {
   switch (type) {
     case 'movement':
       return {
@@ -42,15 +42,8 @@ const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' 
       return {
         iconName: 'call' as const,
         iconComponent: Ionicons,
-        backgroundColor: '#FFA94D', // Orange
+        backgroundColor: '#FFA94D',
         cardBackground: '#FFF5E6',
-      };
-    case 'sos':
-      return {
-        iconName: 'alert-circle' as const,
-        iconComponent: Ionicons,
-        backgroundColor: '#FF6B6B', // Red
-        cardBackground: '#FFF0F0',
       };
     case 'connected':
       return {

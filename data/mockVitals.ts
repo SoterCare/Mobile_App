@@ -10,7 +10,7 @@ export interface VitalDataPoint {
 
 export interface ActivityEvent {
   id: string;
-  type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call' | 'sos';
+  type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call';
   label: string;
   time: string;
   deviceInfo?: string[];

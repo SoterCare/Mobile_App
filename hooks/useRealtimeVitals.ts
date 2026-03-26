@@ -115,8 +115,8 @@ export function useRealtimeVitals(deviceId?: string) {
                 newAlerts.push({
                   id: `sos_${logDeviceId}_${rawTimestamp || Date.now()}`,
                   deviceId: logDeviceId,
-                  type: 'movement',
-                  title: 'SOS Emergency',
+                  type: 'help_call',
+                  title: 'Help Call',
                   timestamp: new Date().toISOString(),
                 } as RecentAlert);
               }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     StyleSheet,
     View,
@@ -14,10 +14,20 @@ import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
 // Height of one expanded alert card is slightly more, so just set a standard max height
 const SCROLL_HEIGHT = 280;
+const POLL_INTERVAL_MS = 15_000; // Refresh backend alerts every 15 seconds
 
 export const RecentAlerts = () => {
     const { recentAlerts: contextAlerts, selectedDeviceId, refreshRecentAlerts } = useRaspberryPi();
     const { recentAlerts: realtimeAlerts, removeAlert } = useRealtimeVitals(selectedDeviceId || undefined);
+
+    // Poll backend for fresh alerts every 15 seconds
+    useEffect(() => {
+        refreshRecentAlerts(); // immediate fetch on mount
+        const interval = setInterval(() => {
+            refreshRecentAlerts();
+        }, POLL_INTERVAL_MS);
+        return () => clearInterval(interval);
+    }, [refreshRecentAlerts]);
 
     const handleAlertDismissed = (id: string) => {
         // Refresh backend alerts
