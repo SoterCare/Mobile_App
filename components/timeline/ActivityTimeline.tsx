@@ -1,6 +1,6 @@
 /**
  * ActivityTimeline component for Day view
- * Shows a vertical timeline with activity events (movement, fall only)
+ * Shows a vertical timeline with activity events (movement, fall, moisture, etc.)
  * Matches the reference design with continuous vertical line on the left
  */
 
@@ -22,7 +22,7 @@ interface ActivityTimelineProps {
   style?: ViewStyle;
 }
 
-const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call') => {
+const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call' | 'moisture') => {
   switch (type) {
     case 'movement':
       return {
@@ -33,10 +33,17 @@ const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' 
       };
     case 'fall':
       return {
-        iconName: 'warning' as const, // Changed from alert
+        iconName: 'warning' as const,
         iconComponent: Ionicons,
         backgroundColor: '#FF9D93', // Light Red Pastel
         cardBackground: '#FFF0F0',
+      };
+    case 'moisture':
+      return {
+        iconName: 'water' as const,
+        iconComponent: Ionicons,
+        backgroundColor: '#91D7E4', // Light Blue
+        cardBackground: '#EBF7F9', // Very light blue tint
       };
     case 'help_call':
       return {
@@ -134,7 +141,8 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
 
         {/* Timeline items */}
         {displayEvents.map((event, index) => {
-          const config = getIconConfig(event.type);
+          // Use type casting to handle potential 'urine' or 'moisture' naming from backend
+          const config = getIconConfig(event.type as any);
           const IconComponent = config.iconComponent;
           const isLast = index === displayEvents.length - 1;
 
@@ -265,7 +273,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   eventCardContainer: {
-    borderRadius: 24, // Increased curve
+    borderRadius: 24,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -279,7 +287,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: CARD_HEIGHT,
     paddingHorizontal: 16,
-    marginLeft: 6, // Thickness of the left color border
+    marginLeft: 6, 
     borderTopLeftRadius: 24,
     borderBottomLeftRadius: 24,
   },

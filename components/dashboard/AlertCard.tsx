@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { alertService } from '@/services/alertService';
 import { recycleBinService } from '@/services/recycleBinService';
 
-type AlertType = 'movement' | 'fall' | 'urine' | 'sos' | 'help_call';
+type AlertType = 'movement' | 'fall' | 'urine' | 'sos' | 'help_call' | 'moisture'; // Added 'moisture' type
 
 interface AlertCardProps {
     id: string;
@@ -25,7 +25,7 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
         iconColor: '#ffffff',
         bgColor: '#FF9D93',
     },
-    urine: {
+    urine: { // Keep urine as 'high moisture' with water icon and blue bg
         icon: 'water',
         iconColor: '#ffffff',
         bgColor: '#91D7E4',
@@ -39,6 +39,11 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
         icon: 'call',
         iconColor: '#ffffff',
         bgColor: '#FFA94D',
+    },
+    moisture: { // Added moisture type with water icon and blue bg
+        icon: 'water',
+        iconColor: '#ffffff',
+        bgColor: '#91D7E4',
     },
 };
 
