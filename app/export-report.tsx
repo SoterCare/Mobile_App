@@ -615,8 +615,8 @@ export default function ExportReportScreen() {
                     <View style={styles.metricsRow}>
                         <MetricCard
                             icon="thermometer"
-                            color="#F9C45A"
-                            bgColor="#FFF5E6"
+                            color="#f9c45a"
+                            bgColor="#FFF1D9"
                             label="Skin Temp"
                             checked={selectedMetrics.temperature}
                             onPress={() => toggleMetric('temperature')}
@@ -625,8 +625,8 @@ export default function ExportReportScreen() {
                         />
                         <MetricCard
                             icon="thermometer-lines"
-                            color="#ED8936"
-                            bgColor="#FFFAF0"
+                            color="#FFAB66"
+                            bgColor="#FFF1E0"
                             label="Room Temp"
                             checked={selectedMetrics.ambientTemp}
                             onPress={() => toggleMetric('ambientTemp')}
@@ -634,9 +634,9 @@ export default function ExportReportScreen() {
                             useMatIcon
                         />
                         <MetricCard
-                            icon="water-percent"
-                            color="#4299E1"
-                            bgColor="#EBF8FF"
+                            icon="water"
+                            color="#91D7E4"
+                            bgColor="#e0f2fb"
                             label="Moisture"
                             checked={selectedMetrics.moisture}
                             onPress={() => toggleMetric('moisture')}
@@ -645,8 +645,8 @@ export default function ExportReportScreen() {
                         />
                         <MetricCard
                             icon="walk"
-                            color="#78d6e7"
-                            bgColor="#E8F6FD"
+                            color="#42dfdf"
+                            bgColor="#E0FBFB"
                             label="Activity"
                             checked={selectedMetrics.activity}
                             onPress={() => toggleMetric('activity')}
@@ -700,17 +700,18 @@ export default function ExportReportScreen() {
 }
 
 // ── MetricCard ──────────────────────────────────────────────────────────────
+// activeOpacity removed; dark/active appearance is now the default (always-on) style
 function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 34, useMatIcon = false }: any) {
     return (
-        <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={styles.metricCardWrapper}>
+        <TouchableOpacity onPress={onPress} style={styles.metricCardWrapper}>
             <View style={[styles.metricCardContent, checked && styles.metricCardActive]}>
                 <View style={[styles.iconCircle, { backgroundColor: bgColor }]}>
                     {useMatIcon
-                        ? <MaterialCommunityIcons name={icon} size={iconSize} color={checked ? color : '#A0AEC0'} />
-                        : <IconSymbol name={icon} size={iconSize} color={checked ? color : '#A0AEC0'} />
+                        ? <MaterialCommunityIcons name={icon} size={iconSize} color={color} />
+                        : <IconSymbol name={icon} size={iconSize} color={color} />
                     }
                 </View>
-                <Text style={[styles.metricLabel, checked && styles.metricLabelActive]} numberOfLines={1}>
+                <Text style={styles.metricLabel} numberOfLines={1}>
                     {label}
                 </Text>
                 <View style={[styles.checkbox, checked && styles.metricCheckboxChecked]}>
@@ -920,7 +921,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center', alignItems: 'center', 
         marginBottom: 14 
     },
-    metricLabel: { fontSize: 14, color: '#A0AEC0', textAlign: 'center', fontWeight: '500', marginBottom: 12 },
+    // Label is always the dark/active color by default
+    metricLabel: { fontSize: 14, color: '#2D3748', textAlign: 'center', fontWeight: '600', marginBottom: 12 },
     metricLabelActive: { color: '#2D3748', fontWeight: '600' },
 
     // Format Toggle
