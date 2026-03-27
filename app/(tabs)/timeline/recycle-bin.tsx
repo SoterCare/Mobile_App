@@ -14,14 +14,28 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { recycleBinService } from '@/services/recycleBinService';
 
-// Types updated to match AlertCard
+// Types updated to include moisture
 interface RemovedActivity {
   id: string;
   deviceId?: string;
-  type: 'movement' | 'fall' | 'urine' | 'sos' | 'help_call';
+  type: 'movement' | 'fall' | 'urine' | 'sos' | 'help_call' | 'moisture';
   title: string;
-  time: string;
+  time: string; // This will now store formatted time like "09:03 PM"
 }
+
+/**
+ * Helper to convert ISO string to "HH:MM AM/PM"
+ * Example: "2026-03-27T21:03:42.000Z" -> "09:03 PM"
+ */
+const formatToTime = (timestamp: string): string => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
 
 // Helper to map backend items to RemovedActivity
 const mapToRemovedActivity = (item: any): RemovedActivity => ({
@@ -29,14 +43,10 @@ const mapToRemovedActivity = (item: any): RemovedActivity => ({
   deviceId: item.deviceId ?? item.device_id,
   type: item.type ?? item.category ?? 'movement',
   title: item.title ?? item.label ?? item.name ?? 'Activity',
-  time: item.time ?? item.createdAt ?? item.timestamp ?? '',
+  // FORMATTING HAPPENS HERE
+  time: formatToTime(item.time ?? item.createdAt ?? item.timestamp ?? ''),
 });
 
-/**
- * Updated configuration to match AlertCard colors and icons
- * iconBgColor: Matches the circle background in Recent Alerts
- * cardBgColor: A softer, tinted version for the Recycle Bin card
- */
 const getActivityConfig = (type: RemovedActivity['type']) => {
   switch (type) {
     case 'movement':
@@ -53,6 +63,7 @@ const getActivityConfig = (type: RemovedActivity['type']) => {
         cardBgColor: '#FFF2F1',
         buttonBgColor: '#FF9D93',
       };
+    case 'moisture':
     case 'urine':
       return {
         iconName: 'water' as const,
@@ -148,18 +159,13 @@ export default function RecycleBinScreen() {
 
   const lineHeight =
     removedActivities.length > 1
-      ? (removedActivities.length - 1) * (CARD_MIN_HEIGHT + ITEM_GAP) +
-        CARD_MIN_HEIGHT / 2
+      ? (removedActivities.length - 1) * (CARD_MIN_HEIGHT + ITEM_GAP)
       : 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Pressable
-          onPress={handleGoBack}
-          style={styles.backButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
+        <Pressable onPress={handleGoBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#333333" />
         </Pressable>
         <Text style={styles.headerTitle}>Recycle Bin</Text>
@@ -172,34 +178,16 @@ export default function RecycleBinScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {loading && (
-          <View style={styles.emptyState}>
-            <ActivityIndicator size="large" color="#42dfdf" />
-          </View>
-        )}
-
-        {!loading && error && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>{error}</Text>
-            <Pressable onPress={fetchDismissed} style={{ marginTop: 12 }}>
-              <Text style={{ color: '#42dfdf', fontWeight: '600' }}>Retry</Text>
-            </Pressable>
-          </View>
-        )}
-
         {!loading && !error && (
           <>
             <View style={styles.topRow}>
               <Text style={styles.removedLabel}>Removed Activities</Text>
               <Text style={styles.dateLabel}>
-                {removedActivities.length > 0 && removedActivities[0].time
-                  ? new Date(removedActivities[0].time).toLocaleDateString('en-CA')
-                  : new Date().toLocaleDateString('en-CA')}
+                {new Date().toLocaleDateString('en-CA')}
               </Text>
             </View>
 
@@ -253,6 +241,7 @@ export default function RecycleBinScreen() {
                       >
                         <View style={styles.cardContent}>
                           <Text style={styles.activityTitle}>{activity.title}</Text>
+                          {/* SHOWING HH:MM AM/PM ONLY */}
                           <Text style={styles.activityTime}>{activity.time}</Text>
                         </View>
                         <Pressable
@@ -278,141 +267,40 @@ export default function RecycleBinScreen() {
             )}
           </>
         )}
+        
+        {loading && (
+          <View style={styles.emptyState}>
+            <ActivityIndicator size="large" color="#42dfdf" />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F6F6F6',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-    marginTop: 10,
-  },
-  backButton: {
-    padding: 4,
-    marginLeft: 4,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333333',
-    marginLeft: -4,
-  },
-  description: {
-    fontSize: 14,
-    color: '#666666',
-    lineHeight: 20,
-    paddingHorizontal: 30,
-    marginBottom: 24,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 120,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  removedLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  dateLabel: {
-    fontSize: 14,
-    color: '#999999',
-  },
-  timeline: {
-    position: 'relative',
-  },
-  verticalLine: {
-    position: 'absolute',
-    width: 2,
-    backgroundColor: '#E0E0E0',
-    zIndex: 0,
-  },
-  timelineItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  iconWrapper: {
-    width: ICON_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2,
-    marginTop: 8,
-  },
-  iconCircle: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    borderRadius: ICON_SIZE / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activityCard: {
-    flex: 1,
-    marginLeft: 12,
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minHeight: CARD_MIN_HEIGHT,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  activityTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  activityTime: {
-    fontSize: 12,
-    color: '#666666',
-  },
-  restoreButton: {
-    alignSelf: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  restoreButtonPressed: {
-    opacity: 0.8,
-  },
-  restoreButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyStateText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#999999',
-  },
+  container: { flex: 1, backgroundColor: '#F6F6F6' },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 8, marginTop: 10 },
+  backButton: { padding: 4, marginLeft: -4 },
+  headerTitle: { fontSize: 20, fontWeight: '600', color: '#333333' },
+  description: { fontSize: 14, color: '#666666', lineHeight: 20, paddingHorizontal: 25, marginBottom: 24 },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 120 },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  removedLabel: { fontSize: 14, fontWeight: '600', color: '#333333', marginLeft: 10 },
+  dateLabel: { fontSize: 14, color: '#999999', marginRight: 8 },
+  timeline: { position: 'relative' },
+  verticalLine: { position: 'absolute', width: 2, backgroundColor: '#E0E0E0', zIndex: 0, marginLeft: 10 },
+  timelineItem: { flexDirection: 'row', alignItems: 'flex-start', marginLeft: 10, marginRight: 10 },
+  iconWrapper: { width: ICON_SIZE, justifyContent: 'center', alignItems: 'center', zIndex: 2, marginTop: 8 },
+  iconCircle: { width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2, justifyContent: 'center', alignItems: 'center' },
+  activityCard: { flex: 1, marginLeft: 12, borderRadius: 16, paddingVertical: 12, paddingHorizontal: 16, minHeight: CARD_MIN_HEIGHT, elevation: 2 },
+  cardContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  activityTitle: { fontSize: 14, fontWeight: '600', color: '#333333' },
+  activityTime: { fontSize: 12, color: '#666666' },
+  restoreButton: { alignSelf: 'flex-end', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 12 },
+  restoreButtonPressed: { opacity: 0.8 },
+  restoreButtonText: { fontSize: 12, fontWeight: '600', color: '#FFFFFF' },
+  emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 60 },
+  emptyStateText: { marginTop: 12, fontSize: 14, color: '#999999' },
 });
