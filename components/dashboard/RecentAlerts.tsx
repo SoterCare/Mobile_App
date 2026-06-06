@@ -4,16 +4,14 @@ import {
     View,
     Text,
     TouchableOpacity,
-    ScrollView,
-    Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertCard } from './AlertCard';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 
-// Height of one expanded alert card is slightly more, so just set a standard max height
-const SCROLL_HEIGHT = 280;
+// Number of alerts shown in the dashboard preview ("View All" reveals the rest)
+const PREVIEW_COUNT = 5;
 const POLL_INTERVAL_MS = 15_000; // Refresh backend alerts every 15 seconds
 
 export const RecentAlerts = () => {
@@ -38,7 +36,7 @@ export const RecentAlerts = () => {
 
     const allAlerts = [...realtimeAlerts, ...contextAlerts];
     const uniqueAlerts = Array.from(new Map(allAlerts.map(item => [item.id, item])).values());
-    const sortedAlerts = uniqueAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 20);
+    const sortedAlerts = uniqueAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, PREVIEW_COUNT);
 
     const alertsToRender = sortedAlerts.map((a, index) => ({
         id: a.id || `alert_${index}`,
@@ -58,12 +56,8 @@ export const RecentAlerts = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* Scrollable list — only ~2 cards tall */}
-            <ScrollView
-                style={{ maxHeight: SCROLL_HEIGHT }}
-                showsVerticalScrollIndicator={false}
-                nestedScrollEnabled={true}
-            >
+            {/* Preview list — the parent screen handles scrolling */}
+            <View>
                 {alertsToRender.map((alert) => (
                     <AlertCard
                         key={alert.id}
@@ -77,7 +71,7 @@ export const RecentAlerts = () => {
                 {alertsToRender.length === 0 && (
                     <Text style={styles.emptyText}>No recent alerts</Text>
                 )}
-            </ScrollView>
+            </View>
         </View>
     );
 };
