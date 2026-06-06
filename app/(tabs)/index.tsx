@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Image, Dimensions } from 'react-native';
+import { StyleSheet, View, Image, Dimensions, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
@@ -23,16 +23,16 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Top content */}
-      <View style={styles.topContent}>
+      {/* Scrollable content so the vitals grid and alerts never overlap */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <DeviceStatusHeader />
         <VitalsGrid />
-      </View>
-
-      {/* Alerts pinned to bottom */}
-      <View style={styles.bottomContent}>
         <RecentAlerts />
-      </View>
+      </ScrollView>
 
     </SafeAreaView>
   );
@@ -42,8 +42,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f2f3f7',
-    padding: 20,
-    paddingBottom: 10,
   },
   backgroundContainer: {
     position: 'absolute',
@@ -60,10 +58,11 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1 }],
     marginTop: -40,
   },
-  topContent: {
+  scroll: {
     flex: 1,
   },
-  bottomContent: {
-    paddingBottom: 1,
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 24,
   },
 });

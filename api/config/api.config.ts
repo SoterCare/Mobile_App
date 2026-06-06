@@ -65,29 +65,6 @@ export const API_CONFIG = {
       DISMISS: '/timeline/dismiss',
     },
   },
-
-  // Raspberry Pi Gateway Configuration
-  RASPBERRY_PI: {
-    // Candidate hosts to scan for Raspberry Pi (in order)
-    CANDIDATE_HOSTS: [
-      'raspberrypi.local',
-      '192.168.1.100',
-      '192.168.0.100',
-      'localhost',
-    ],
-    // HTTP port for health check ping
-    HTTP_PORT: 8080,
-    // WebSocket port for bidirectional communication
-    WS_PORT: 8080,
-    // Health check endpoint for discovery
-    HEALTH_PATH: '/health',
-    // WebSocket path for device communication
-    WS_PATH: '/ws/gateway',
-    // Timeout for individual host ping (milliseconds)
-    SCAN_TIMEOUT_MS: 5000,
-    // Timeout for WebSocket connection attempt (milliseconds)
-    CONNECT_TIMEOUT_MS: 10000,
-  },
 };
 
 // Environment-specific configurations

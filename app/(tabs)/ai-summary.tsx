@@ -76,7 +76,7 @@ export default function AISummaryScreen() {
         try {
             let data;
 
-            const timeoutPromise = new Promise((_, reject) =>
+            const timeoutPromise = new Promise<never>((_, reject) =>
                 setTimeout(() => reject(new Error('Request timeout')), 15000)
             );
 
