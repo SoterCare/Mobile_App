@@ -3,15 +3,17 @@
  * Matches the reference screenshots
  */
 
+import { Colors as Tokens } from './tokens';
+
 export const TimelineColors = {
   // Background colors
   background: '#F6F6F6',
   cardBackground: '#FFFFFF',
 
-  // Primary cyan/teal color for active states
-  primaryCyan: '#84D3E8',
-  primaryCyanLight: '#8FD3E8',
-  primaryCyanDark: '#6BC4DB',
+  // Primary cyan/teal color for active states (reconciled to the brand token)
+  primaryCyan: Tokens.brand,
+  primaryCyanLight: Tokens.brand,
+  primaryCyanDark: Tokens.brandDark,
 
   // Chart line and gradient
   chartLineRed: '#F05A5A',
