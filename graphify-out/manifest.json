@@ -1,0 +1,632 @@
+{
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\__tests__\\syncService.test.ts": {
+    "mtime": 1774029299.7346544,
+    "ast_hash": "32142c829cdd3734b4f863d0fb23c7e0",
+    "semantic_hash": "32142c829cdd3734b4f863d0fb23c7e0"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\__tests__\\validation.test.ts": {
+    "mtime": 1773901923.5618398,
+    "ast_hash": "3a2d190f551446967ed951d307aa7002",
+    "semantic_hash": "3a2d190f551446967ed951d307aa7002"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\api\\client.ts": {
+    "mtime": 1772387352.812797,
+    "ast_hash": "d3510be8549ab8120717bff47f64a8e3",
+    "semantic_hash": "d3510be8549ab8120717bff47f64a8e3"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\api\\config\\api.config.ts": {
+    "mtime": 1781083508.618469,
+    "ast_hash": "bbf27a03736c9b6c617fcdeb79065560",
+    "semantic_hash": "bbf27a03736c9b6c617fcdeb79065560"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\api\\index.ts": {
+    "mtime": 1772387352.8152177,
+    "ast_hash": "61f79762d45e44dabc1cfe5e6088c070",
+    "semantic_hash": "61f79762d45e44dabc1cfe5e6088c070"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app.json": {
+    "mtime": 1774029299.769017,
+    "ast_hash": "cab6c705cd5707cbe3a3bb01776d2cb5",
+    "semantic_hash": "cab6c705cd5707cbe3a3bb01776d2cb5"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(auth)\\_layout.tsx": {
+    "mtime": 1768767243.4241073,
+    "ast_hash": "ae96f860aa16e4d848d75360c3258820",
+    "semantic_hash": "ae96f860aa16e4d848d75360c3258820"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(auth)\\otp-verification.tsx": {
+    "mtime": 1781083508.6271172,
+    "ast_hash": "5e9b8a8931364a3be23f2a54be943062",
+    "semantic_hash": "5e9b8a8931364a3be23f2a54be943062"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(auth)\\sign-in.tsx": {
+    "mtime": 1781083508.6340747,
+    "ast_hash": "74dc68cadcf289890184cd0ff3405712",
+    "semantic_hash": "74dc68cadcf289890184cd0ff3405712"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(auth)\\sign-up.tsx": {
+    "mtime": 1774604046.5109327,
+    "ast_hash": "db1371b6132484b540c0a271f5c7937d",
+    "semantic_hash": "db1371b6132484b540c0a271f5c7937d"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(auth)\\welcome.tsx": {
+    "mtime": 1773908697.8127377,
+    "ast_hash": "203094a9d560295a3af2806c11e1558b",
+    "semantic_hash": "203094a9d560295a3af2806c11e1558b"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(tabs)\\_layout.tsx": {
+    "mtime": 1781083508.6430943,
+    "ast_hash": "d91271846e246dab7f3c8bb8d5670514",
+    "semantic_hash": "d91271846e246dab7f3c8bb8d5670514"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(tabs)\\ai-summary.tsx": {
+    "mtime": 1781083508.6507344,
+    "ast_hash": "d3ef61c9aa9ff0db8baa691d55ad65aa",
+    "semantic_hash": "d3ef61c9aa9ff0db8baa691d55ad65aa"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(tabs)\\device.tsx": {
+    "mtime": 1774604046.541423,
+    "ast_hash": "75fa6b2d5fcbe2be3522f3da6460ce28",
+    "semantic_hash": "75fa6b2d5fcbe2be3522f3da6460ce28"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(tabs)\\index.tsx": {
+    "mtime": 1781083508.6582508,
+    "ast_hash": "7c0a3fa2e0e34585057047da083cd123",
+    "semantic_hash": "7c0a3fa2e0e34585057047da083cd123"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(tabs)\\profile.tsx": {
+    "mtime": 1774159412.999503,
+    "ast_hash": "f10a79b8bb9367065cad6e69f5435144",
+    "semantic_hash": "f10a79b8bb9367065cad6e69f5435144"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(tabs)\\timeline\\_layout.tsx": {
+    "mtime": 1773901231.4996867,
+    "ast_hash": "d2e9c9f7c086c4b32a4d8c2f98eb7952",
+    "semantic_hash": "d2e9c9f7c086c4b32a4d8c2f98eb7952"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(tabs)\\timeline\\index.tsx": {
+    "mtime": 1774604046.5566146,
+    "ast_hash": "08a1a23500bef5dffbe187ffec69ca9e",
+    "semantic_hash": "08a1a23500bef5dffbe187ffec69ca9e"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\(tabs)\\timeline\\recycle-bin.tsx": {
+    "mtime": 1774985157.9405718,
+    "ast_hash": "8256cacfc2d89f845f0e44728eb4a7ed",
+    "semantic_hash": "8256cacfc2d89f845f0e44728eb4a7ed"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\_layout.tsx": {
+    "mtime": 1774029299.8084824,
+    "ast_hash": "fb7456e1bac963dae2acafae2b9df1fa",
+    "semantic_hash": "fb7456e1bac963dae2acafae2b9df1fa"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\export-report.tsx": {
+    "mtime": 1774985157.9519498,
+    "ast_hash": "460e3e72514ca2d98f6b847b2f298c44",
+    "semantic_hash": "460e3e72514ca2d98f6b847b2f298c44"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\modal.tsx": {
+    "mtime": 1768767243.4315257,
+    "ast_hash": "09fcd6bf99b66bad54f0725695c7de88",
+    "semantic_hash": "09fcd6bf99b66bad54f0725695c7de88"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\about.tsx": {
+    "mtime": 1773908697.8217874,
+    "ast_hash": "d96255877ebc9b00ec392fa61264ceb5",
+    "semantic_hash": "d96255877ebc9b00ec392fa61264ceb5"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\help.tsx": {
+    "mtime": 1773902831.7295122,
+    "ast_hash": "33b2b3ac53cf9ce0584a1130fe2c5cc7",
+    "semantic_hash": "33b2b3ac53cf9ce0584a1130fe2c5cc7"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\language.tsx": {
+    "mtime": 1773908697.8228042,
+    "ast_hash": "b9912f23e804720ae68a2a2dcc43aab2",
+    "semantic_hash": "b9912f23e804720ae68a2a2dcc43aab2"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\payment-add.tsx": {
+    "mtime": 1773908697.8243124,
+    "ast_hash": "9da8f59afe35713ac3479c805cca6e80",
+    "semantic_hash": "9da8f59afe35713ac3479c805cca6e80"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\payment-delete.tsx": {
+    "mtime": 1773908697.273144,
+    "ast_hash": "5f9b3285695249b91abe1843c29efa95",
+    "semantic_hash": "5f9b3285695249b91abe1843c29efa95"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\payment-detail.tsx": {
+    "mtime": 1773908697.8268335,
+    "ast_hash": "2bfcedc35efa33bf08f4c7fb0710c9c4",
+    "semantic_hash": "2bfcedc35efa33bf08f4c7fb0710c9c4"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\payment-edit.tsx": {
+    "mtime": 1773908697.8283503,
+    "ast_hash": "15a6feef74c8eb479a5e49dcee09da74",
+    "semantic_hash": "15a6feef74c8eb479a5e49dcee09da74"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\payment-success.tsx": {
+    "mtime": 1773908697.8293636,
+    "ast_hash": "fdf6aa2742f39a1a6ed1a499c167f0fb",
+    "semantic_hash": "fdf6aa2742f39a1a6ed1a499c167f0fb"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\payment.tsx": {
+    "mtime": 1773908697.8308184,
+    "ast_hash": "4450473ecc9266839fea40caf9654129",
+    "semantic_hash": "4450473ecc9266839fea40caf9654129"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\settings\\temperature.tsx": {
+    "mtime": 1773908697.8324883,
+    "ast_hash": "315908cbce6d0aa24d81028c51e7260c",
+    "semantic_hash": "315908cbce6d0aa24d81028c51e7260c"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\subscription.tsx": {
+    "mtime": 1774159413.0697203,
+    "ast_hash": "4b40c822351137a0070c4fc3602f6376",
+    "semantic_hash": "4b40c822351137a0070c4fc3602f6376"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\app\\user\\update.tsx": {
+    "mtime": 1773908697.8341434,
+    "ast_hash": "61cfc8577c9e45f3099c92acfb3a76d0",
+    "semantic_hash": "61cfc8577c9e45f3099c92acfb3a76d0"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ErrorBoundary.tsx": {
+    "mtime": 1773901923.6080568,
+    "ast_hash": "3752e74459e6d7c248932304eab207ef",
+    "semantic_hash": "3752e74459e6d7c248932304eab207ef"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ai-summary\\GenerateButton.tsx": {
+    "mtime": 1773901923.6095774,
+    "ast_hash": "7242a0dede955fe4899fc346b5600414",
+    "semantic_hash": "7242a0dede955fe4899fc346b5600414"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ai-summary\\SummaryHeader.tsx": {
+    "mtime": 1772387353.068577,
+    "ast_hash": "9dfe4b99a0e54851efa3b5f38fcdefc1",
+    "semantic_hash": "9dfe4b99a0e54851efa3b5f38fcdefc1"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ai-summary\\ToggleSwitch.tsx": {
+    "mtime": 1773901923.6117103,
+    "ast_hash": "0432f93efcc1c55aa251d580111198a5",
+    "semantic_hash": "0432f93efcc1c55aa251d580111198a5"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\dashboard\\AlertCard.tsx": {
+    "mtime": 1774985157.9639492,
+    "ast_hash": "76dd20d312d5dd67d53b2188a330c527",
+    "semantic_hash": "76dd20d312d5dd67d53b2188a330c527"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\dashboard\\DeviceStatusHeader.tsx": {
+    "mtime": 1774604046.6687794,
+    "ast_hash": "1a247726b1b60c677915255fcf3342b2",
+    "semantic_hash": "1a247726b1b60c677915255fcf3342b2"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\dashboard\\RecentAlerts.tsx": {
+    "mtime": 1781083508.6652577,
+    "ast_hash": "760aea87547ad5f231145ef72decd815",
+    "semantic_hash": "760aea87547ad5f231145ef72decd815"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\dashboard\\VitalCard.tsx": {
+    "mtime": 1773901923.6181922,
+    "ast_hash": "ffd31d519561f01f4bf6799fbf099879",
+    "semantic_hash": "ffd31d519561f01f4bf6799fbf099879"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\dashboard\\VitalsGrid.tsx": {
+    "mtime": 1774159413.153009,
+    "ast_hash": "d1621e37954b30cf467e91e9d570da8e",
+    "semantic_hash": "d1621e37954b30cf467e91e9d570da8e"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\external-link.tsx": {
+    "mtime": 1781083508.6771388,
+    "ast_hash": "7b548d13b3bdd0dd3cf9aaca7e886d85",
+    "semantic_hash": "7b548d13b3bdd0dd3cf9aaca7e886d85"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\haptic-tab.tsx": {
+    "mtime": 1768767243.4487472,
+    "ast_hash": "0794528a2e4a1d38e4b561471776013a",
+    "semantic_hash": "0794528a2e4a1d38e4b561471776013a"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\hello-wave.tsx": {
+    "mtime": 1768767243.4497466,
+    "ast_hash": "ca15c5ac88908bd7163f0a1492676561",
+    "semantic_hash": "ca15c5ac88908bd7163f0a1492676561"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\parallax-scroll-view.tsx": {
+    "mtime": 1768767243.4497466,
+    "ast_hash": "4c4adfceb5d55af4bca61e8e2ded3fc6",
+    "semantic_hash": "4c4adfceb5d55af4bca61e8e2ded3fc6"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\profile\\ProfileHeader.tsx": {
+    "mtime": 1773901923.6222296,
+    "ast_hash": "33d9f84011257afc7811a98123d52c19",
+    "semantic_hash": "33d9f84011257afc7811a98123d52c19"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\profile\\ProfileMenu.tsx": {
+    "mtime": 1768767243.4507723,
+    "ast_hash": "fdcc78dcfd6d8e4632d91181fb9bbb8f",
+    "semantic_hash": "fdcc78dcfd6d8e4632d91181fb9bbb8f"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\profile\\ProfileSettingsCard.tsx": {
+    "mtime": 1774159413.1701243,
+    "ast_hash": "561aedd508c4f17367f52b9b61fa7530",
+    "semantic_hash": "561aedd508c4f17367f52b9b61fa7530"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\profile\\ProfileSupportCard.tsx": {
+    "mtime": 1774159413.1865149,
+    "ast_hash": "19df6aa415acca3755ee3006a85fc330",
+    "semantic_hash": "19df6aa415acca3755ee3006a85fc330"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\profile\\ProfileUserCard.tsx": {
+    "mtime": 1774159413.2057722,
+    "ast_hash": "0907bf92ff9c6bcac2f921abb2485b58",
+    "semantic_hash": "0907bf92ff9c6bcac2f921abb2485b58"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\themed-text.tsx": {
+    "mtime": 1768767243.451771,
+    "ast_hash": "6f0eeac63495340c7c48cbf00518f1f7",
+    "semantic_hash": "6f0eeac63495340c7c48cbf00518f1f7"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\themed-view.tsx": {
+    "mtime": 1768767243.4527707,
+    "ast_hash": "e8563a5d89c7c7c8fd8df95c2c2f1225",
+    "semantic_hash": "e8563a5d89c7c7c8fd8df95c2c2f1225"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\timeline\\ActivityStatsCards.tsx": {
+    "mtime": 1773902831.9732337,
+    "ast_hash": "49887cd3411fce4254eb551f116e4d72",
+    "semantic_hash": "49887cd3411fce4254eb551f116e4d72"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\timeline\\ActivityTimeline.tsx": {
+    "mtime": 1774985157.9726603,
+    "ast_hash": "8b2229433e1f27921b64bd4a79a3cd9b",
+    "semantic_hash": "8b2229433e1f27921b64bd4a79a3cd9b"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\timeline\\AreaLineChart.tsx": {
+    "mtime": 1774604046.7163935,
+    "ast_hash": "65c0978d15a6fd7c740104e6a53efbba",
+    "semantic_hash": "65c0978d15a6fd7c740104e6a53efbba"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\timeline\\SegmentedControl.tsx": {
+    "mtime": 1773908697.8357816,
+    "ast_hash": "347b399adcb43e1fdc709f7424cdd635",
+    "semantic_hash": "347b399adcb43e1fdc709f7424cdd635"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\timeline\\VitalsChartCard.tsx": {
+    "mtime": 1774029299.8435478,
+    "ast_hash": "cff8b9063d9b7b60ca8073d4127206be",
+    "semantic_hash": "cff8b9063d9b7b60ca8073d4127206be"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\timeline\\index.ts": {
+    "mtime": 1772387353.1059234,
+    "ast_hash": "d90ecadef92bb28ff48c709eef3650d0",
+    "semantic_hash": "d90ecadef92bb28ff48c709eef3650d0"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ui\\AnimatedCounter.tsx": {
+    "mtime": 1772387353.1073177,
+    "ast_hash": "0b2c78f0150b328f79036ce61c6d2232",
+    "semantic_hash": "0b2c78f0150b328f79036ce61c6d2232"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ui\\CustomSplashScreen.tsx": {
+    "mtime": 1768767243.4527707,
+    "ast_hash": "96e4ac34617e95523e103962785e7a19",
+    "semantic_hash": "96e4ac34617e95523e103962785e7a19"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ui\\NeumorphicButton.tsx": {
+    "mtime": 1772387353.108318,
+    "ast_hash": "e1c922b7a932e291615097b1adc33808",
+    "semantic_hash": "e1c922b7a932e291615097b1adc33808"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ui\\NeumorphicCard.tsx": {
+    "mtime": 1773902832.030326,
+    "ast_hash": "54ab45718d083913d41366013d1cb784",
+    "semantic_hash": "54ab45718d083913d41366013d1cb784"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ui\\collapsible.tsx": {
+    "mtime": 1768767243.4542785,
+    "ast_hash": "2ccf0e87114665844c3f2e5ec4f101cc",
+    "semantic_hash": "2ccf0e87114665844c3f2e5ec4f101cc"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ui\\icon-symbol.ios.tsx": {
+    "mtime": 1768767243.4552946,
+    "ast_hash": "089d11181cc7542fa42b05fade85fe36",
+    "semantic_hash": "089d11181cc7542fa42b05fade85fe36"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\components\\ui\\icon-symbol.tsx": {
+    "mtime": 1772387353.111701,
+    "ast_hash": "4411ca61b25a274739faef0c92ba41a8",
+    "semantic_hash": "4411ca61b25a274739faef0c92ba41a8"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\constants\\bleConfig.ts": {
+    "mtime": 1773901923.634364,
+    "ast_hash": "913024dc576d42a48d3f4845ef52ed1a",
+    "semantic_hash": "913024dc576d42a48d3f4845ef52ed1a"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\constants\\theme.ts": {
+    "mtime": 1768767243.456291,
+    "ast_hash": "e1108bb2e985a756e9ed009018501ad5",
+    "semantic_hash": "e1108bb2e985a756e9ed009018501ad5"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\contexts\\AuthContext.tsx": {
+    "mtime": 1773901923.635375,
+    "ast_hash": "4b6fb342aa177d8dbceda2d2b7e6acbc",
+    "semantic_hash": "4b6fb342aa177d8dbceda2d2b7e6acbc"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\contexts\\RaspberryPiContext.tsx": {
+    "mtime": 1774071068.581285,
+    "ast_hash": "96858c1e8e38b0bac84037b3631e92ec",
+    "semantic_hash": "96858c1e8e38b0bac84037b3631e92ec"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\contexts\\VitalsContext.tsx": {
+    "mtime": 1773901923.6369486,
+    "ast_hash": "2e586be8ca237ee8e514466fabc0a5d9",
+    "semantic_hash": "2e586be8ca237ee8e514466fabc0a5d9"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\data\\mockVitals.ts": {
+    "mtime": 1774604046.7317917,
+    "ast_hash": "360289fef62d2e976099d78a906e0aee",
+    "semantic_hash": "360289fef62d2e976099d78a906e0aee"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\eas.json": {
+    "mtime": 1772387353.118641,
+    "ast_hash": "7c821e4684201137ce3c10ae1656f3ae",
+    "semantic_hash": "7c821e4684201137ce3c10ae1656f3ae"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\eslint.config.js": {
+    "mtime": 1768767243.4572904,
+    "ast_hash": "863383b08e7ec37e0b09ebacf6c03216",
+    "semantic_hash": "863383b08e7ec37e0b09ebacf6c03216"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\hooks\\use-color-scheme.ts": {
+    "mtime": 1768767243.4572904,
+    "ast_hash": "5e75b3d5ace0289cfc1bab951ca625bb",
+    "semantic_hash": "5e75b3d5ace0289cfc1bab951ca625bb"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\hooks\\use-color-scheme.web.ts": {
+    "mtime": 1768767243.4572904,
+    "ast_hash": "bcd7b96a68e8a00dd1de95aac4953eb6",
+    "semantic_hash": "bcd7b96a68e8a00dd1de95aac4953eb6"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\hooks\\use-theme-color.ts": {
+    "mtime": 1768767243.45829,
+    "ast_hash": "1c4852743a2fe0529f96ab4ef1f61026",
+    "semantic_hash": "1c4852743a2fe0529f96ab4ef1f61026"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\hooks\\useRealtimeVitals.ts": {
+    "mtime": 1774604046.7465456,
+    "ast_hash": "09566aa43424831b7b0807e8286abb70",
+    "semantic_hash": "09566aa43424831b7b0807e8286abb70"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\jest.config.js": {
+    "mtime": 1773901923.6412504,
+    "ast_hash": "4205ae44479dcc4cf2eeb7d102fa4bc2",
+    "semantic_hash": "4205ae44479dcc4cf2eeb7d102fa4bc2"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\jest.setup.ts": {
+    "mtime": 1773901923.6422603,
+    "ast_hash": "ee017f7b978478e6d2832918a41afafb",
+    "semantic_hash": "ee017f7b978478e6d2832918a41afafb"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\package.json": {
+    "mtime": 1781083508.6844535,
+    "ast_hash": "7668ef19ba79fd94a1137b38c566c8c3",
+    "semantic_hash": "7668ef19ba79fd94a1137b38c566c8c3"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\patientData.json": {
+    "mtime": 1773901923.651744,
+    "ast_hash": "d1847fd6ba501ff5a80defcac19177fe",
+    "semantic_hash": "d1847fd6ba501ff5a80defcac19177fe"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\sampledata.json": {
+    "mtime": 1772387353.1295118,
+    "ast_hash": "5628b5aa54716397c087efacb650d6b7",
+    "semantic_hash": "5628b5aa54716397c087efacb650d6b7"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\scripts\\generate_vitals.py": {
+    "mtime": 1772387353.1307876,
+    "ast_hash": "57bc2f3dec24dfccad664c1b0545a9fd",
+    "semantic_hash": "57bc2f3dec24dfccad664c1b0545a9fd"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\scripts\\parse_jsonl.js": {
+    "mtime": 1773901923.6532793,
+    "ast_hash": "f07a3787accc6c610e250055fb4bed45",
+    "semantic_hash": "f07a3787accc6c610e250055fb4bed45"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\scripts\\reset-project.js": {
+    "mtime": 1768767243.4622908,
+    "ast_hash": "45037f1403194ff08819938578939b58",
+    "semantic_hash": "45037f1403194ff08819938578939b58"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\alertService.ts": {
+    "mtime": 1774604046.761248,
+    "ast_hash": "4f4145a0d02ad16967971a8f2b176409",
+    "semantic_hash": "4f4145a0d02ad16967971a8f2b176409"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\authService.ts": {
+    "mtime": 1773901923.6547966,
+    "ast_hash": "826c88e3595ea8bef9bf97d5ee637f13",
+    "semantic_hash": "826c88e3595ea8bef9bf97d5ee637f13"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\crashReportService.ts": {
+    "mtime": 1773901923.6699777,
+    "ast_hash": "da96e665ccd7d91b94f8c81de139d9d1",
+    "semantic_hash": "da96e665ccd7d91b94f8c81de139d9d1"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\deviceDataService.ts": {
+    "mtime": 1773964606.4614472,
+    "ast_hash": "f543a6afa9dfe7e6c11796862a3d0819",
+    "semantic_hash": "f543a6afa9dfe7e6c11796862a3d0819"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\healthLogsService.ts": {
+    "mtime": 1773964606.4762077,
+    "ast_hash": "0de5b9845a51e78b14309d12d691ace8",
+    "semantic_hash": "0de5b9845a51e78b14309d12d691ace8"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\recycleBinService.ts": {
+    "mtime": 1774604046.776841,
+    "ast_hash": "181926cf849870025769143c0ef6a8e5",
+    "semantic_hash": "181926cf849870025769143c0ef6a8e5"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\socialAuthService.ts": {
+    "mtime": 1772387353.1503549,
+    "ast_hash": "0025adad9b9377a473a49f428cb84702",
+    "semantic_hash": "0025adad9b9377a473a49f428cb84702"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\summaryService.ts": {
+    "mtime": 1774159413.260321,
+    "ast_hash": "44625bad99557638ee0776e06cf03ef8",
+    "semantic_hash": "44625bad99557638ee0776e06cf03ef8"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\syncService.ts": {
+    "mtime": 1774029299.875456,
+    "ast_hash": "3f40c6c2f415ddfbe5ac725fb55aa708",
+    "semantic_hash": "3f40c6c2f415ddfbe5ac725fb55aa708"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\timelineService.ts": {
+    "mtime": 1774029299.8930678,
+    "ast_hash": "c9293314294b64b64f2ec9a7fa3b8091",
+    "semantic_hash": "c9293314294b64b64f2ec9a7fa3b8091"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\services\\userService.ts": {
+    "mtime": 1773901923.6773653,
+    "ast_hash": "d614d07db79d2b6d704ec72921cb922d",
+    "semantic_hash": "d614d07db79d2b6d704ec72921cb922d"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\theme\\colors.ts": {
+    "mtime": 1772387353.1853015,
+    "ast_hash": "01ec4f3be119cb53f4980f42ef817bcd",
+    "semantic_hash": "01ec4f3be119cb53f4980f42ef817bcd"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\theme\\index.ts": {
+    "mtime": 1772387353.186324,
+    "ast_hash": "fe428ff6ebdf59ceba1a8ca48002a80c",
+    "semantic_hash": "fe428ff6ebdf59ceba1a8ca48002a80c"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\theme\\shadows.ts": {
+    "mtime": 1772387353.1875253,
+    "ast_hash": "387f886671efc6ccbb7ec079866ae64e",
+    "semantic_hash": "387f886671efc6ccbb7ec079866ae64e"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\tsconfig.json": {
+    "mtime": 1773901923.6951067,
+    "ast_hash": "d9321e9cad693d0c16639240440255c4",
+    "semantic_hash": "d9321e9cad693d0c16639240440255c4"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\types\\auth.types.ts": {
+    "mtime": 1772387353.1885722,
+    "ast_hash": "06ee8c22e69d371bd37dd3dd6490779e",
+    "semantic_hash": "06ee8c22e69d371bd37dd3dd6490779e"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\types\\raspberryPi.types.ts": {
+    "mtime": 1773964606.5133338,
+    "ast_hash": "2b4211b1593765e8271494eaf808aef7",
+    "semantic_hash": "2b4211b1593765e8271494eaf808aef7"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\utils\\validation.ts": {
+    "mtime": 1772387353.189589,
+    "ast_hash": "91800db461b300f745ca42c75a3a3687",
+    "semantic_hash": "91800db461b300f745ca42c75a3a3687"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\vitals_history_3days.json": {
+    "mtime": 1772387353.1907432,
+    "ast_hash": "6ac931e0d7e469ac125421dafb7c2694",
+    "semantic_hash": "6ac931e0d7e469ac125421dafb7c2694"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\README.md": {
+    "mtime": 1773779223.3687458,
+    "ast_hash": "ef694ace196975f18ed08e17cdda1e54",
+    "semantic_hash": "ef694ace196975f18ed08e17cdda1e54"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\e2e\\welcome-screen.yaml": {
+    "mtime": 1773901923.6402087,
+    "ast_hash": "a3eb83ac038f6cd8fa341c7df9650a50",
+    "semantic_hash": "a3eb83ac038f6cd8fa341c7df9650a50"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\tsc_output.txt": {
+    "mtime": 1773901923.6923842,
+    "ast_hash": "3ff9d8bfc32895740a7ca00f6841dd9b",
+    "semantic_hash": "3ff9d8bfc32895740a7ca00f6841dd9b"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\SoterCare-Primary-logo.png": {
+    "mtime": 1768767243.4329278,
+    "ast_hash": "1a01c344e5849f461f26931d2950a2cd",
+    "semantic_hash": "1a01c344e5849f461f26931d2950a2cd"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\SoterCare-only-logo.png": {
+    "mtime": 1774604046.597761,
+    "ast_hash": "587edfbb0fba5319cc75d7007ecc55c3",
+    "semantic_hash": "587edfbb0fba5319cc75d7007ecc55c3"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\SoterCareH.png": {
+    "mtime": 1774604046.611974,
+    "ast_hash": "a7c50f75654af48e403e0dc1f36ed289",
+    "semantic_hash": "a7c50f75654af48e403e0dc1f36ed289"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\SoterCareS.png": {
+    "mtime": 1774604046.6268592,
+    "ast_hash": "a825babdb8475cc94f9fc9acf31e863f",
+    "semantic_hash": "a825babdb8475cc94f9fc9acf31e863f"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\SoterCarelogo.png": {
+    "mtime": 1774604046.640145,
+    "ast_hash": "163b8fe426d92534851e1f012a7e4164",
+    "semantic_hash": "163b8fe426d92534851e1f012a7e4164"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\android-icon-background.png": {
+    "mtime": 1768767243.4329278,
+    "ast_hash": "2d65569cc0e2afdcea0af9f9902d4173",
+    "semantic_hash": "2d65569cc0e2afdcea0af9f9902d4173"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\android-icon-foreground.png": {
+    "mtime": 1768767243.4345796,
+    "ast_hash": "72e71a9c846c6aa4ae32476641a00e18",
+    "semantic_hash": "72e71a9c846c6aa4ae32476641a00e18"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\android-icon-monochrome.png": {
+    "mtime": 1768767243.4345796,
+    "ast_hash": "1e097dab989759fc0b69440092ca22cd",
+    "semantic_hash": "1e097dab989759fc0b69440092ca22cd"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\favicon.png": {
+    "mtime": 1768767243.4345796,
+    "ast_hash": "d9f444efbdfbe7931aa93beada07318a",
+    "semantic_hash": "d9f444efbdfbe7931aa93beada07318a"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\icon.png": {
+    "mtime": 1768767243.4386697,
+    "ast_hash": "cb975bba2216ce10a60e6c0ffe9941a2",
+    "semantic_hash": "cb975bba2216ce10a60e6c0ffe9941a2"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\man.png": {
+    "mtime": 1774159413.101573,
+    "ast_hash": "7eb35efbfa5adccfc1ac6b7834fae76d",
+    "semantic_hash": "7eb35efbfa5adccfc1ac6b7834fae76d"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\partial-react-logo.png": {
+    "mtime": 1768767243.4396682,
+    "ast_hash": "8f14e478886737f3323a2ac79c833749",
+    "semantic_hash": "8f14e478886737f3323a2ac79c833749"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\patient-bed-3d.png": {
+    "mtime": 1772387352.8639705,
+    "ast_hash": "d9f444efbdfbe7931aa93beada07318a",
+    "semantic_hash": "d9f444efbdfbe7931aa93beada07318a"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\react-logo.png": {
+    "mtime": 1768767243.444179,
+    "ast_hash": "695d5a1c6f29a689130f3aaa573aec6e",
+    "semantic_hash": "695d5a1c6f29a689130f3aaa573aec6e"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\react-logo@2x.png": {
+    "mtime": 1768767243.4451866,
+    "ast_hash": "b507e7f2c91ebc8fe24dee79ccb3b600",
+    "semantic_hash": "b507e7f2c91ebc8fe24dee79ccb3b600"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\react-logo@3x.png": {
+    "mtime": 1768767243.4451866,
+    "ast_hash": "8a4d0e5b845044e56e3b2df627d01cfd",
+    "semantic_hash": "8a4d0e5b845044e56e3b2df627d01cfd"
+  },
+  "D:\\IIT Work\\!SDGP\\Github\\Mobile_App\\assets\\images\\splash-icon.png": {
+    "mtime": 1768767243.4462266,
+    "ast_hash": "97dae5a0e62ad8551d8a31897b425e63",
+    "semantic_hash": "97dae5a0e62ad8551d8a31897b425e63"
+  }
+}
