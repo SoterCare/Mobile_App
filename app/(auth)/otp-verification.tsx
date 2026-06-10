@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors, Radius, circle } from '@/theme/tokens';
 
 export default function OTPVerificationScreen() {
     const router = useRouter();
@@ -201,10 +202,10 @@ const styles = StyleSheet.create({
     iconCircle: {
         width: 80,
         height: 80,
-        borderRadius: 40,
+        borderRadius: circle(80),
         backgroundColor: 'transparent',
         borderWidth: 3,
-        borderColor: '#91D7E4',
+        borderColor: Colors.brand,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
         height: 50,
         borderWidth: 1.5,
         borderColor: '#ccc',
-        borderRadius: 8,
+        borderRadius: Radius.xs,
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
@@ -247,8 +248,8 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         height: 56,
-        backgroundColor: '#91D7E4', // Cyan/Light Blue
-        borderRadius: 28,
+        backgroundColor: Colors.brand, // Cyan/Light Blue
+        borderRadius: Radius.pill,
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 2,
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     resendLink: {
-        color: '#91D7E4',
+        color: Colors.brand,
         fontWeight: 'bold',
     },
 });

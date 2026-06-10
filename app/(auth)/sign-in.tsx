@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import { useGoogleAuth, processGoogleAuthResponse, useFacebookAuth, processFacebookAuthResponse, appleSignIn } from '@/services/socialAuthService';
 import { useAuth } from '@/contexts/AuthContext';
+import { Colors, Radius, circle } from '@/theme/tokens';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -146,7 +147,7 @@ export default function SignInScreen() {
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                         <Ionicons name="chevron-back" size={25} color="#333" />
                     </TouchableOpacity>
                     <Text style={styles.title}>Sign In</Text>
@@ -207,19 +208,19 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
     content: { flex: 1, paddingHorizontal: 30, paddingTop: 20 },
     header: { flexDirection: 'row', alignItems: 'center', marginBottom: 60, marginTop: 10 },
-    backButton: { marginRight: 4, padding: 5, marginLeft: -15 },
+    backButton: { marginRight: 4, padding: 5 },
     title: { fontSize: 25, fontWeight: 'bold', color: '#333' },
     form: { gap: 30 },
     inputContainer: { marginBottom: 10 },
     input: { height: 50, borderBottomWidth: 1, borderBottomColor: '#ddd', fontSize: 16, color: '#333', paddingVertical: 10 },
-    button: { height: 50, backgroundColor: '#91D7E4', borderRadius: 25, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 4.65, elevation: 6, marginTop: 10 },
+    button: { height: 50, backgroundColor: Colors.brand, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.15, shadowRadius: 4.65, elevation: 6, marginTop: 10 },
     buttonDisabled: { opacity: 0.7 },
     buttonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
     dividerContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 20, marginBottom: 20 },
     dividerLine: { flex: 1, height: 1, backgroundColor: '#eee' },
     dividerText: { marginHorizontal: 15, color: '#999', fontSize: 14 },
     socialContainer: { flexDirection: 'row', justifyContent: 'center', gap: 20 },
-    socialButton: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#eee', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
+    socialButton: { width: 60, height: 60, borderRadius: circle(60), backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#eee', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3 },
     signUpLink: { textAlign: 'center', fontSize: 14, color: '#888', marginTop: 20 },
-    signUpLinkHighlight: { color: '#91D7E4', fontWeight: '600' },
+    signUpLinkHighlight: { color: Colors.brand, fontWeight: '600' },
 });

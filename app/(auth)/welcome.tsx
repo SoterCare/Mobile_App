@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { Colors, Radius } from '@/theme/tokens';
 
 export default function WelcomeScreen() {
     const router = useRouter();
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         height: 56,
-        borderRadius: 28, // Pill shape
+        borderRadius: Radius.pill, // Pill shape
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#000',
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
         elevation: 6,
     },
     primaryButton: {
-        backgroundColor: '#91D7E4', // Cyan
+        backgroundColor: Colors.brand, // Cyan
     },
     primaryButtonText: {
         color: '#fff',
@@ -97,12 +98,12 @@ const styles = StyleSheet.create({
     secondaryButton: {
         backgroundColor: '#fff',
         borderWidth: 1,
-        borderColor: '#91D7E4',
+        borderColor: Colors.brand,
         shadowColor: 'transparent',
         elevation: 0,
     },
     secondaryButtonText: {
-        color: '#91D7E4',
+        color: Colors.brand,
         fontSize: 18,
         fontWeight: '700',
     },
