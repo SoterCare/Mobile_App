@@ -2,6 +2,8 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { User } from '@/types/auth.types';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors, Radius, circle } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
 
 interface ProfileUserCardProps {
     user: User | null;
@@ -48,21 +50,14 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         marginTop: 30, // More space at the top to accommodate the higher avatar
         position: 'relative',
-        paddingHorizontal: -1, // Fixes slight shadow clipping
     },
     cardContainer: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 24,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.xl,
         paddingHorizontal: 25,
         paddingBottom: 25,
         paddingTop: 45, // Pushes content down so it's not under the avatar
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        width: '102%',
-        marginLeft: -4,
+        ...Shadows.card,
     },
     contentRow: {
         flexDirection: 'row',
@@ -75,8 +70,8 @@ const styles = StyleSheet.create({
         left: 20,
         width: 64,
         height: 64,
-        borderRadius: 32,
-        backgroundColor: '#91D7E4',
+        borderRadius: circle(64),
+        backgroundColor: Colors.brand,
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 10,

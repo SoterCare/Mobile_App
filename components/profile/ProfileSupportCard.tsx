@@ -3,6 +3,8 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { NeumorphicCard } from '../ui/NeumorphicCard';
+import { Colors, Radius } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
 
 interface MenuItemProps {
     icon: keyof typeof Ionicons.glyphMap;
@@ -55,15 +57,9 @@ export const ProfileSupportCard: React.FC<ProfileSupportCardProps> = ({ onLogout
 const styles = StyleSheet.create({
     cardContainer: {
         marginBottom: 30,
-        backgroundColor: '#ffffff',
-        borderRadius: 20,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        width: '102%',
-        marginLeft: -4,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.lg,
+        ...Shadows.card,
     },
     cardContent: {
         paddingVertical: 5,
