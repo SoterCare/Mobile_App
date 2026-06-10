@@ -9,6 +9,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { TimelineColors } from '../../theme/colors';
 // Note: Shadows.card should be a soft shadow to match the floating look
 import { Shadows } from '../../theme/shadows';
+import { Colors, Radius, circle } from '@/theme/tokens';
 import { ActivityStats } from '../../data/mockVitals';
 
 interface ActivityStatsCardsProps {
@@ -21,7 +22,7 @@ interface ActivityStatsCardsProps {
 const FIGMA_COLORS = {
   movement: { main: '#42dfdf', bg: '#dffcfc' },
   fall: { main: '#FF9D93', bg: '#FFF0F0' },
-  urine: { main: '#91D7E4', bg: '#F0F7FF' },
+  urine: { main: Colors.brand, bg: '#F0F7FF' },
 };
 
 const ActivityStatsCards: React.FC<ActivityStatsCardsProps> = ({
@@ -113,7 +114,6 @@ const styles = StyleSheet.create({
     color: '#4A4A4A', // Slightly darker to match "Monthly Activity" text
     marginBottom: 30,
     marginLeft: 4,
-    marginTop: -10, // Adjusted to better align with the cards below
   },
   cardsRow: {
     flexDirection: 'row',
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: Radius.md,
     paddingVertical: 14,
     paddingHorizontal: 15,
     minHeight: 115,
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: circle(32),
     justifyContent: 'center',
     alignItems: 'center',
     // Slight shadow for the icon circle to make it pop

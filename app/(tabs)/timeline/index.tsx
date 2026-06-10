@@ -25,6 +25,7 @@ import {
 } from '../../../components/timeline';
 import { TimelineColors } from '../../../theme/colors';
 import { Shadows } from '../../../theme/shadows';
+import { Colors, Radius } from '@/theme/tokens';
 import {
   vitalYAxisConfig,
   VitalType,
@@ -447,7 +448,7 @@ export default function TimelineScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F7',
+    backgroundColor: Colors.screenBg,
   },
   scrollContent: {
     flexGrow: 1,
@@ -472,16 +473,12 @@ const styles = StyleSheet.create({
   exportButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.cardBg,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 24,
+    borderRadius: Radius.pill,
     gap: 2,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    ...Shadows.card,
     marginHorizontal: 4,
   },
   exportButtonText: {
@@ -493,8 +490,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#4A4A4A',
-    marginBottom: 40,
-    marginTop: -35,
+    marginBottom: 24,
     marginLeft: 4,
   },
   periodControl: {
@@ -544,8 +540,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: Colors.cardBg,
+    borderRadius: Radius.md,
     padding: 20,
     width: '90%',
   },

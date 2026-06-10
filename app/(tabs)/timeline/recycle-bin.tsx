@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { recycleBinService } from '@/services/recycleBinService';
+import { Colors, Radius } from '@/theme/tokens';
 
 // Types updated to include moisture
 interface RemovedActivity {
@@ -67,9 +68,9 @@ const getActivityConfig = (type: RemovedActivity['type']) => {
     case 'urine':
       return {
         iconName: 'water' as const,
-        iconBgColor: '#91D7E4',
+        iconBgColor: Colors.brand,
         cardBgColor: '#F0F9FB',
-        buttonBgColor: '#91D7E4',
+        buttonBgColor: Colors.brand,
       };
     case 'sos':
       return {
@@ -165,7 +166,7 @@ export default function RecycleBinScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Pressable onPress={handleGoBack} style={styles.backButton}>
+        <Pressable onPress={handleGoBack} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Ionicons name="chevron-back" size={24} color="#333333" />
         </Pressable>
         <Text style={styles.headerTitle}>Recycle Bin</Text>
@@ -279,9 +280,9 @@ export default function RecycleBinScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F6F6F6' },
+  container: { flex: 1, backgroundColor: Colors.screenBg },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 8, marginTop: 10 },
-  backButton: { padding: 4, marginLeft: -4 },
+  backButton: { padding: 4 },
   headerTitle: { fontSize: 20, fontWeight: '600', color: '#333333' },
   description: { fontSize: 14, color: '#666666', lineHeight: 20, paddingHorizontal: 25, marginBottom: 24 },
   scrollView: { flex: 1 },
@@ -294,7 +295,7 @@ const styles = StyleSheet.create({
   timelineItem: { flexDirection: 'row', alignItems: 'flex-start', marginLeft: 10, marginRight: 10 },
   iconWrapper: { width: ICON_SIZE, justifyContent: 'center', alignItems: 'center', zIndex: 2, marginTop: 8 },
   iconCircle: { width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2, justifyContent: 'center', alignItems: 'center' },
-  activityCard: { flex: 1, marginLeft: 12, borderRadius: 16, paddingVertical: 12, paddingHorizontal: 16, minHeight: CARD_MIN_HEIGHT, elevation: 2 },
+  activityCard: { flex: 1, marginLeft: 12, borderRadius: Radius.md, paddingVertical: 12, paddingHorizontal: 16, minHeight: CARD_MIN_HEIGHT, elevation: 2 },
   cardContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   activityTitle: { fontSize: 14, fontWeight: '600', color: '#333333' },
   activityTime: { fontSize: 12, color: '#666666' },
