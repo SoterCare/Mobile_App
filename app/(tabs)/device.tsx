@@ -14,6 +14,8 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
+import { Colors, Radius, circle } from '@/theme/tokens';
+import { ScreenTitle } from '@/components/ui/ScreenTitle';
 
 export default function DeviceScreen() {
     const {
@@ -42,7 +44,7 @@ export default function DeviceScreen() {
 
     // Device is live if the selected device is actively streaming via websocket
     const deviceLiveLabel = isDeviceStreaming ? 'Device Online' : 'Device Offline';
-    const deviceLiveColor = isDeviceStreaming ? '#2ee134' : '#EF4444';
+    const deviceLiveColor = isDeviceStreaming ? Colors.success : Colors.danger;
 
     const handleClaim = async () => {
         const deviceId = claimInput.trim();
@@ -80,7 +82,7 @@ export default function DeviceScreen() {
                         <Ionicons
                             name="bluetooth"
                             size={28}
-                            color={isSelected ? '#91D7E4' : '#CBD5E1'}
+                            color={isSelected ? Colors.brand : '#CBD5E1'}
                         />
                     </View>
                     <View style={styles.deviceDetails}>
@@ -94,12 +96,12 @@ export default function DeviceScreen() {
                             <View
                                 style={[
                                     styles.signalDot,
-                                    { backgroundColor: isOnline ? '#2ee134' : '#EF4444' },
+                                    { backgroundColor: isOnline ? Colors.success : Colors.danger },
                                 ]}
                             />
                             <Text style={styles.deviceRssi}>
                                 Status: <Text style={{ 
-                                    color: isOnline ? '#2ee134' : '#EF4444', 
+                                    color: isOnline ? Colors.success : Colors.danger, 
                                     fontWeight: '700' 
                                 }}>
                                     {statusLabel}
@@ -122,7 +124,7 @@ export default function DeviceScreen() {
             <StatusBar style="dark" />
 
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>My Devices</Text>
+                <ScreenTitle>My Devices</ScreenTitle>
                 <View style={styles.headerRow}>
                     <Text style={styles.headerSubtitle}>{connectionLabel}</Text>
                     <View style={styles.headerRow}>
@@ -135,7 +137,7 @@ export default function DeviceScreen() {
                         {/* Backend sync indicator */}
                         <View style={[
                             styles.bluetoothStatus,
-                            { backgroundColor: connectionState === 'connected' ? '#94a3b8' : '#EF4444' }
+                            { backgroundColor: connectionState === 'connected' ? '#94a3b8' : Colors.danger }
                         ]}>
                             <Text style={styles.bluetoothStatusText}>
                                 {connectionState === 'connected' ? 'SYNC' : 'DOWN'}
@@ -213,7 +215,7 @@ export default function DeviceScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8f9fc',
+        backgroundColor: Colors.screenBg,
     },
     header: {
         padding: 20,
@@ -250,8 +252,8 @@ const styles = StyleSheet.create({
     claimContainer: {
         marginHorizontal: 20,
         marginBottom: 12,
-        backgroundColor: '#fff',
-        borderRadius: 16,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.md,
         padding: 16,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fdfdfd',
     },
     claimButton: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
         borderRadius: 12,
         paddingHorizontal: 16,
         height: 44,
@@ -290,20 +292,20 @@ const styles = StyleSheet.create({
     },
     errorText: {
         marginTop: 8,
-        color: '#ef4444',
+        color: Colors.danger,
         fontSize: 12,
         fontWeight: '600',
     },
     scanButton: {
         flexDirection: 'row',
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
         marginHorizontal: 20,
         paddingVertical: 14,
-        borderRadius: 16,
+        borderRadius: Radius.md,
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 4,
-        shadowColor: '#91D7E4',
+        shadowColor: Colors.brand,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
@@ -333,8 +335,8 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     deviceCard: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.lg,
         padding: 16,
         marginBottom: 12,
         flexDirection: 'row',
@@ -350,7 +352,7 @@ const styles = StyleSheet.create({
     },
     connectedCard: {
         backgroundColor: '#f0f9ff',
-        borderColor: '#91D7E4',
+        borderColor: Colors.brand,
         borderWidth: 1.5,
     },
     deviceInfo: {
@@ -402,7 +404,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f1f5f9',
     },
     connectedBadge: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
     },
     statusText: {
         fontSize: 13,
@@ -422,7 +424,7 @@ const styles = StyleSheet.create({
     emptyIconContainer: {
         width: 100,
         height: 100,
-        borderRadius: 50,
+        borderRadius: circle(100),
         backgroundColor: '#f1f5f9',
         justifyContent: 'center',
         alignItems: 'center',
