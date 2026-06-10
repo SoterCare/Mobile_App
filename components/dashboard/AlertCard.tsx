@@ -3,6 +3,8 @@ import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { alertService } from '@/services/alertService';
 import { recycleBinService } from '@/services/recycleBinService';
+import { Colors, Radius, circle } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
 
 type AlertType = 'movement' | 'fall' | 'urine' | 'sos' | 'help_call' | 'moisture'; // Added 'moisture' type
 
@@ -28,7 +30,7 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     urine: { // Keep urine as 'high moisture' with water icon and blue bg
         icon: 'water',
         iconColor: '#ffffff',
-        bgColor: '#91D7E4',
+        bgColor: Colors.brand,
     },
     sos: {
         icon: 'alert-circle',
@@ -43,7 +45,7 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     moisture: { // Added moisture type with water icon and blue bg
         icon: 'water',
         iconColor: '#ffffff',
-        bgColor: '#91D7E4',
+        bgColor: Colors.brand,
     },
 };
 
@@ -138,7 +140,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
                                 />
                             )}
                             {isProcessing && (
-                                <ActivityIndicator size="small" color="#91D7E4" style={styles.chevron} />
+                                <ActivityIndicator size="small" color={Colors.brand} style={styles.chevron} />
                             )}
                         </View>
                     </View>
@@ -168,20 +170,14 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
 
 const styles = StyleSheet.create({
     alertCard: {
-        backgroundColor: '#fff',
-        borderRadius: 25,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.lg,
         paddingVertical: 15,
         paddingHorizontal: 16,
         marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 10,
-        elevation: 3,
+        ...Shadows.card,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
-        width: '98%',
-        marginLeft: '0.9%',
+        borderColor: Colors.border,
     },
     cardContent: {
         flexDirection: 'row',
@@ -190,7 +186,7 @@ const styles = StyleSheet.create({
     alertIconCircle: {
         width: 52,
         height: 52,
-        borderRadius: 26,
+        borderRadius: circle(52),
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 16,
@@ -215,7 +211,6 @@ const styles = StyleSheet.create({
     timeAndChevron: {
         alignItems: 'flex-end',
         justifyContent: 'center',
-        marginTop: -10,
         gap: 4,
     },
     alertTime: {
@@ -235,10 +230,10 @@ const styles = StyleSheet.create({
     actionBtn: {
         paddingVertical: 10,
         paddingHorizontal: 28,
-        borderRadius: 24,
+        borderRadius: Radius.pill,
     },
     actionBtnPrimary: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
     },
     actionBtnSecondary: {
         backgroundColor: '#E0E0E0',

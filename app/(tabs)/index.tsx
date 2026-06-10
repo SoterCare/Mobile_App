@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { DeviceStatusHeader } from '@/components/dashboard/DeviceStatusHeader';
 import { VitalsGrid } from '@/components/dashboard/VitalsGrid';
 import { RecentAlerts } from '@/components/dashboard/RecentAlerts';
+import { Colors, SCREEN_PADDING, Spacing } from '@/theme/tokens';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -41,7 +42,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f3f7',
+    backgroundColor: Colors.screenBg,
   },
   backgroundContainer: {
     position: 'absolute',
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 24,
+    padding: SCREEN_PADDING,
+    paddingBottom: Spacing.xxl,
   },
 });

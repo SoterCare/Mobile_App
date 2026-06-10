@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { VitalCard } from './VitalCard';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
+import { Colors, Radius, circle } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
 
 const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
     <View style={styles.gaitCard}>
@@ -69,12 +71,12 @@ export const VitalsGrid = () => {
             <View style={styles.gridRow}>
                 <VitalCard
                     icon="water"
-                    iconColor="#91D7E4"
-                    backgroundColor="#e0f2fb"
+                    iconColor={Colors.brand}
+                    backgroundColor={Colors.brandTint}
                     value={String(moisture)}
                     unit="%"
                     label="Moisture · Dry"
-                    valueColor="#91D7E4"
+                    valueColor={Colors.brand}
                 />
                 <GaitAnalysisCard value={gaitValue} />
             </View>
@@ -92,26 +94,22 @@ const styles = StyleSheet.create({
         marginBottom: 14,
     },
     gaitCard: {
-        backgroundColor: '#fff',
-        borderRadius: 22,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.lg,
         padding: 16,
         paddingHorizontal: 14,
         flexDirection: 'row',
         width: '48%',
         alignItems: 'center',
         minHeight: 110,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 10,
-        elevation: 3,
+        ...Shadows.card,
         gap: 12,
     },
     gaitIconCircle: {
         width: 46,
         height: 46,
-        borderRadius: 27,
-        backgroundColor: '#dff1fd',
+        borderRadius: circle(46),
+        backgroundColor: Colors.brandTint,
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,

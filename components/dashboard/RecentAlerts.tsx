@@ -9,6 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { AlertCard } from './AlertCard';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
+import { Colors, Radius } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
 
 // Number of alerts shown in the dashboard preview ("View All" reveals the rest)
 const PREVIEW_COUNT = 5;
@@ -78,17 +80,13 @@ export const RecentAlerts = () => {
 
 const styles = StyleSheet.create({
     alertsContainer: {
-        backgroundColor: '#fff',
-        borderRadius: 24,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.xl,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
+        borderColor: Colors.border,
         padding: 20,
         paddingBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.04,
-        shadowRadius: 10,
-        elevation: 3,
+        ...Shadows.card,
     },
     alertsHeader: {
         flexDirection: 'row',
