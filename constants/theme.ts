@@ -4,8 +4,9 @@
  */
 
 import { Platform } from 'react-native';
+import { Colors as Tokens } from '@/theme/tokens';
 
-const tintColorLight = '#0a7ea4';
+const tintColorLight = Tokens.brand; // was '#0a7ea4' (Expo boilerplate); use brand cyan
 const tintColorDark = '#fff';
 
 export const Colors = {
