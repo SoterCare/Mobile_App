@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
+import { Colors, Radius, circle } from '@/theme/tokens';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/userService';
@@ -257,8 +258,7 @@ const styles = StyleSheet.create({
     },
     backButton: {
         padding: 4,
-        marginLeft: -4,
-        marginRight: 4, 
+        marginRight: 4,
     },
     headerTitle: {
         fontSize: 20,
@@ -278,8 +278,8 @@ const styles = StyleSheet.create({
     avatarContainer: {
         width: 100,
         height: 100,
-        borderRadius: 50,
-        backgroundColor: '#91D7E4',
+        borderRadius: circle(100),
+        backgroundColor: Colors.brand,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
@@ -330,8 +330,8 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     saveButton: {
-        backgroundColor: '#91D7E4',
-        borderRadius: 25,
+        backgroundColor: Colors.brand,
+        borderRadius: Radius.pill,
         width: '100%',
         paddingVertical: 16,
         alignItems: 'center',
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F5F5',
     },
     verifyButton: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
     },
     cancelButtonText: {
         color: '#666',
