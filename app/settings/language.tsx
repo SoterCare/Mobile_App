@@ -86,7 +86,7 @@ export default function LanguageScreen() {
                         <Text style={styles.currentNative}> · {selectedLang.nativeName}</Text>
                     </Text>
                 </View>
-                <Ionicons name="checkmark-circle" size={22} color="#91D7E4" />
+                <Ionicons name="checkmark-circle" size={22} color={Colors.brand} />
             </View>
 
             {/* Language list */}

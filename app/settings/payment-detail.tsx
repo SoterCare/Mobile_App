@@ -58,7 +58,7 @@ export default function PaymentDetailScreen() {
                     headerRight: () => (
                         <TouchableOpacity style={styles.editIconBtn}
                             onPress={() => router.push({ pathname: '/settings/payment-edit' as any, params: { cardId: card.id } })}>
-                            <Ionicons name="create-outline" size={22} color="#91D7E4" />
+                            <Ionicons name="create-outline" size={22} color={Colors.brand} />
                         </TouchableOpacity>
                     ),
                     headerShadowVisible: false,
@@ -91,7 +91,7 @@ export default function PaymentDetailScreen() {
 
                 {card.isDefault && (
                     <View style={styles.defaultBanner}>
-                        <Ionicons name="checkmark-circle" size={16} color="#91D7E4" />
+                        <Ionicons name="checkmark-circle" size={16} color={Colors.brand} />
                         <Text style={styles.defaultBannerText}>This is your default card</Text>
                     </View>
                 )}

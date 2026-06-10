@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { TimelineColors } from '@/theme/colors';
 import { Shadows } from '@/theme/shadows';
+import { Colors } from '@/theme/tokens';
 
 interface ToggleSwitchProps {
     activeTab: 'today' | 'previous';
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     activeToggleButton: {
-        backgroundColor: '#91D7E4', // the cyan color mapped exactly
+        backgroundColor: Colors.brand, // the cyan color mapped exactly
     },
     toggleText: {
         fontSize: 16,

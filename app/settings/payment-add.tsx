@@ -193,7 +193,7 @@ export default function PaymentAddScreen() {
                                     <Text style={styles.bankOptionName}>{b.name}</Text>
                                     <Text style={styles.bankOptionShort}>{b.shortName}</Text>
                                 </View>
-                                {selectedBank === key && <Ionicons name="checkmark-circle" size={22} color="#91D7E4" />}
+                                {selectedBank === key && <Ionicons name="checkmark-circle" size={22} color={Colors.brand} />}
                             </TouchableOpacity>
                         ))}
                     </View>

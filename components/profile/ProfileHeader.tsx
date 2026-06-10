@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, Image } from 'react-native';
 import { User } from '@/types/auth.types';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '@/theme/tokens';
 
 interface ProfileHeaderProps {
     user: User | null;
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: '#91D7E4', // Cyan Theme
+        backgroundColor: Colors.brand, // Cyan Theme
         alignItems: 'center',
         justifyContent: 'center',
     },

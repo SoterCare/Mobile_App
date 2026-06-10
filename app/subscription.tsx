@@ -123,7 +123,7 @@ export default function SubscriptionScreen() {
                             <View style={styles.featuresList}>
                                 {plan.features.map((feature, i) => (
                                     <View key={i} style={styles.featureItem}>
-                                        <Ionicons name="checkmark" size={18} color="#91D7E4" />
+                                        <Ionicons name="checkmark" size={18} color={Colors.brand} />
                                         <Text style={styles.featureText}>{feature}</Text>
                                     </View>
                                 ))}

@@ -121,7 +121,7 @@ export default function OTPVerificationScreen() {
             <View style={styles.content}>
                 <View style={styles.iconContainer}>
                     <View style={styles.iconCircle}>
-                        <Ionicons name="mail-open-outline" size={40} color="#91D7E4" />
+                        <Ionicons name="mail-open-outline" size={40} color={Colors.brand} />
                     </View>
                 </View>
 

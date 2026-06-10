@@ -395,7 +395,7 @@ export default function ExportReportScreen() {
                                             {device}
                                         </Text>
                                         {selectedDevice === device && (
-                                            <IconSymbol name="checkmark" size={14} color="#91D7E4" />
+                                            <IconSymbol name="checkmark" size={14} color={Colors.brand} />
                                         )}
                                     </TouchableOpacity>
                                 ))}
@@ -580,7 +580,7 @@ export default function ExportReportScreen() {
 
                     {isLoadingLogs ? (
                         <View style={styles.logsStateBox}>
-                            <ActivityIndicator color="#91D7E4" />
+                            <ActivityIndicator color={Colors.brand} />
                             <Text style={styles.helperText}>Loading logs...</Text>
                         </View>
                     ) : logsError ? (
@@ -636,7 +636,7 @@ export default function ExportReportScreen() {
                         />
                         <MetricCard
                             icon="water"
-                            color="#91D7E4"
+                            color={Colors.brand}
                             bgColor="#e0f2fb"
                             label="Moisture"
                             checked={selectedMetrics.moisture}

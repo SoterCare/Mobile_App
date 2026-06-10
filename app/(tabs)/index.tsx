@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   },
   backgroundContainer: {
     position: 'absolute',
-    top: 0,
+    top: -40,
     left: 0,
     right: 0,
     bottom: 0,
@@ -57,7 +57,6 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
     transform: [{ scale: 1 }],
-    marginTop: -40,
   },
   scroll: {
     flex: 1,
