@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
+import { Colors } from '@/theme/tokens';
 
 // ─── Sri Lankan Bank Definitions ──────────────────────────────────────────
 export type SLBank = 'sampath' | 'commercial' | 'hnb' | 'boc' | 'ndb' | 'seylan';
@@ -190,17 +191,17 @@ const styles = StyleSheet.create({
     emptyText: { marginTop: 12, fontSize: 14, color: '#ADB5BD', fontWeight: '600' },
     cardRow: { backgroundColor: '#FFF', borderRadius: 18, padding: 14, marginBottom: 12,
         borderWidth: 1.5, borderColor: '#F1F3F5', flexDirection: 'row', alignItems: 'center', gap: 12 },
-    cardRowDefault: { borderColor: '#91D7E4', shadowColor: '#91D7E4',
+    cardRowDefault: { borderColor: Colors.brand, shadowColor: Colors.brand,
         shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
     cardMeta: { flex: 1 },
     cardMetaTop: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
     cardBankName: { fontSize: 12, fontWeight: '800', color: '#333' },
     cardNetwork: { fontSize: 10, color: '#ADB5BD', fontWeight: '600', marginBottom: 2 },
-    defaultBadge: { backgroundColor: '#91D7E4', borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
+    defaultBadge: { backgroundColor: Colors.brand, borderRadius: 20, paddingHorizontal: 7, paddingVertical: 2 },
     defaultBadgeText: { fontSize: 9, color: '#fff', fontWeight: '700' },
     cardLast4: { fontSize: 12, color: '#ADB5BD' },
     cardExpiry: { fontSize: 11, color: '#ADB5BD', marginTop: 2 },
-    addButton: { backgroundColor: '#91D7E4', flexDirection: 'row', padding: 16, borderRadius: 16,
+    addButton: { backgroundColor: Colors.brand, flexDirection: 'row', padding: 16, borderRadius: 16,
         justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 4 },
     addButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
     secureRow: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', marginTop: 16 },

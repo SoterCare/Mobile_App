@@ -2,6 +2,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Ale
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { Colors } from '@/theme/tokens';
 
 const FEATURES = [
     { icon: 'pulse-outline' as const, title: 'Real-time Vitals Tracking', desc: 'Monitor heart rate, temperature, and more in real time.' },
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 14,
         elevation: 6,
-        shadowColor: '#91D7E4',
+        shadowColor: Colors.brand,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 12,

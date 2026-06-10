@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { cardStore, CardVisual, SL_BANKS } from './payment';
+import { Colors } from '@/theme/tokens';
 
 export default function PaymentDetailScreen() {
     const router = useRouter();
@@ -130,8 +131,8 @@ const styles = StyleSheet.create({
     defaultBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16,
         backgroundColor: 'rgba(143,217,229,0.08)', borderRadius: 12, padding: 12,
         borderWidth: 1, borderColor: 'rgba(143,217,229,0.2)' },
-    defaultBannerText: { fontSize: 12, color: '#91D7E4', fontWeight: '700' },
-    editButton: { backgroundColor: '#91D7E4', borderRadius: 16, height: 52,
+    defaultBannerText: { fontSize: 12, color: Colors.brand, fontWeight: '700' },
+    editButton: { backgroundColor: Colors.brand, borderRadius: 16, height: 52,
         alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
     editButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
     removeButton: { borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center',

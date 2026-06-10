@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors } from '@/theme/tokens';
 
 type Language = { code: string; name: string; nativeName: string; flag: string };
 
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     currentFlag: { fontSize: 28 },
     currentLabel: {
         fontSize: 11, 
-        color: '#91D7E4', 
+        color: Colors.brand, 
         fontWeight: '700',
         marginBottom: 2, 
         textTransform: 'uppercase', 
@@ -210,6 +211,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center', 
         flexShrink: 0,
     },
-    radioOuterActive: { borderColor: '#91D7E4' },
-    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#91D7E4' },
+    radioOuterActive: { borderColor: Colors.brand },
+    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: Colors.brand },
 });

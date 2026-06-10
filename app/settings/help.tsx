@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Ale
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { Colors } from '@/theme/tokens';
 
 const FAQ_ITEMS = [
     { q: 'How do I pair my device?', a: 'Go to the Device tab, tap "Connect Device", and follow the on-screen Bluetooth pairing instructions.' },
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 16,
         elevation: 4,
-        shadowColor: '#91D7E4',
+        shadowColor: Colors.brand,
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.12,
         shadowRadius: 10,

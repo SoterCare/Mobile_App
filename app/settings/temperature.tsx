@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors } from '@/theme/tokens';
 
 type Unit = 'F' | 'C';
 
@@ -132,8 +133,8 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     unitCardActive: {
-        borderColor: '#91D7E4',
-        shadowColor: '#91D7E4',
+        borderColor: Colors.brand,
+        shadowColor: Colors.brand,
         shadowOpacity: 0.18,
         shadowRadius: 12,
         elevation: 5,
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexShrink: 0,
     },
-    symbolCircleActive: { backgroundColor: '#91D7E4' },
+    symbolCircleActive: { backgroundColor: Colors.brand },
     symbolText: { fontSize: 17, fontWeight: '800', color: '#ADB5BD', letterSpacing: -0.5 },
     symbolTextActive: { color: '#FFFFFF' },
 
@@ -169,8 +170,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexShrink: 0,
     },
-    radioOuterActive: { borderColor: '#91D7E4' },
-    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: '#91D7E4' },
+    radioOuterActive: { borderColor: Colors.brand },
+    radioInner: { width: 11, height: 11, borderRadius: 6, backgroundColor: Colors.brand },
 
     // ── Current setting banner ──
     previewCard: {

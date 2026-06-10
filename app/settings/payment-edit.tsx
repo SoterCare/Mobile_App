@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { cardStore, setCardStore, CardVisual, Card, SL_BANKS } from './payment';
+import { Colors } from '@/theme/tokens';
 
 const formatExpiry = (v: string) => {
     const d = v.replace(/\D/g, '');
@@ -164,12 +165,12 @@ const styles = StyleSheet.create({
     errorText: { fontSize: 10, color: '#FF6B6B', marginTop: 4, fontWeight: '600' },
     defaultToggle: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20,
         padding: 14, borderRadius: 13, borderWidth: 1.5, borderColor: '#F1F3F5', backgroundColor: '#FFF' },
-    defaultToggleActive: { borderColor: '#91D7E4', backgroundColor: 'rgba(143,217,229,0.05)' },
+    defaultToggleActive: { borderColor: Colors.brand, backgroundColor: 'rgba(143,217,229,0.05)' },
     checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#F1F3F5',
         alignItems: 'center', justifyContent: 'center' },
-    checkboxActive: { backgroundColor: '#91D7E4', borderColor: '#91D7E4' },
+    checkboxActive: { backgroundColor: Colors.brand, borderColor: Colors.brand },
     defaultToggleText: { fontSize: 13, color: '#333', fontWeight: '600', flex: 1 },
-    saveButton: { backgroundColor: '#91D7E4', borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center' },
+    saveButton: { backgroundColor: Colors.brand, borderRadius: 16, height: 52, alignItems: 'center', justifyContent: 'center' },
     saveButtonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
     notFound: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     notFoundText: { color: '#ADB5BD', fontSize: 15 },
