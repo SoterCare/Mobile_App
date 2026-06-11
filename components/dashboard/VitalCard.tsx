@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AnimatedCounter } from '../ui/AnimatedCounter';
+import { Colors, Radius, circle } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
 
 interface VitalCardProps {
     icon: keyof typeof Ionicons.glyphMap;
@@ -59,8 +61,8 @@ export const VitalCard: React.FC<VitalCardProps> = ({
 
 const styles = StyleSheet.create({
     vitalCard: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.lg,
         padding: 14,
         paddingHorizontal: 16,
         flexDirection: 'row',
@@ -68,16 +70,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         minHeight: 110,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
+        ...Shadows.card,
     },
     vitalIconCircle: {
         width: 46,
         height: 46,
-        borderRadius: 23,
+        borderRadius: circle(46),
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 10,

@@ -17,6 +17,8 @@ export function useRealtimeVitals(deviceId?: string) {
   const offlineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (!deviceId) return;
+
     let socketInstance: Socket | null = null;
 
     const connectSocket = async () => {
@@ -28,21 +30,16 @@ export function useRealtimeVitals(deviceId?: string) {
           auth: {
             token: token || '',
           },
+          reconnectionAttempts: 5,
+          reconnectionDelay: 3000,
+          reconnectionDelayMax: 15000,
+          timeout: 10000,
         });
 
         socketInstance.on('connect', () => {
-          console.log('[Socket] Connected to wss://backend.sotercare.com/realtime');
           setIsConnected(true);
           setError(null);
-          if (deviceId) {
-            console.log(`[Socket] Subscribing to device: ${deviceId}`);
-            socketInstance?.emit('subscribe', { deviceId });
-          }
-        });
-
-        // Catch ALL incoming events to see what the server is actually sending
-        socketInstance.onAny((eventName, ...args) => {
-          console.log(`[Socket Received Event]: ${eventName}`, JSON.stringify(args, null, 2));
+          socketInstance?.emit('subscribe', { deviceId });
         });
 
         const markDeviceOnline = () => {
@@ -61,7 +58,7 @@ export function useRealtimeVitals(deviceId?: string) {
         });
 
         socketInstance.on('connect_error', (err) => {
-          console.error('Socket connection error:', err);
+          console.warn('[Socket] Connection error:', err.message);
           setError(err.message);
         });
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { TimelineColors } from '@/theme/colors';
+import { Colors } from '@/theme/tokens';
 
 interface GenerateButtonProps {
     onPress: () => void;
@@ -26,7 +27,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, isLoadi
 
 const styles = StyleSheet.create({
     generateButton: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
         borderRadius: 30,
         paddingVertical: 18,
         alignItems: 'center',

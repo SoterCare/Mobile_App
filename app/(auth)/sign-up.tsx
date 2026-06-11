@@ -8,6 +8,7 @@ import { isValidEmail, isValidName } from "../../utils/validation";
 import * as WebBrowser from 'expo-web-browser';
 import { useGoogleAuth, processGoogleAuthResponse, useFacebookAuth, processFacebookAuthResponse, appleSignIn } from '@/services/socialAuthService';
 import { useAuth } from '@/contexts/AuthContext';
+import { Colors, Radius, circle } from '@/theme/tokens';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -79,7 +80,7 @@ export default function SignUpScreen() {
             <View style={styles.content}>
                 {/* Updated Header with Back Button */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                         <Ionicons name="chevron-back" size={25} color="#333" />
                     </TouchableOpacity>
                     <Text style={styles.title}>Sign Up</Text>
@@ -176,7 +177,6 @@ const styles = StyleSheet.create({
     backButton: {
         marginRight: 5,
         padding: 5,
-        marginLeft: -20, // Moves button slightly left for better optical alignment
     },
     title: {
         fontSize: 25,
@@ -199,8 +199,8 @@ const styles = StyleSheet.create({
     },
     button: {
         height: 50,
-        backgroundColor: '#91D7E4',
-        borderRadius: 25,
+        backgroundColor: Colors.brand,
+        borderRadius: Radius.pill,
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: 10,
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     socialButton: {
         width: 60,
         height: 60,
-        borderRadius: 30,
+        borderRadius: circle(60),
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
@@ -266,8 +266,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     checkboxChecked: {
-        backgroundColor: '#91D7E4',
-        borderColor: '#91D7E4',
+        backgroundColor: Colors.brand,
+        borderColor: Colors.brand,
     },
     checkboxLabel: {
         flex: 1,
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
         color: '#666',
     },
     link: {
-        color: '#91D7E4',
+        color: Colors.brand,
         fontWeight: '600',
     },
     signInLink: {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     signInLinkHighlight: {
-        color: '#91D7E4',
+        color: Colors.brand,
         fontWeight: '600',
     },
 });

@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Ale
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { Colors } from '@/theme/tokens';
 
 const FAQ_ITEMS = [
     { q: 'How do I pair my device?', a: 'Go to the Device tab, tap "Connect Device", and follow the on-screen Bluetooth pairing instructions.' },
@@ -83,7 +84,7 @@ export default function HelpSupportScreen() {
                 {/* Intro */}
                 <View style={styles.introContainer}>
                     <View style={styles.introIconCircle}>
-                        <Ionicons name="help-buoy-outline" size={36} color="#91D7E4" />
+                        <Ionicons name="help-buoy-outline" size={36} color={Colors.brand} />
                     </View>
                     <Text style={styles.introHeading}>How can we help?</Text>
                     <Text style={styles.introText}>
@@ -95,26 +96,26 @@ export default function HelpSupportScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="flash-outline" size={18} color="#91D7E4" />
+                            <Ionicons name="flash-outline" size={18} color={Colors.brand} />
                         </View>
                         <Text style={styles.sectionTitle}>Quick Help</Text>
                     </View>
                     <View style={styles.quickActions}>
                         <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Alert.alert('Getting Started', 'Getting started guide will be available soon.')}>
                             <View style={styles.quickActionIcon}>
-                                <Ionicons name="rocket-outline" size={22} color="#91D7E4" />
+                                <Ionicons name="rocket-outline" size={22} color={Colors.brand} />
                             </View>
                             <Text style={styles.quickActionLabel}>Getting{'\n'}Started</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Alert.alert('Device Setup', 'Device setup guide will be available soon.')}>
                             <View style={styles.quickActionIcon}>
-                                <Ionicons name="watch-outline" size={22} color="#91D7E4" />
+                                <Ionicons name="watch-outline" size={22} color={Colors.brand} />
                             </View>
                             <Text style={styles.quickActionLabel}>Device{'\n'}Setup</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.quickActionBtn} activeOpacity={0.6} onPress={() => Alert.alert('App Guide', 'App guide will be available soon.')}>
                             <View style={styles.quickActionIcon}>
-                                <Ionicons name="phone-portrait-outline" size={22} color="#91D7E4" />
+                                <Ionicons name="phone-portrait-outline" size={22} color={Colors.brand} />
                             </View>
                             <Text style={styles.quickActionLabel}>App{'\n'}Guide</Text>
                         </TouchableOpacity>
@@ -125,7 +126,7 @@ export default function HelpSupportScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="help-circle-outline" size={18} color="#91D7E4" />
+                            <Ionicons name="help-circle-outline" size={18} color={Colors.brand} />
                         </View>
                         <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
                     </View>
@@ -138,7 +139,7 @@ export default function HelpSupportScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="headset-outline" size={18} color="#91D7E4" />
+                            <Ionicons name="headset-outline" size={18} color={Colors.brand} />
                         </View>
                         <Text style={styles.sectionTitle}>Contact Us</Text>
                     </View>
@@ -150,7 +151,7 @@ export default function HelpSupportScreen() {
                             onPress={opt.action}
                         >
                             <View style={styles.contactIconBox}>
-                                <Ionicons name={opt.icon} size={22} color="#91D7E4" />
+                                <Ionicons name={opt.icon} size={22} color={Colors.brand} />
                             </View>
                             <View style={styles.contactContent}>
                                 <Text style={styles.contactLabel}>{opt.label}</Text>
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 16,
         elevation: 4,
-        shadowColor: '#91D7E4',
+        shadowColor: Colors.brand,
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.12,
         shadowRadius: 10,

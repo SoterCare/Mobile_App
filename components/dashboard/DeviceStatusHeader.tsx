@@ -2,6 +2,11 @@ import React, { useMemo } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
+import { Colors, Radius } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
+
+const stripDevicePrefix = (name?: string) =>
+    name?.replace(/^iot\s+device\s*/i, '').trim() || 'No Device';
 
 export const DeviceStatusHeader = () => {
     const { devices, selectedDeviceId } = useRaspberryPi();
@@ -26,7 +31,7 @@ export const DeviceStatusHeader = () => {
                 </Text>
                 <View style={styles.devicePill}>
                     <Text style={styles.devicePillText}>
-                        {selectedDevice?.name || 'No Device'}
+                        {stripDevicePrefix(selectedDevice?.name)}
                     </Text>
                 </View>
             </View>
@@ -39,38 +44,34 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     headerCard: {
-        backgroundColor: '#fff',
-        borderRadius: 16,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.md,
         padding: 16,
         paddingVertical: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
+        ...Shadows.card,
     },
     statusLabel: {
         fontSize: 15,
-        color: '#888',
+        color: Colors.textSecondary,
         fontWeight: '500',
     },
     statusOnline: {
-        color: '#2ee134',
+        color: Colors.success,
         fontWeight: '600',
     },
     statusOffline: {
-        color: '#ff2121',
+        color: Colors.danger,
         fontWeight: '600',
         textTransform: 'capitalize',
     },
     devicePill: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
         paddingVertical: 5,
         paddingHorizontal: 17,
-        borderRadius: 20,
+        borderRadius: Radius.pill,
     },
     devicePillText: {
         fontSize: 13,

@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { TimelineColors } from '../../theme/colors';
 import { Shadows } from '../../theme/shadows';
+import { Colors } from '@/theme/tokens';
 
 export interface SegmentOption {
   key: string;
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   } as ViewStyle,
 
   pillButtonActive: {
-    backgroundColor: '#91D7E4',
+    backgroundColor: Colors.brand,
     elevation: 2,
     shadowOpacity: 0.15,
   } as ViewStyle,

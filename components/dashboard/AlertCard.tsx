@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { alertService } from '@/services/alertService';
 import { recycleBinService } from '@/services/recycleBinService';
+import { Colors, Radius, circle } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
 
 type AlertType = 'movement' | 'fall' | 'urine' | 'sos' | 'help_call' | 'moisture'; // Added 'moisture' type
 
@@ -28,7 +31,7 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     urine: { // Keep urine as 'high moisture' with water icon and blue bg
         icon: 'water',
         iconColor: '#ffffff',
-        bgColor: '#91D7E4',
+        bgColor: Colors.brand,
     },
     sos: {
         icon: 'alert-circle',
@@ -43,7 +46,7 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
     moisture: { // Added moisture type with water icon and blue bg
         icon: 'water',
         iconColor: '#ffffff',
-        bgColor: '#91D7E4',
+        bgColor: Colors.brand,
     },
 };
 
@@ -69,44 +72,64 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
     const [isProcessing, setIsProcessing] = useState(false);
     const [, forceUpdate] = useState(0);
     const config = ALERT_CONFIG[type] ?? DEFAULT_ALERT_CONFIG;
+    const router = useRouter();
 
     useEffect(() => {
-        const interval = setInterval(() => forceUpdate((n: number) => n + 1), 1000); // refresh every 1s
+        const interval = setInterval(() => forceUpdate((n: number) => n + 1), 1000);
         return () => clearInterval(interval);
     }, []);
 
-    const handleAttend = async () => {
-        try {
-            setIsProcessing(true);
-            // All alerts (both persistent and real-time) should be registered on the backend
-            if (id) {
-                await Promise.all([
-                    alertService.attendAlert(id),
-                    recycleBinService.dismiss({ id })
-                ]);
-            }
-            onDismiss?.(id);
-        } catch (error) {
-            console.error('Failed to attend alert:', error);
-            setIsProcessing(false);
-        }
+    const handleAttend = () => {
+        Alert.alert(
+            'Confirm Attended',
+            'Mark this alert as attended? It will be logged in your Timeline.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Attended',
+                    onPress: async () => {
+                        try {
+                            setIsProcessing(true);
+                            if (id) await alertService.attendAlert(id);
+                            onDismiss?.(id);
+                            router.navigate('/(tabs)/timeline');
+                        } catch (error) {
+                            console.error('Failed to attend alert:', error);
+                            setIsProcessing(false);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
-    const handleFalseAlarm = async () => {
-        try {
-            setIsProcessing(true);
-            // All alerts (both persistent and real-time) should be registered on the backend
-            if (id) {
-                await Promise.all([
-                    alertService.falseAlarmAlert(id),
-                    recycleBinService.dismiss({ id })
-                ]);
-            }
-            onDismiss?.(id);
-        } catch (error) {
-            console.error('Failed to mark false alarm:', error);
-            setIsProcessing(false);
-        }
+    const handleFalseAlarm = () => {
+        Alert.alert(
+            'Mark as False Alarm?',
+            'This alert will be moved to the Recycle Bin. You can restore it from there if needed.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'False Alarm',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            setIsProcessing(true);
+                            if (id) {
+                                await Promise.all([
+                                    alertService.falseAlarmAlert(id),
+                                    recycleBinService.dismiss({ id }),
+                                ]);
+                            }
+                            onDismiss?.(id);
+                        } catch (error) {
+                            console.error('Failed to mark false alarm:', error);
+                            setIsProcessing(false);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     return (
@@ -138,7 +161,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
                                 />
                             )}
                             {isProcessing && (
-                                <ActivityIndicator size="small" color="#91D7E4" style={styles.chevron} />
+                                <ActivityIndicator size="small" color={Colors.brand} style={styles.chevron} />
                             )}
                         </View>
                     </View>
@@ -168,20 +191,14 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
 
 const styles = StyleSheet.create({
     alertCard: {
-        backgroundColor: '#fff',
-        borderRadius: 25,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.lg,
         paddingVertical: 15,
         paddingHorizontal: 16,
         marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 10,
-        elevation: 3,
+        ...Shadows.card,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
-        width: '98%',
-        marginLeft: '0.9%',
+        borderColor: Colors.border,
     },
     cardContent: {
         flexDirection: 'row',
@@ -190,7 +207,7 @@ const styles = StyleSheet.create({
     alertIconCircle: {
         width: 52,
         height: 52,
-        borderRadius: 26,
+        borderRadius: circle(52),
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 16,
@@ -215,7 +232,6 @@ const styles = StyleSheet.create({
     timeAndChevron: {
         alignItems: 'flex-end',
         justifyContent: 'center',
-        marginTop: -10,
         gap: 4,
     },
     alertTime: {
@@ -235,10 +251,10 @@ const styles = StyleSheet.create({
     actionBtn: {
         paddingVertical: 10,
         paddingHorizontal: 28,
-        borderRadius: 24,
+        borderRadius: Radius.pill,
     },
     actionBtnPrimary: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
     },
     actionBtnSecondary: {
         backgroundColor: '#E0E0E0',

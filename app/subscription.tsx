@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
+import { Colors, Radius } from '@/theme/tokens';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;
@@ -122,7 +123,7 @@ export default function SubscriptionScreen() {
                             <View style={styles.featuresList}>
                                 {plan.features.map((feature, i) => (
                                     <View key={i} style={styles.featureItem}>
-                                        <Ionicons name="checkmark" size={18} color="#91D7E4" />
+                                        <Ionicons name="checkmark" size={18} color={Colors.brand} />
                                         <Text style={styles.featureText}>{feature}</Text>
                                     </View>
                                 ))}
@@ -155,7 +156,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8F9FA',
     },
     headerBackBtn: {
-        marginLeft: -4,
         marginTop: 20,
     },
     headerTitle: {
@@ -168,13 +168,11 @@ const styles = StyleSheet.create({
     toggleContainer: {
         alignItems: 'center',
         paddingVertical: 25,
-        width: '119%',
-        marginLeft: -40,
     },
     toggleBg: {
         flexDirection: 'row',
         backgroundColor: '#FFFFFF',
-        borderRadius: 35,
+        borderRadius: Radius.pill,
         padding: 5,
         width: '75%',
         ...Platform.select({
@@ -191,10 +189,10 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 14,
         alignItems: 'center',
-        borderRadius: 30,
+        borderRadius: Radius.pill,
     },
     activeTab: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
     },
     toggleText: {
         fontSize: 16,
@@ -213,7 +211,7 @@ const styles = StyleSheet.create({
         width: CARD_WIDTH,
         minHeight: 540,
         backgroundColor: '#FFF',
-        borderRadius: 30,
+        borderRadius: Radius.xl,
         padding: 30,
         marginRight: CARD_MARGIN,
         ...Platform.select({
@@ -270,9 +268,9 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     subscribeButton: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
         paddingVertical: 18,
-        borderRadius: 22,
+        borderRadius: Radius.xl,
         alignItems: 'center',
     },
     subscribeText: {

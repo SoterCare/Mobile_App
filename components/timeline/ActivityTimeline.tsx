@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ActivityEvent } from '../../data/mockVitals';
+import { Colors, Radius } from '@/theme/tokens';
 
 interface ActivityTimelineProps {
   events: ActivityEvent[];
@@ -42,7 +43,7 @@ const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' 
       return {
         iconName: 'water' as const,
         iconComponent: Ionicons,
-        backgroundColor: '#91D7E4', // Light Blue
+        backgroundColor: Colors.brand, // Light Blue
         cardBackground: '#EBF7F9', // Very light blue tint
       };
     case 'help_call':
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   eventCardContainer: {
-    borderRadius: 24,
+    borderRadius: Radius.xl,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

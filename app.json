@@ -63,18 +63,7 @@
           }
         }
       ],
-      [
-        "react-native-ble-manager",
-        {
-          "isBackgroundEnabled": false,
-          "modes": [
-            "peripheral",
-            "central"
-          ],
-          "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to Bluetooth devices"
-        }
-      ],
-      "expo-font",
+"expo-font",
       "@react-native-community/datetimepicker"
     ],
     "experiments": {

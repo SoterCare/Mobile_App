@@ -7,7 +7,8 @@ import { Shadows } from '@/theme/shadows';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
 import { summaryService, SummaryResponse } from '@/services/summaryService';
-import { TimelineColors } from '@/theme/colors';
+import { Colors, Radius, circle, SCREEN_PADDING } from '@/theme/tokens';
+import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Calendar } from 'react-native-calendars';
 
 export default function AISummaryScreen() {
@@ -145,10 +146,8 @@ export default function AISummaryScreen() {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header Row */}
-                <View style={styles.headerRow}>
-                    <Text style={styles.screenTitle}>AI Summary</Text>
-                </View>
+                {/* Header */}
+                <ScreenTitle>AI Summary</ScreenTitle>
 
                 {/* Controls Row: Toggle Container */}
                 <View style={styles.controlsRow}>
@@ -176,7 +175,7 @@ export default function AISummaryScreen() {
                 {/* Generate Button */}
                 <View style={styles.generateButtonContainer}>
                     <GenerateButton onPress={handleGenerate} isLoading={isLoading} />
-                    {isLoading && (
+                    {__DEV__ && isLoading && (
                         <TouchableOpacity
                             style={styles.resetButton}
                             onPress={() => {
@@ -220,12 +219,6 @@ export default function AISummaryScreen() {
                                 </View>,
                                 'Temperature'
                             )}
-                            {renderMetricChip(
-                                <View style={[styles.iconWrapper, { backgroundColor: '#FFEBEB' }]}>
-                                    <FontAwesome5 name="heartbeat" size={18} color="#FF6B6B" />
-                                </View>,
-                                'Heart Rate'
-                            )}
                         </View>
                     </View>
                 )}
@@ -253,13 +246,13 @@ export default function AISummaryScreen() {
                             markedDates={{
                                 [selectedDate.toISOString().slice(0, 10)]: {
                                     selected: true,
-                                    selectedColor: '#91D7E4',
+                                    selectedColor: Colors.brand,
                                 },
                             }}
                             theme={{
-                                arrowColor: '#91D7E4',
-                                todayTextColor: '#91D7E4',
-                                selectedDayBackgroundColor: '#91D7E4',
+                                arrowColor: Colors.brand,
+                                todayTextColor: Colors.brand,
+                                selectedDayBackgroundColor: Colors.brand,
                             }}
                             maxDate={new Date().toISOString().slice(0, 10)}
                         />
@@ -273,22 +266,22 @@ export default function AISummaryScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: TimelineColors.background,
+        backgroundColor: Colors.screenBg,
     },
     scrollView: {
         flex: 1,
     },
     historyCard: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: Colors.cardBg,
         padding: 16,
-        borderRadius: 16,
+        borderRadius: Radius.md,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: '#EEEEEE',
+        borderColor: Colors.border,
     },
     historyCardActive: {
-        borderColor: TimelineColors.primaryCyan,
-        backgroundColor: '#F0FBFC',
+        borderColor: Colors.brand,
+        backgroundColor: Colors.brandSurface,
     },
     historyDate: {
         fontSize: 16,
@@ -301,26 +294,13 @@ const styles = StyleSheet.create({
         color: '#666666',
     },
     scrollContent: {
-        paddingHorizontal: 24,
+        paddingHorizontal: SCREEN_PADDING,
         paddingTop: 16,
         paddingBottom: 40,
     },
-    headerRow: {
-        marginBottom: 16,
-    },
-    screenTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333333',
-        marginTop: 10,
-        marginBottom: 8,
-        marginLeft: -3,
-    },
     controlsRow: {
         marginBottom: 24,
-        width: '101%',
         alignItems: 'center',
-        marginLeft: -3,
     },
     helperText: {
         fontSize: 15,
@@ -343,15 +323,11 @@ const styles = StyleSheet.create({
         marginLeft: 4,
     },
     datePill: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: Colors.cardBg,
         paddingVertical: 12,
         paddingHorizontal: 24,
-        borderRadius: 24,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
+        borderRadius: Radius.pill,
+        ...Shadows.card,
     },
     datePillText: {
         fontSize: 15,
@@ -366,7 +342,7 @@ const styles = StyleSheet.create({
         padding: 8,
         alignItems: 'center',
         backgroundColor: '#FF6B6B',
-        borderRadius: 8,
+        borderRadius: Radius.xs,
     },
     resetButtonText: {
         color: '#FFFFFF',
@@ -391,15 +367,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     summaryCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 24,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.xl,
         padding: 24,
         marginBottom: 24,
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
     },
     summaryTitle: {
         fontSize: 20,
@@ -422,21 +393,17 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: Colors.cardBg,
         paddingVertical: 14,
         paddingHorizontal: 12,
-        borderRadius: 20,
+        borderRadius: Radius.lg,
         gap: 10,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 8,
+        ...Shadows.card,
     },
     iconWrapper: {
         width: 36,
         height: 36,
-        borderRadius: 18,
+        borderRadius: circle(36),
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -453,8 +420,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalContent: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.md,
         padding: 20,
         width: '90%',
     },

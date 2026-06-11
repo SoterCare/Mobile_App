@@ -2,9 +2,10 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Ale
 import { Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { Colors } from '@/theme/tokens';
 
 const FEATURES = [
-    { icon: 'pulse-outline' as const, title: 'Real-time Vitals Tracking', desc: 'Monitor heart rate, temperature, and more in real time.' },
+    { icon: 'pulse-outline' as const, title: 'Real-time Vitals Tracking', desc: 'Monitor temperature, moisture, gait analysis, and more in real time.' },
     { icon: 'sparkles-outline' as const, title: 'AI Health Summaries(Future Implementation)', desc: 'Get intelligent insights powered by machine learning.' },
     { icon: 'document-text-outline' as const, title: 'Detailed Report Exports', desc: 'Export comprehensive PDF reports for your doctor.' },
     { icon: 'notifications-outline' as const, title: 'Smart Alerts', desc: 'Receive timely notifications when vitals need attention.' },
@@ -34,7 +35,7 @@ export default function AboutScreen() {
                 {/* Logo & Identity */}
                 <View style={styles.logoContainer}>
                     <View style={styles.iconCircle}>
-                        <Ionicons name="fitness-outline" size={44} color="#91D7E4" />
+                        <Ionicons name="fitness-outline" size={44} color={Colors.brand} />
                     </View>
                     <Text style={styles.appName}>Sotercare</Text>
                     <View style={styles.versionBadge}>
@@ -46,7 +47,7 @@ export default function AboutScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="heart-outline" size={18} color="#91D7E4" />
+                            <Ionicons name="heart-outline" size={18} color={Colors.brand} />
                         </View>
                         <Text style={styles.sectionTitle}>Our Mission</Text>
                     </View>
@@ -59,7 +60,7 @@ export default function AboutScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="information-circle-outline" size={18} color="#91D7E4" />
+                            <Ionicons name="information-circle-outline" size={18} color={Colors.brand} />
                         </View>
                         <Text style={styles.sectionTitle}>What is Sotercare?</Text>
                     </View>
@@ -72,14 +73,14 @@ export default function AboutScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="grid-outline" size={18} color="#91D7E4" />
+                            <Ionicons name="grid-outline" size={18} color={Colors.brand} />
                         </View>
                         <Text style={styles.sectionTitle}>Key Features</Text>
                     </View>
                     {FEATURES.map((feat, idx) => (
                         <View key={idx} style={[styles.featureRow, idx < FEATURES.length - 1 && styles.featureRowBorder]}>
                             <View style={styles.featureIconBox}>
-                                <Ionicons name={feat.icon} size={22} color="#91D7E4" />
+                                <Ionicons name={feat.icon} size={22} color={Colors.brand} />
                             </View>
                             <View style={styles.featureContent}>
                                 <Text style={styles.featureTitle}>{feat.title}</Text>
@@ -93,7 +94,7 @@ export default function AboutScreen() {
                 <View style={styles.card}>
                     <View style={styles.sectionHeader}>
                         <View style={styles.sectionIconBox}>
-                            <Ionicons name="shield-checkmark-outline" size={18} color="#91D7E4" />
+                            <Ionicons name="shield-checkmark-outline" size={18} color={Colors.brand} />
                         </View>
                         <Text style={styles.sectionTitle}>Legal</Text>
                     </View>
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 14,
         elevation: 6,
-        shadowColor: '#91D7E4',
+        shadowColor: Colors.brand,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 12,

@@ -15,6 +15,7 @@ import apiClient from '@/api/client';
 import { API_CONFIG } from '@/api/config/api.config';
 import { HealthLogItem, healthLogsService } from '@/services/healthLogsService';
 import { cleanSummaryText } from '@/services/summaryService';
+import { Colors, Radius } from '@/theme/tokens';
 
 export default function ExportReportScreen() {
     const router = useRouter();
@@ -394,7 +395,7 @@ export default function ExportReportScreen() {
                                             {device}
                                         </Text>
                                         {selectedDevice === device && (
-                                            <IconSymbol name="checkmark" size={14} color="#91D7E4" />
+                                            <IconSymbol name="checkmark" size={14} color={Colors.brand} />
                                         )}
                                     </TouchableOpacity>
                                 ))}
@@ -554,7 +555,7 @@ export default function ExportReportScreen() {
                                         const str = toLocalDateString(curr);
                                         marks[str] = {
                                             selected: true,
-                                            color: '#91D7E4',
+                                            color: Colors.brand,
                                             startingDay: str === sStr,
                                             endingDay: str === eStr,
                                         };
@@ -562,7 +563,7 @@ export default function ExportReportScreen() {
                                     }
                                     return marks;
                                 })()}
-                                theme={{ arrowColor: '#91D7E4', todayTextColor: '#81D4FA' }}
+                                theme={{ arrowColor: Colors.brand, todayTextColor: '#81D4FA' }}
                             />
                         </View>
                     )}
@@ -579,7 +580,7 @@ export default function ExportReportScreen() {
 
                     {isLoadingLogs ? (
                         <View style={styles.logsStateBox}>
-                            <ActivityIndicator color="#91D7E4" />
+                            <ActivityIndicator color={Colors.brand} />
                             <Text style={styles.helperText}>Loading logs...</Text>
                         </View>
                     ) : logsError ? (
@@ -635,7 +636,7 @@ export default function ExportReportScreen() {
                         />
                         <MetricCard
                             icon="water"
-                            color="#91D7E4"
+                            color={Colors.brand}
                             bgColor="#e0f2fb"
                             label="Moisture"
                             checked={selectedMetrics.moisture}
@@ -740,9 +741,7 @@ const styles = StyleSheet.create({
         width: 38,
         height: 38,
         alignItems: 'center',
-        justifyContent: 'center',
-        marginLeft: -4,
-    },
+        justifyContent: 'center',    },
     customHeaderTitle: {
         fontSize: 20,
         fontWeight: '600',
@@ -780,7 +779,7 @@ const styles = StyleSheet.create({
 
     // Device Dropdown
     dropdownButtonBox: {
-        backgroundColor: '#91D7E4',
+        backgroundColor: Colors.brand,
         borderRadius: 24,
         paddingHorizontal: 20,
         paddingVertical: 14,
@@ -792,9 +791,7 @@ const styles = StyleSheet.create({
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
-        shadowRadius: 6,
-        marginLeft: -4,
-    },
+        shadowRadius: 6,    },
     dropdownButtonText: { fontSize: 16, color: '#333333', fontWeight: '500' },
     dropdownMenu: {
         position: 'absolute',
@@ -809,9 +806,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.12,
         shadowRadius: 10,
-        overflow: 'hidden',
-        marginLeft: -4,
-    },
+        overflow: 'hidden',    },
     dropdownItem: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -832,7 +827,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     dropdownItemTextActive: {
-        color: '#91D7E4',
+        color: Colors.brand,
         fontWeight: '600',
     },
 
@@ -853,8 +848,6 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.08,
         shadowRadius: 6,
-        marginLeft: -4,
-        marginRight: -4,
     },
     dateButtonContentDisabled: {
         backgroundColor: '#FCFCFC',
@@ -876,9 +869,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
         marginTop: 4,
-        marginBottom: 4,
-        marginLeft: -4,
-    },
+        marginBottom: 4,    },
     checkbox: {
         width: 22,
         height: 22,
@@ -888,8 +879,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginLeft: 4,
     },
-    checkboxChecked: { backgroundColor: '#91D7E4' },
-    metricCheckboxChecked: { backgroundColor: '#91D7E4' },
+    checkboxChecked: { backgroundColor: Colors.brand },
+    metricCheckboxChecked: { backgroundColor: Colors.brand },
     checkboxLabel: { fontSize: 15, color: '#888888', fontWeight: '500' },
 
     // Metrics
@@ -912,7 +903,7 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
     },
     metricCardActive: {
-        borderColor: '#91D7E4',
+        borderColor: Colors.brand,
         backgroundColor: '#FCFFFF',
     },
     iconCircle: { 
@@ -939,7 +930,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
     },
     formatOption: { flex: 1, paddingVertical: 14, alignItems: 'center', borderRadius: 24 },
-    formatOptionActive: { backgroundColor: '#91D7E4', elevation: 2, shadowColor: '#91D7E4', shadowOpacity: 0.3, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4 },
+    formatOptionActive: { backgroundColor: Colors.brand, elevation: 2, shadowColor: Colors.brand, shadowOpacity: 0.3, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4 },
     formatText: { fontSize: 16, fontWeight: '600', color: '#94A3B8' },
     formatTextActive: { color: '#FFFFFF' },
 
@@ -950,8 +941,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 12,
-        marginLeft: -4,
-        marginRight: -4,
     },
     logsStateBox: {
         minHeight: 72,
@@ -962,8 +951,6 @@ const styles = StyleSheet.create({
         padding: 14,
         justifyContent: 'center',
         gap: 10,
-        marginLeft: -4,
-        marginRight: -4,
     },
     logsList: {
         gap: 10,
@@ -987,13 +974,13 @@ const styles = StyleSheet.create({
     },
     exportButton: {
         width: '100%',
-        backgroundColor: '#91D7E4',
-        borderRadius: 32,
+        backgroundColor: Colors.brand,
+        borderRadius: Radius.pill,
         paddingVertical: 18,
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 8,
-        shadowColor: '#91D7E4',
+        shadowColor: Colors.brand,
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.4,
         shadowRadius: 16,

@@ -3,6 +3,8 @@ import { StyleSheet, View, Text, Switch, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { NeumorphicCard } from '../ui/NeumorphicCard';
+import { Colors, Radius } from '@/theme/tokens';
+import { Shadows } from '@/theme/shadows';
 
 interface MenuItemProps {
     icon: keyof typeof Ionicons.glyphMap;
@@ -41,7 +43,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
                 <Switch
                     value={isToggled}
                     onValueChange={onToggle}
-                    trackColor={{ false: "#D1D1D1", true: "#91D7E4" }}
+                    trackColor={{ false: "#D1D1D1", true: Colors.brand }}
                     thumbColor={"#FFFFFF"}
                 />
             ) : (
@@ -103,15 +105,9 @@ export const ProfileSettingsCard: React.FC = () => {
 const styles = StyleSheet.create({
     cardContainer: {
         marginBottom: 20,
-        backgroundColor: '#ffffff',
-        borderRadius: 24,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        width: '102%',
-        marginLeft: -4,
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.xl,
+        ...Shadows.card,
     },
     cardContent: {
         paddingHorizontal: 20,

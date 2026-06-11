@@ -4,6 +4,7 @@ import React from 'react';
 import { HapticTab } from '@/components/haptic-tab';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors } from '@/theme/tokens';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -11,7 +12,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#91D7E4', // Cyan Theme Color
+        tabBarActiveTintColor: Colors.brand, // Cyan Theme Color
         tabBarInactiveTintColor: '#999',
         headerShown: false,
         tabBarButton: HapticTab,

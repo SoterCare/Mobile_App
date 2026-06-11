@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, Alert, Text, View } from 'react-native';
+import { StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProfileUserCard } from '@/components/profile/ProfileUserCard';
 import { ProfileSettingsCard } from '@/components/profile/ProfileSettingsCard';
 import { ProfileSupportCard } from '@/components/profile/ProfileSupportCard';
+import { ScreenTitle } from '@/components/ui/ScreenTitle';
+import { Colors } from '@/theme/tokens';
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
@@ -38,7 +40,7 @@ export default function ProfileScreen() {
             <StatusBar style="dark" />
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-                <Text style={styles.screenTitle}>Profile</Text>
+                <ScreenTitle>Profile</ScreenTitle>
 
                 <ProfileUserCard user={user} />
 
@@ -54,18 +56,11 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F7F7',
+        backgroundColor: Colors.screenBg,
     },
     scrollContent: {
         padding: 24,
         paddingBottom: 40,
-    },
-    screenTitle: {
-        fontSize: 22,
-        fontWeight: '700',
-        color: '#4A4A4A',
-        marginBottom: 24,
-        marginLeft: -2,
     },
 });
 
