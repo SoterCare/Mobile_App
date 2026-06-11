@@ -17,6 +17,9 @@ import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 import { Colors, Radius, circle } from '@/theme/tokens';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 
+const stripDevicePrefix = (name?: string) =>
+    name?.replace(/^iot\s+device\s*/i, '').trim() || 'Unknown Device';
+
 export default function DeviceScreen() {
     const {
         devices,
@@ -87,7 +90,7 @@ export default function DeviceScreen() {
                     </View>
                     <View style={styles.deviceDetails}>
                         <Text style={styles.deviceName} numberOfLines={1}>
-                            {item.name}
+                            {stripDevicePrefix(item.name)}
                         </Text>
                         <Text style={styles.deviceId} numberOfLines={1}>
                             {item.id}

@@ -7,13 +7,17 @@ import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 import { Colors, Radius, circle } from '@/theme/tokens';
 import { Shadows } from '@/theme/shadows';
 
-const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
+const OFFLINE_COLOR = '#BBBBBB';
+
+const GaitAnalysisCard = ({ value = 'N/A', offline = false }: { value?: string; offline?: boolean }) => (
     <View style={styles.gaitCard}>
         <View style={styles.gaitIconCircle}>
-            <Ionicons name="pulse-outline" size={24} color="#6BA8C4" />
+            <Ionicons name="pulse-outline" size={24} color={offline ? OFFLINE_COLOR : '#6BA8C4'} />
         </View>
         <View style={{ flex: 1, justifyContent: 'center' }}>
-            <Text style={styles.gaitValue} numberOfLines={2}>{value}</Text>
+            <Text style={[styles.gaitValue, offline && styles.gaitValueOffline]} numberOfLines={2}>
+                {offline ? '-' : value}
+            </Text>
             <Text style={styles.gaitLabel}>Gait Analysis</Text>
         </View>
     </View>
@@ -21,27 +25,26 @@ const GaitAnalysisCard = ({ value = 'N/A' }: { value?: string }) => (
 
 export const VitalsGrid = () => {
     const { latestVitals: contextVitals, selectedDeviceId } = useRaspberryPi();
-    const { vitals: realtimeVitals } = useRealtimeVitals(selectedDeviceId || undefined);
+    const { vitals: realtimeVitals, isDeviceStreaming } = useRealtimeVitals(selectedDeviceId || undefined);
 
     const skinTempVal = realtimeVitals?.temperature ?? contextVitals?.temperature;
-    const skinTemp = typeof skinTempVal === 'number' ? skinTempVal : 30.4;
+    const skinTemp = typeof skinTempVal === 'number' ? skinTempVal : null;
 
     const moistureVal = realtimeVitals?.moisture ?? contextVitals?.moisture;
-    const moisture = typeof moistureVal === 'number' ? moistureVal : 0;
+    const moisture = typeof moistureVal === 'number' ? moistureVal : null;
 
     const roomTempVal = realtimeVitals?.roomTemperature ?? contextVitals?.roomTemperature;
-    const roomTemp =
-        typeof roomTempVal === 'number'
-            ? roomTempVal.toFixed(1)
-            : (skinTemp - 0.5).toFixed(1);
+    const roomTemp = typeof roomTempVal === 'number' ? roomTempVal : null;
 
-    const gaitRaw = realtimeVitals?.gaitAnalysis ?? contextVitals?.gaitAnalysis ?? 'N/A';
-    const gaitValue = typeof gaitRaw === 'string'
+    const gaitRaw = realtimeVitals?.gaitAnalysis ?? contextVitals?.gaitAnalysis;
+    const gaitValue = typeof gaitRaw === 'string' && gaitRaw.trim()
         ? gaitRaw
             .split(' ')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join('\n')
-        : String(gaitRaw);
+        : null;
+
+    const offline = !isDeviceStreaming;
 
     return (
         <View style={styles.gridContainer}>
@@ -49,21 +52,21 @@ export const VitalsGrid = () => {
             <View style={styles.gridRow}>
                 <VitalCard
                     icon="thermometer-outline"
-                    iconColor="#f9c45a"
-                    backgroundColor="#FFF1D9"
-                    value={skinTemp.toFixed(1)}
-                    unit="°C"
+                    iconColor={offline ? OFFLINE_COLOR : '#f9c45a'}
+                    backgroundColor={offline ? '#F5F5F5' : '#FFF1D9'}
+                    value={offline || skinTemp === null ? '-' : skinTemp.toFixed(1)}
+                    unit={offline ? '' : '°C'}
                     label="Body Temp"
-                    valueColor="#f9c45a"
+                    valueColor={offline ? OFFLINE_COLOR : '#f9c45a'}
                 />
                 <VitalCard
                     icon="home"
-                    iconColor="#FFAB66"
-                    backgroundColor="#FFF1E0"
-                    value={roomTemp}
-                    unit="°C"
+                    iconColor={offline ? OFFLINE_COLOR : '#FFAB66'}
+                    backgroundColor={offline ? '#F5F5F5' : '#FFF1E0'}
+                    value={offline || roomTemp === null ? '-' : roomTemp.toFixed(1)}
+                    unit={offline ? '' : '°C'}
                     label="Room Temp"
-                    valueColor="#FFAB66"
+                    valueColor={offline ? OFFLINE_COLOR : '#FFAB66'}
                 />
             </View>
 
@@ -71,14 +74,14 @@ export const VitalsGrid = () => {
             <View style={styles.gridRow}>
                 <VitalCard
                     icon="water"
-                    iconColor={Colors.brand}
-                    backgroundColor={Colors.brandTint}
-                    value={String(moisture)}
-                    unit="%"
+                    iconColor={offline ? OFFLINE_COLOR : Colors.brand}
+                    backgroundColor={offline ? '#F5F5F5' : Colors.brandTint}
+                    value={offline || moisture === null ? '-' : String(moisture)}
+                    unit={offline ? '' : '%'}
                     label="Moisture · Dry"
-                    valueColor={Colors.brand}
+                    valueColor={offline ? OFFLINE_COLOR : Colors.brand}
                 />
-                <GaitAnalysisCard value={gaitValue} />
+                <GaitAnalysisCard value={gaitValue ?? 'N/A'} offline={offline} />
             </View>
         </View>
     );
@@ -123,6 +126,10 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         width: '100%',
         marginTop: 3,
+    },
+    gaitValueOffline: {
+        color: OFFLINE_COLOR,
+        fontSize: 24,
     },
     gaitLabel: {
         fontSize: 13,

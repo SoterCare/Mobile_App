@@ -5,6 +5,9 @@ import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 import { Colors, Radius } from '@/theme/tokens';
 import { Shadows } from '@/theme/shadows';
 
+const stripDevicePrefix = (name?: string) =>
+    name?.replace(/^iot\s+device\s*/i, '').trim() || 'No Device';
+
 export const DeviceStatusHeader = () => {
     const { devices, selectedDeviceId } = useRaspberryPi();
     const { isDeviceStreaming } = useRealtimeVitals(selectedDeviceId || undefined);
@@ -28,7 +31,7 @@ export const DeviceStatusHeader = () => {
                 </Text>
                 <View style={styles.devicePill}>
                     <Text style={styles.devicePillText}>
-                        {selectedDevice?.name || 'No Device'}
+                        {stripDevicePrefix(selectedDevice?.name)}
                     </Text>
                 </View>
             </View>
