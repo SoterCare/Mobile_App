@@ -136,8 +136,8 @@ export default function RecycleBinScreen() {
 
   const handleRestore = useCallback((activity: RemovedActivity) => {
     Alert.alert(
-      'Restore Activity',
-      `Are you sure you want to restore "${activity.title}"?`,
+      'Restore to Timeline?',
+      `"${activity.title}" was marked as a false alarm. Restore it back to your Timeline?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -148,7 +148,7 @@ export default function RecycleBinScreen() {
               setRemovedActivities((prev) =>
                 prev.filter((item) => item.id !== activity.id)
               );
-              Alert.alert('Restored', `"${activity.title}" has been restored.`);
+              router.navigate('/(tabs)/timeline');
             } catch (err: any) {
               Alert.alert('Error', err?.message || 'Failed to restore activity');
             }
@@ -156,7 +156,7 @@ export default function RecycleBinScreen() {
         },
       ]
     );
-  }, []);
+  }, [router]);
 
   const lineHeight =
     removedActivities.length > 1

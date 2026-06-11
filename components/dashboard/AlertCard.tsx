@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { alertService } from '@/services/alertService';
 import { recycleBinService } from '@/services/recycleBinService';
 import { Colors, Radius, circle } from '@/theme/tokens';
@@ -71,44 +72,64 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
     const [isProcessing, setIsProcessing] = useState(false);
     const [, forceUpdate] = useState(0);
     const config = ALERT_CONFIG[type] ?? DEFAULT_ALERT_CONFIG;
+    const router = useRouter();
 
     useEffect(() => {
-        const interval = setInterval(() => forceUpdate((n: number) => n + 1), 1000); // refresh every 1s
+        const interval = setInterval(() => forceUpdate((n: number) => n + 1), 1000);
         return () => clearInterval(interval);
     }, []);
 
-    const handleAttend = async () => {
-        try {
-            setIsProcessing(true);
-            // All alerts (both persistent and real-time) should be registered on the backend
-            if (id) {
-                await Promise.all([
-                    alertService.attendAlert(id),
-                    recycleBinService.dismiss({ id })
-                ]);
-            }
-            onDismiss?.(id);
-        } catch (error) {
-            console.error('Failed to attend alert:', error);
-            setIsProcessing(false);
-        }
+    const handleAttend = () => {
+        Alert.alert(
+            'Confirm Attended',
+            'Mark this alert as attended? It will be logged in your Timeline.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Attended',
+                    onPress: async () => {
+                        try {
+                            setIsProcessing(true);
+                            if (id) await alertService.attendAlert(id);
+                            onDismiss?.(id);
+                            router.navigate('/(tabs)/timeline');
+                        } catch (error) {
+                            console.error('Failed to attend alert:', error);
+                            setIsProcessing(false);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
-    const handleFalseAlarm = async () => {
-        try {
-            setIsProcessing(true);
-            // All alerts (both persistent and real-time) should be registered on the backend
-            if (id) {
-                await Promise.all([
-                    alertService.falseAlarmAlert(id),
-                    recycleBinService.dismiss({ id })
-                ]);
-            }
-            onDismiss?.(id);
-        } catch (error) {
-            console.error('Failed to mark false alarm:', error);
-            setIsProcessing(false);
-        }
+    const handleFalseAlarm = () => {
+        Alert.alert(
+            'Mark as False Alarm?',
+            'This alert will be moved to the Recycle Bin. You can restore it from there if needed.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'False Alarm',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            setIsProcessing(true);
+                            if (id) {
+                                await Promise.all([
+                                    alertService.falseAlarmAlert(id),
+                                    recycleBinService.dismiss({ id }),
+                                ]);
+                            }
+                            onDismiss?.(id);
+                        } catch (error) {
+                            console.error('Failed to mark false alarm:', error);
+                            setIsProcessing(false);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     return (
