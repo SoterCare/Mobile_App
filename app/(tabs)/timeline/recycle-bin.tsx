@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { BackButton } from '@/components/ui/BackButton';
 import { recycleBinService } from '@/services/recycleBinService';
 import { Colors, Radius } from '@/theme/tokens';
+import { toTimeStr, parseToUnixMs } from '@/utils/timestamp';
 
 // Types updated to include moisture
 interface RemovedActivity {
@@ -25,28 +26,14 @@ interface RemovedActivity {
   time: string; // This will now store formatted time like "09:03 PM"
 }
 
-/**
- * Helper to convert ISO string to "HH:MM AM/PM"
- * Example: "2026-03-27T21:03:42.000Z" -> "09:03 PM"
- */
-const formatToTime = (timestamp: string): string => {
-  if (!timestamp) return '';
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-};
-
 // Helper to map backend items to RemovedActivity
+// `timestamp` field (Unix ms) replaced the old `time` UTC string — recycleBinService normalizes it
 const mapToRemovedActivity = (item: any): RemovedActivity => ({
   id: String(item.id ?? item._id ?? item.eventId),
   deviceId: item.deviceId ?? item.device_id,
   type: item.type ?? item.category ?? 'movement',
   title: item.title ?? item.label ?? item.name ?? 'Activity',
-  // FORMATTING HAPPENS HERE
-  time: formatToTime(item.time ?? item.createdAt ?? item.timestamp ?? ''),
+  time: toTimeStr(parseToUnixMs(item.timestamp ?? item.createdAt)),
 });
 
 const getActivityConfig = (type: RemovedActivity['type']) => {

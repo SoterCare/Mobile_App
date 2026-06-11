@@ -6,6 +6,7 @@ import { alertService } from '@/services/alertService';
 import { recycleBinService } from '@/services/recycleBinService';
 import { Colors, Radius, circle } from '@/theme/tokens';
 import { Shadows } from '@/theme/shadows';
+import { relativeTime } from '@/utils/timestamp';
 
 type AlertType = 'movement' | 'fall' | 'urine' | 'sos' | 'help_call' | 'moisture'; // Added 'moisture' type
 
@@ -53,18 +54,6 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
 
 const DEFAULT_ALERT_CONFIG = ALERT_CONFIG.movement;
 
-const getRelativeTime = (timestampMs: number): string => {
-    const diffMs = Math.max(0, Date.now() - timestampMs);
-    const diffSeconds = Math.floor(diffMs / 1000);
-    const diffMinutes = Math.floor(diffSeconds / 60);
-    const diffHours = Math.floor(diffMinutes / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffSeconds < 60) return `${diffSeconds}s ago`;
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-};
 
 export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp, onDismiss }) => {
     const [expanded, setExpanded] = useState(false);
@@ -150,7 +139,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
                     <View style={styles.titleRow}>
                         <Text style={styles.alertText}>{title}</Text>
                         <View style={styles.timeAndChevron}>
-                            <Text style={styles.alertTime}>{getRelativeTime(timestamp)}</Text>
+                            <Text style={styles.alertTime}>{relativeTime(timestamp)}</Text>
                             {!expanded && !isProcessing && (
                                 <Ionicons
                                     name="chevron-down"

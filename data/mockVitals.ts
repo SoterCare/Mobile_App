@@ -12,7 +12,8 @@ export interface ActivityEvent {
   id: string;
   type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call';
   label: string;
-  time: string;
+  /** Unix milliseconds — format with toTimeStr() for display in device local timezone. */
+  timestamp: number;
   deviceInfo?: string[];
 }
 
@@ -50,33 +51,37 @@ export const temperatureDataMonth: VitalDataPoint[] = [
 
 export const temperatureDataCustom: VitalDataPoint[] = temperatureDataDay;
 
+// Compute today's midnight so mock events land at realistic hours in local time
+const _todayMs = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); })();
+const _hms = (h: number, m = 0) => _todayMs + h * 3_600_000 + m * 60_000;
+
 // Activity timeline events for Day view
 export const activityEventsDay: ActivityEvent[] = [
   {
     id: '1',
     type: 'movement',
     label: 'Movement Detected',
-    time: '23:45 PM',
+    timestamp: _hms(23, 45),
   },
   {
     id: '2',
     type: 'fall',
     label: 'Fall Detected',
-    time: '20:37 PM',
-    deviceInfo: ['Wrist band online - 19:15 PM', 'Thigh band online - 19:15 PM'],
+    timestamp: _hms(20, 37),
+    deviceInfo: ['Wrist band online - 19:15', 'Thigh band online - 19:15'],
   },
   {
     id: '3',
     type: 'connected',
     label: 'Edge Unit Connected',
-    time: '19:15 PM',
-    deviceInfo: ['Wrist band offline - 19:14 PM', 'Thigh band offline - 19:14 PM'],
+    timestamp: _hms(19, 15),
+    deviceInfo: ['Wrist band offline - 19:14', 'Thigh band offline - 19:14'],
   },
   {
     id: '4',
     type: 'disconnected',
     label: 'Edge Unit Disconnected',
-    time: '19:14 PM',
+    timestamp: _hms(19, 14),
   },
 ];
 

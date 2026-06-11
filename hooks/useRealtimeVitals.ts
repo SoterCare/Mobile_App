@@ -69,6 +69,24 @@ export function useRealtimeVitals(deviceId?: string) {
           }
         });
 
+        // Server pushes a pre-classified alert (e.g. from the backend alerting engine)
+        socketInstance.on('alert.new', (data: any) => {
+          if (!data) return;
+          const alertDeviceId = data.deviceId || data.device_id || deviceId || 'unknown';
+          if (!deviceId || alertDeviceId === deviceId) {
+            const alertTimestamp = parseToUnixMs(data.timestamp ?? data.ts);
+            setRecentAlerts((prev) => {
+              const newAlert: RecentAlert = {
+                id: data.id || `ws_${alertDeviceId}_${alertTimestamp}`,
+                type: data.type || 'movement',
+                title: data.title || 'Alert',
+                timestamp: alertTimestamp,
+              };
+              return [newAlert, ...prev].slice(0, 10);
+            });
+          }
+        });
+
         // Backend broadcasts under 'device.logs.ingested'
         socketInstance.on('device.logs.ingested', (data: any) => {
           // Mark device as online/streaming whenever data arrives

@@ -3,8 +3,9 @@ import { API_CONFIG } from '@/api/config/api.config';
 
 export interface HealthLogItem {
   id?: string | number;
-  timestamp?: string;
-  createdAt?: string;
+  timestamp?: unknown;
+  ts?: unknown;
+  createdAt?: unknown;
   data?: Record<string, unknown>;
   [key: string]: unknown;
 }
@@ -18,7 +19,8 @@ export interface ClaimDeviceResponse {
 
 export interface LatestVitalsResponse {
   deviceId: string;
-  timestamp: string;
+  /** Unix milliseconds */
+  timestamp: number;
   temperature?: number;
   roomTemperature?: number;
   moisture?: number;

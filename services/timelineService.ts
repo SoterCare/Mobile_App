@@ -1,6 +1,7 @@
 import apiClient from '@/api/client';
 import { API_CONFIG } from '@/api/config/api.config';
 import { ActivityEvent } from '@/data/mockVitals';
+import { parseToUnixMs } from '@/utils/timestamp';
 
 const unwrapData = <T>(payload: any): T => {
   if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
@@ -27,7 +28,16 @@ export const timelineService = {
     if (endDate) params.endDate = endDate;
 
     const response = await apiClient.get<any>(API_CONFIG.ENDPOINTS.TIMELINE.EVENTS, { params });
-    return unwrapData<any>(response.data);
+    const result = unwrapData<any>(response.data);
+    // Normalize event timestamps; drop legacy UTC-string `time` field
+    if (result?.events && Array.isArray(result.events)) {
+      result.events = result.events.map((e: any): ActivityEvent => ({
+        ...e,
+        timestamp: parseToUnixMs(e.timestamp ?? e.ts ?? e.time),
+        time: undefined,
+      }));
+    }
+    return result;
   },
 
   getTimelineStats: async (deviceId: string, period: string, date: string, month: string) => {
@@ -46,7 +56,15 @@ export const timelineService = {
 
   getDismissedAlerts: async () => {
     const response = await apiClient.get<any>(API_CONFIG.ENDPOINTS.TIMELINE.DISMISSED);
-    return unwrapData<{ items: any[] }>(response.data);
+    const result = unwrapData<{ items: any[] }>(response.data);
+    // Field renamed from `time` (UTC string) to `timestamp` (Unix ms)
+    if (result?.items && Array.isArray(result.items)) {
+      result.items = result.items.map((item: any) => ({
+        ...item,
+        timestamp: parseToUnixMs(item.timestamp ?? item.time ?? item.createdAt),
+      }));
+    }
+    return result;
   },
 
   restoreAlert: async (id: string) => {

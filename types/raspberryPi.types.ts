@@ -5,7 +5,8 @@ export interface PiDevice {
   name: string;
   type: string;
   status: 'online' | 'offline' | string;
-  lastSeenAt?: string;
+  /** Unix milliseconds */
+  lastSeenAt?: number | null;
 }
 
 export interface PiDeviceStatus {
@@ -13,7 +14,10 @@ export interface PiDeviceStatus {
   status: string;
   battery?: number;
   signalRssi?: number;
-  connectedAt?: string;
+  /** Unix milliseconds */
+  connectedAt?: number | null;
+  /** Unix milliseconds */
+  receivedAt?: number;
   bands?: Array<{ name: string; status: string }>;
 }
 
@@ -31,8 +35,10 @@ export interface RecentAlert {
   id: string;
   type: 'movement' | 'fall' | 'urine' | string;
   title: string;
-  /** Unix milliseconds — use new Date(timestamp) to convert. */
+  /** Unix milliseconds */
   timestamp: number;
+  /** Unix milliseconds — set when the alert was attended */
+  attendedAt?: number;
 }
 
 export interface RecordingSession {

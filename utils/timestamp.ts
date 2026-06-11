@@ -24,7 +24,46 @@ export function parseToUnixMs(raw: unknown): number {
   return Date.now();
 }
 
-/** Formats Unix ms as a local date string "YYYY-MM-DD" (for API date params). */
+/** Formats Unix ms as a UTC date string "YYYY-MM-DD" — for API query params only, not for display. */
 export function toDateString(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
+}
+
+// ─── Display helpers — all use device local timezone automatically ────────────
+
+/** "2:30 PM" — short time, device locale + local timezone. */
+export function toTimeStr(ms: number): string {
+  return new Intl.DateTimeFormat(undefined, { timeStyle: 'short' }).format(new Date(ms));
+}
+
+/** "Jun 11, 2:30 PM" — medium date + short time, local timezone. */
+export function toDateTimeStr(ms: number): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(ms));
+}
+
+/** "Jun 11, 2026" — date only, local timezone. */
+export function toFullDateStr(ms: number): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(ms));
+}
+
+/** "5s ago" / "3m ago" / "2h ago" / "4d ago" */
+export function relativeTime(ms: number): string {
+  const diff = Math.max(0, Date.now() - ms);
+  const s = Math.floor(diff / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if (s < 60) return `${s}s ago`;
+  if (m < 60) return `${m}m ago`;
+  if (h < 24) return `${h}h ago`;
+  return `${d}d ago`;
 }

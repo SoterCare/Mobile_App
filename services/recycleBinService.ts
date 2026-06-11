@@ -1,5 +1,13 @@
 import apiClient from '../api/client';
 import { API_CONFIG } from '../api/config/api.config';
+import { parseToUnixMs } from '@/utils/timestamp';
+
+const normalizeItems = (items: any[]): any[] =>
+  items.map((item) => ({
+    ...item,
+    // field was renamed from `time` (UTC string) to `timestamp` (Unix ms)
+    timestamp: parseToUnixMs(item.timestamp ?? item.time ?? item.createdAt),
+  }));
 
 export const recycleBinService = {
   getDismissed: async (deviceId?: string): Promise<any[]> => {
@@ -9,19 +17,10 @@ export const recycleBinService = {
 
     const data = res.data;
 
-    // ✅ Match { success: true, data: { items: [...] } }
-    if (data?.data?.items && Array.isArray(data.data.items)) return data.data.items;
-
-    // ✅ If backend returns array directly
-    if (Array.isArray(data)) return data;
-
-    // ✅ If backend returns { success: true, items: [...] }
-    if (data && Array.isArray(data.items)) return data.items;
-
-    // ✅ If backend returns { success: true, data: [...] }
-    if (data && Array.isArray(data.data)) return data.data;
-
-    // ✅ fallback (avoid map crash)
+    if (data?.data?.items && Array.isArray(data.data.items)) return normalizeItems(data.data.items);
+    if (Array.isArray(data)) return normalizeItems(data);
+    if (data && Array.isArray(data.items)) return normalizeItems(data.items);
+    if (data && Array.isArray(data.data)) return normalizeItems(data.data);
     return [];
   },
 

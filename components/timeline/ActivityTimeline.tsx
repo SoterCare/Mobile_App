@@ -15,6 +15,7 @@ import {
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ActivityEvent } from '../../data/mockVitals';
 import { Colors, Radius } from '@/theme/tokens';
+import { toTimeStr } from '@/utils/timestamp';
 
 interface ActivityTimelineProps {
   events: ActivityEvent[];
@@ -186,7 +187,7 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                     ]}
                   >
                     <Text style={styles.eventLabel}>{event.label}</Text>
-                    <Text style={styles.eventTime}>{event.time}</Text>
+                    <Text style={styles.eventTime}>{toTimeStr(event.timestamp)}</Text>
                   </View>
                 </View>
 

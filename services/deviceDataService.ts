@@ -20,14 +20,29 @@ export const deviceDataService = {
     const response = await apiClient.get<{ devices: PiDevice[] }>(API_CONFIG.ENDPOINTS.DEVICES.LIST, {
       params: query,
     });
-    const data = unwrapData<{ devices?: PiDevice[] }>(response.data);
-    return data?.devices || [];
+    const data = unwrapData<{ devices?: any[] }>(response.data);
+    return (data?.devices || []).map((d: any): PiDevice => ({
+      ...d,
+      lastSeenAt: d.lastSeenAt != null ? parseToUnixMs(d.lastSeenAt) : null,
+      latestStatus: d.latestStatus
+        ? {
+            ...d.latestStatus,
+            connectedAt: d.latestStatus.connectedAt != null ? parseToUnixMs(d.latestStatus.connectedAt) : null,
+            receivedAt: d.latestStatus.receivedAt != null ? parseToUnixMs(d.latestStatus.receivedAt) : undefined,
+          }
+        : undefined,
+    }));
   },
 
   getDeviceStatus: async (deviceId: string): Promise<PiDeviceStatus> => {
     const endpoint = API_CONFIG.ENDPOINTS.DEVICES.STATUS(deviceId);
     const response = await apiClient.get<PiDeviceStatus>(endpoint);
-    return unwrapData<PiDeviceStatus>(response.data);
+    const raw = unwrapData<any>(response.data);
+    return {
+      ...raw,
+      connectedAt: raw?.connectedAt != null ? parseToUnixMs(raw.connectedAt) : null,
+      receivedAt: raw?.receivedAt != null ? parseToUnixMs(raw.receivedAt) : undefined,
+    } as PiDeviceStatus;
   },
 
   getLatestVitals: async (deviceId: string): Promise<DashboardVitals> => {
@@ -57,6 +72,7 @@ export const deviceDataService = {
     return rawList.map((item) => ({
       ...item,
       timestamp: parseToUnixMs(item?.timestamp ?? item?.ts ?? item?.createdAt),
+      attendedAt: item?.attendedAt != null ? parseToUnixMs(item.attendedAt) : undefined,
     })) as RecentAlert[];
   },
 };
