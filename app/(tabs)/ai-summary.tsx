@@ -219,12 +219,6 @@ export default function AISummaryScreen() {
                                 </View>,
                                 'Temperature'
                             )}
-                            {renderMetricChip(
-                                <View style={[styles.iconWrapper, { backgroundColor: '#FFEBEB' }]}>
-                                    <FontAwesome5 name="heartbeat" size={18} color="#FF6B6B" />
-                                </View>,
-                                'Heart Rate'
-                            )}
                         </View>
                     </View>
                 )}

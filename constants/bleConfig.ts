@@ -25,8 +25,6 @@ export const BLE_CONFIG = {
         BATTERY_LEVEL: '2A19',
         
         // Health Data Characteristics - replace with actual ESP32 Characteristic UUIDs
-        HEART_RATE_MEASUREMENT: '00002A37-0000-1000-8000-00805F9B34FB',
-        SPO2_MEASUREMENT: '00002A5E-0000-1000-8000-00805F9B34FB',
         FALL_DETECTION_STATUS: '00002A1C-0000-1000-8000-00805F9B34FB', // Example UUID
         
         // Raw Sensor Characteristics (if streaming directly)

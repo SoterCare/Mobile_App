@@ -2,8 +2,6 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Define the shape of our vitals data
 export interface VitalsData {
-  heartRate: number | null;
-  spO2: number | null;
   fallDetected: boolean;
   batteryLevel: number | null;
   accelerometer: { x: number; y: number; z: number } | null;
@@ -18,8 +16,6 @@ interface VitalsContextType {
 
 // Initial empty state
 const defaultVitals: VitalsData = {
-  heartRate: null,
-  spO2: null,
   fallDetected: false,
   batteryLevel: null,
   accelerometer: null,

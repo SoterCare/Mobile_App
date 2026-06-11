@@ -135,8 +135,7 @@ export default function TimelineScreen() {
       apiDate = `${rawFormattedDate}-01`;
     }
 
-    const metricMap: Record<string, string> = { heart: 'heart_rate', spo2: 'spo2' };
-    const apiMetric = metricMap[vital] || vital;
+    const apiMetric = vital;
 
     const filterMap: Record<string, string> = { All: 'all', Movements: 'movement', Falls: 'fall', Urine: 'urine' };
     const apiFilter = filterMap[activeFilter] || 'all';

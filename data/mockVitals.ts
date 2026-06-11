@@ -22,76 +22,6 @@ export interface ActivityStats {
   urine: number;
 }
 
-// Heart rate data - produces a curve that rises, peaks, and has variations like screenshot
-export const heartRateDataDay: VitalDataPoint[] = [
-  { xLabel: '00:00', value: 62 },
-  { xLabel: '01:00', value: 60 },
-  { xLabel: '02:00', value: 58 },
-  { xLabel: '03:00', value: 61 },
-  { xLabel: '04:00', value: 63 },
-  { xLabel: '05:00', value: 68 },
-  { xLabel: '06:00', value: 72 },
-  { xLabel: '07:00', value: 78 },
-  { xLabel: '08:00', value: 82 },
-  { xLabel: '09:00', value: 85 },
-  { xLabel: '10:00', value: 88 },
-  { xLabel: '11:00', value: 86 },
-  { xLabel: '12:00', value: 83 },
-  { xLabel: '13:00', value: 80 },
-  { xLabel: '14:00', value: 76 },
-  { xLabel: '15:00', value: 72 },
-  { xLabel: '16:00', value: 68 },
-  { xLabel: '17:00', value: 70 },
-  { xLabel: '18:00', value: 75 },
-  { xLabel: '19:00', value: 82 },
-  { xLabel: '20:00', value: 88 },
-  { xLabel: '21:00', value: 85 },
-  { xLabel: '22:00', value: 78 },
-  { xLabel: '23:00', value: 72 },
-  { xLabel: '24:00', value: 90 },
-];
-
-export const heartRateDataMonth: VitalDataPoint[] = [
-  { xLabel: '00:00', value: 62 },
-  { xLabel: '03:00', value: 60 },
-  { xLabel: '06:00', value: 70 },
-  { xLabel: '09:00', value: 85 },
-  { xLabel: '12:00', value: 83 },
-  { xLabel: '15:00', value: 72 },
-  { xLabel: '18:00', value: 75 },
-  { xLabel: '21:00', value: 82 },
-  { xLabel: '24:00', value: 90 },
-];
-
-export const heartRateDataCustom: VitalDataPoint[] = heartRateDataDay;
-
-// SpO2 (Blood O2) data - stays high (94-99%) with gradual variations
-export const spo2DataDay: VitalDataPoint[] = [
-  { xLabel: '00:00', value: 95 },
-  { xLabel: '02:00', value: 96 },
-  { xLabel: '04:00', value: 97 },
-  { xLabel: '06:00', value: 98 },
-  { xLabel: '08:00', value: 98.5 },
-  { xLabel: '10:00', value: 98 },
-  { xLabel: '12:00', value: 97.5 },
-  { xLabel: '14:00', value: 97 },
-  { xLabel: '16:00', value: 96.5 },
-  { xLabel: '18:00', value: 96 },
-  { xLabel: '20:00', value: 97 },
-  { xLabel: '22:00', value: 98 },
-  { xLabel: '24:00', value: 99 },
-];
-
-export const spo2DataMonth: VitalDataPoint[] = [
-  { xLabel: '00:00', value: 95 },
-  { xLabel: '06:00', value: 98 },
-  { xLabel: '12:00', value: 97.5 },
-  { xLabel: '18:00', value: 96 },
-  { xLabel: '24:00', value: 99 },
-];
-
-export const spo2DataCustom: VitalDataPoint[] = spo2DataDay;
-
 // Temperature data - stays around 36-37.5°C with smooth curve
 export const temperatureDataDay: VitalDataPoint[] = [
   { xLabel: '00:00', value: 36.5 },
@@ -165,21 +95,11 @@ export const activityStatsCustom: ActivityStats = {
 };
 
 // Helper to get vital data based on type and period
-export type VitalType = 'heart' | 'spo2' | 'temp';
+export type VitalType = 'temp';
 export type PeriodType = 'day' | 'month' | 'custom';
 
 export const getVitalData = (vital: VitalType, period: PeriodType): VitalDataPoint[] => {
   const dataMap = {
-    heart: {
-      day: heartRateDataDay,
-      month: heartRateDataMonth,
-      custom: heartRateDataCustom,
-    },
-    spo2: {
-      day: spo2DataDay,
-      month: spo2DataMonth,
-      custom: spo2DataCustom,
-    },
     temp: {
       day: temperatureDataDay,
       month: temperatureDataMonth,
@@ -192,18 +112,6 @@ export const getVitalData = (vital: VitalType, period: PeriodType): VitalDataPoi
 
 // Y-axis configuration for each vital type
 export const vitalYAxisConfig = {
-  heart: {
-    label: 'Heart Rate (bpm)',
-    minValue: 55,
-    maxValue: 90,
-    unit: 'bpm',
-  },
-  spo2: {
-    label: 'SpO2 (%)',
-    minValue: 94,
-    maxValue: 99,
-    unit: '%',
-  },
   temp: {
     label: 'Temperature (°C)',
     minValue: 36.0,

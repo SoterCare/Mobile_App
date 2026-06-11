@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Colors } from '@/theme/tokens';
 
 const FEATURES = [
-    { icon: 'pulse-outline' as const, title: 'Real-time Vitals Tracking', desc: 'Monitor heart rate, temperature, and more in real time.' },
+    { icon: 'pulse-outline' as const, title: 'Real-time Vitals Tracking', desc: 'Monitor temperature, moisture, gait analysis, and more in real time.' },
     { icon: 'sparkles-outline' as const, title: 'AI Health Summaries(Future Implementation)', desc: 'Get intelligent insights powered by machine learning.' },
     { icon: 'document-text-outline' as const, title: 'Detailed Report Exports', desc: 'Export comprehensive PDF reports for your doctor.' },
     { icon: 'notifications-outline' as const, title: 'Smart Alerts', desc: 'Receive timely notifications when vitals need attention.' },
