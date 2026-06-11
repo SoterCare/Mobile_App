@@ -33,6 +33,7 @@ export function toDateString(ms: number): string {
 
 /** "2:30 PM" — short time, device locale + local timezone. */
 export function toTimeStr(ms: number): string {
+  if (!ms || !isFinite(ms)) return '--';
   return new Intl.DateTimeFormat(undefined, { timeStyle: 'short' }).format(new Date(ms));
 }
 

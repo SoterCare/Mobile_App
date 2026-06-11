@@ -28,16 +28,28 @@ export const timelineService = {
     if (endDate) params.endDate = endDate;
 
     const response = await apiClient.get<any>(API_CONFIG.ENDPOINTS.TIMELINE.EVENTS, { params });
-    const result = unwrapData<any>(response.data);
-    // Normalize event timestamps; drop legacy UTC-string `time` field
-    if (result?.events && Array.isArray(result.events)) {
-      result.events = result.events.map((e: any): ActivityEvent => ({
-        ...e,
-        timestamp: parseToUnixMs(e.timestamp ?? e.ts ?? e.time),
-        time: undefined,
-      }));
+    const raw = response.data;
+    const result = unwrapData<any>(raw);
+
+    // Extract events from multiple possible response shapes
+    let rawEvents: any[] = [];
+    if (Array.isArray(result)) {
+      rawEvents = result;
+    } else if (result?.events && Array.isArray(result.events)) {
+      rawEvents = result.events;
+    } else if (result?.items && Array.isArray(result.items)) {
+      rawEvents = result.items;
     }
-    return result;
+
+    const events: ActivityEvent[] = rawEvents.map((e: any) => ({
+      ...e,
+      timestamp: parseToUnixMs(e.timestamp ?? e.ts ?? e.time),
+    }));
+
+    return {
+      ...(result && typeof result === 'object' && !Array.isArray(result) ? result : {}),
+      events,
+    };
   },
 
   getTimelineStats: async (deviceId: string, period: string, date: string, month: string) => {

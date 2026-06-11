@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, Link } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 import {
   SegmentedControl,
@@ -165,6 +165,13 @@ export default function TimelineScreen() {
   React.useEffect(() => {
     fetchTimelineData();
   }, [fetchTimelineData]);
+
+  // Re-fetch whenever this screen gains focus (e.g. after navigating back from attending an alert)
+  useFocusEffect(
+    useCallback(() => {
+      fetchTimelineData();
+    }, [fetchTimelineData])
+  );
 
   const dateDisplayText = useMemo(() => {
     switch (period) {
