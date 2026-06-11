@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
+import { BackButton } from '@/components/ui/BackButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
 import * as FileSystem from 'expo-file-system';
@@ -343,12 +344,9 @@ export default function ExportReportScreen() {
 
             {/* ── Custom Header ── */}
             <View style={styles.customHeader}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <MaterialCommunityIcons name="chevron-left" size={28} color="#333" />
-                </TouchableOpacity>
+                <BackButton />
                 <Text style={styles.customHeaderTitle}>Export Report</Text>
-                {/* Spacer to keep title centered */}
-                <View style={{ width: 38 }} />
+                <View style={{ width: 32 }} />
             </View>
 
             <ScrollView

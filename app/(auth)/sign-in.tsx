@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/authService';
 import { Ionicons } from '@expo/vector-icons';
+import { BackButton } from '@/components/ui/BackButton';
 import * as WebBrowser from 'expo-web-browser';
 import { useGoogleAuth, processGoogleAuthResponse, useFacebookAuth, processFacebookAuthResponse, appleSignIn } from '@/services/socialAuthService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -147,9 +148,7 @@ export default function SignInScreen() {
         <SafeAreaView style={styles.container}>
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                        <Ionicons name="chevron-back" size={25} color="#333" />
-                    </TouchableOpacity>
+                    <BackButton />
                     <Text style={styles.title}>Sign In</Text>
                 </View>
 

@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { BackButton } from '@/components/ui/BackButton';
 import { recycleBinService } from '@/services/recycleBinService';
 import { Colors, Radius } from '@/theme/tokens';
 
@@ -130,10 +131,6 @@ export default function RecycleBinScreen() {
     fetchDismissed();
   }, [fetchDismissed]);
 
-  const handleGoBack = useCallback(() => {
-    router.back();
-  }, [router]);
-
   const handleRestore = useCallback((activity: RemovedActivity) => {
     Alert.alert(
       'Restore to Timeline?',
@@ -166,9 +163,7 @@ export default function RecycleBinScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Pressable onPress={handleGoBack} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="chevron-back" size={24} color="#333333" />
-        </Pressable>
+        <BackButton />
         <Text style={styles.headerTitle}>Recycle Bin</Text>
       </View>
 

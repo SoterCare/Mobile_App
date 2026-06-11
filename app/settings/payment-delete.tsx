@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { BackButton } from '@/components/ui/BackButton';
 import { cardStore, setCardStore, CardVisual, SL_BANKS } from './payment';
 
 export default function PaymentDeleteScreen() {
@@ -14,11 +15,7 @@ export default function PaymentDeleteScreen() {
             <SafeAreaView style={styles.container}>
                 <Stack.Screen options={{
                     title: '',
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => <Text style={styles.headerTitle}>Remove Card</Text>,
                     headerTitleAlign: 'left',
                     headerRight: () => <View />,
@@ -47,11 +44,7 @@ export default function PaymentDeleteScreen() {
             <Stack.Screen
                 options={{
                     title: '',
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => <Text style={styles.headerTitle}>Remove Card</Text>,
                     headerTitleAlign: 'left',
                     headerRight: () => <View />,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -10,6 +11,7 @@ import { ProfileSettingsCard } from '@/components/profile/ProfileSettingsCard';
 import { ProfileSupportCard } from '@/components/profile/ProfileSupportCard';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Colors } from '@/theme/tokens';
+import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 
 export default function ProfileScreen() {
     const { user, signOut } = useAuth();
@@ -35,7 +37,10 @@ export default function ProfileScreen() {
         );
     };
 
+    const swipeGesture = useSwipeTabs();
+
     return (
+        <GestureDetector gesture={swipeGesture}>
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <StatusBar style="dark" />
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -50,6 +55,7 @@ export default function ProfileScreen() {
 
             </ScrollView>
         </SafeAreaView>
+        </GestureDetector>
     );
 }
 

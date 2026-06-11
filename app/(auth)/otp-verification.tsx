@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { BackButton } from '@/components/ui/BackButton';
 import { Colors, Radius, circle } from '@/theme/tokens';
 
 export default function OTPVerificationScreen() {
@@ -112,9 +113,7 @@ export default function OTPVerificationScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={28} color="#333" />
-                </TouchableOpacity>
+                <BackButton />
                 <Text style={styles.headerTitle}>Verify Email</Text>
             </View>
 

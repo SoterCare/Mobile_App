@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
+import { BackButton } from '@/components/ui/BackButton';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Colors } from '@/theme/tokens';
@@ -61,17 +62,12 @@ const faqStyles = StyleSheet.create({
 });
 
 export default function HelpSupportScreen() {
-    const router = useRouter();
 
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen
                 options={{
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn} activeOpacity={0.7}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => <Text style={styles.headerTitle}>Help & Support</Text>,
                     headerTitleAlign: 'left',
                     headerShadowVisible: false,

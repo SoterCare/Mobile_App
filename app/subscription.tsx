@@ -11,8 +11,9 @@ import {
     Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { Colors, Radius } from '@/theme/tokens';
+import { BackButton } from '@/components/ui/BackButton';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 40;
@@ -52,18 +53,13 @@ const PLANS = [
 ];
 
 export default function SubscriptionScreen() {
-    const router = useRouter();
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen
                 options={{
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => <Text style={styles.headerTitle}>Our Plans</Text>,
                     headerTitleAlign: 'left',
                     headerShadowVisible: false,

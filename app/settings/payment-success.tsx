@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
+import { BackButton } from '@/components/ui/BackButton';
 import { cardStore, CardVisual, SL_BANKS } from './payment';
 import { Colors } from '@/theme/tokens';
 
@@ -48,11 +49,7 @@ export default function PaymentSuccessScreen() {
             <Stack.Screen
                 options={{
                     title: '',
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={goHome} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton onPress={goHome} />,
                     headerTitle: () => (
                         <Text style={styles.headerTitle}>{SCREEN_TITLES[successType]}</Text>
                     ),

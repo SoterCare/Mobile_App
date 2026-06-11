@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { Colors, Radius, circle } from '@/theme/tokens';
 import { Ionicons } from '@expo/vector-icons';
+import { BackButton } from '@/components/ui/BackButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/userService';
 
@@ -113,11 +114,9 @@ export default function EditProfileScreen() {
 
             {/* Custom Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={28} color="#333" />
-                </TouchableOpacity>
+                <BackButton />
                 <Text style={styles.headerTitle}>Edit Profile</Text>
-                <View style={{ width: 28 }} />
+                <View style={{ width: 32 }} />
             </View>
 
             <KeyboardAvoidingView

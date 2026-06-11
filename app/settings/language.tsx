@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '@/theme/tokens';
+import { BackButton } from '@/components/ui/BackButton';
 
 type Language = { code: string; name: string; nativeName: string; flag: string };
 
@@ -52,15 +53,10 @@ export default function LanguageScreen() {
                 options={{
                     title: '',
                     headerLeft: () => (
-                        <TouchableOpacity
-                            onPress={() => {
-                                router.back();
-                                router.setParams({ language: selected });
-                            }}
-                            style={styles.headerBackBtn}
-                        >
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
+                        <BackButton onPress={() => {
+                            router.back();
+                            router.setParams({ language: selected });
+                        }} />
                     ),
                     headerTitle: () => <Text style={styles.headerTitle}>Language</Text>,
                     headerTitleAlign: 'left',

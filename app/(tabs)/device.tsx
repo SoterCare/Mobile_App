@@ -10,12 +10,14 @@ import {
     TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 import { Colors, Radius, circle } from '@/theme/tokens';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
+import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 
 const stripDevicePrefix = (name?: string) =>
     name?.replace(/^iot\s+device\s*/i, '').trim() || 'Unknown Device';
@@ -122,7 +124,10 @@ export default function DeviceScreen() {
         );
     };
 
+    const swipeGesture = useSwipeTabs();
+
     return (
+        <GestureDetector gesture={swipeGesture}>
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <StatusBar style="dark" />
 
@@ -212,6 +217,7 @@ export default function DeviceScreen() {
                 />
             )}
         </SafeAreaView>
+        </GestureDetector>
     );
 }
 

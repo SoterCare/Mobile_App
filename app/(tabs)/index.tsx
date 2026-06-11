@@ -2,16 +2,20 @@ import React from 'react';
 import { StyleSheet, View, Image, Dimensions, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { GestureDetector } from 'react-native-gesture-handler';
 
 import { DeviceStatusHeader } from '@/components/dashboard/DeviceStatusHeader';
 import { VitalsGrid } from '@/components/dashboard/VitalsGrid';
 import { RecentAlerts } from '@/components/dashboard/RecentAlerts';
 import { Colors, SCREEN_PADDING, Spacing } from '@/theme/tokens';
+import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function HomeScreen() {
+  const swipeGesture = useSwipeTabs();
   return (
+    <GestureDetector gesture={swipeGesture}>
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar style="dark" />
 
@@ -36,6 +40,7 @@ export default function HomeScreen() {
       </ScrollView>
 
     </SafeAreaView>
+    </GestureDetector>
   );
 }
 

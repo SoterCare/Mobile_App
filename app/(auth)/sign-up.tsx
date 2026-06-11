@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } 
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { authService } from '@/services/authService';
-import { Ionicons } from '@expo/vector-icons'; // Ensure Ionicons is imported
+import { Ionicons } from '@expo/vector-icons';
+import { BackButton } from '@/components/ui/BackButton';
 import { isValidEmail, isValidName } from "../../utils/validation";
 import * as WebBrowser from 'expo-web-browser';
 import { useGoogleAuth, processGoogleAuthResponse, useFacebookAuth, processFacebookAuthResponse, appleSignIn } from '@/services/socialAuthService';
@@ -80,9 +81,7 @@ export default function SignUpScreen() {
             <View style={styles.content}>
                 {/* Updated Header with Back Button */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                        <Ionicons name="chevron-back" size={25} color="#333" />
-                    </TouchableOpacity>
+                    <BackButton />
                     <Text style={styles.title}>Sign Up</Text>
                 </View>
 

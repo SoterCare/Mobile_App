@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { cardStore, setCardStore, CardVisual, Card, SL_BANKS, SLBank } from './payment';
 import { Colors } from '@/theme/tokens';
+import { BackButton } from '@/components/ui/BackButton';
 
 const formatCardNumber = (v: string) =>
     v.replace(/[^\d]/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
@@ -65,11 +66,7 @@ export default function PaymentAddScreen() {
             <Stack.Screen
                 options={{
                     title: '',
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => (
                         <Text style={styles.headerTitle}>Add New Card</Text>
                     ),

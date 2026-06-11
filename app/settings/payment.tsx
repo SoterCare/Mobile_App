@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Stack } from 'expo-router';
 import { Colors } from '@/theme/tokens';
+import { BackButton } from '@/components/ui/BackButton';
 
 // ─── Sri Lankan Bank Definitions ──────────────────────────────────────────
 export type SLBank = 'sampath' | 'commercial' | 'hnb' | 'boc' | 'ndb' | 'seylan';
@@ -119,11 +120,7 @@ export default function PaymentMethodScreen() {
             <Stack.Screen
                 options={{
                     title: '',
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => (
                         <Text style={styles.headerTitle}>Payment Method</Text>
                     ),

@@ -7,7 +7,8 @@ import {
     SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
+import { BackButton } from '@/components/ui/BackButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '@/theme/tokens';
 
@@ -20,7 +21,6 @@ const UNITS: { key: Unit; label: string; symbol: string }[] = [
 ];
 
 export default function TemperatureScreen() {
-    const router = useRouter();
     const [unit, setUnit] = useState<Unit>('C');
 
     useEffect(() => {
@@ -42,11 +42,7 @@ export default function TemperatureScreen() {
             <Stack.Screen
                 options={{
                     title: '',
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => <Text style={styles.headerTitle}>Temperature</Text>,
                     headerTitleAlign: 'left',
                     headerRight: () => <View />,

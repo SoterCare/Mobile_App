@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { cardStore, setCardStore, CardVisual, Card, SL_BANKS } from './payment';
 import { Colors } from '@/theme/tokens';
+import { BackButton } from '@/components/ui/BackButton';
 
 const formatExpiry = (v: string) => {
     const d = v.replace(/\D/g, '');
@@ -29,11 +30,7 @@ export default function PaymentEditScreen() {
             <SafeAreaView style={styles.container}>
                 <Stack.Screen options={{
                     title: '',
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => <Text style={styles.headerTitle}>Edit Card</Text>,
                     headerTitleAlign: 'left',
                     headerRight: () => <View />,
@@ -73,11 +70,7 @@ export default function PaymentEditScreen() {
             <Stack.Screen
                 options={{
                     title: '',
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => <Text style={styles.headerTitle}>Edit Card</Text>,
                     headerTitleAlign: 'left',
                     headerRight: () => <View />,

@@ -1,6 +1,7 @@
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { BackButton } from '@/components/ui/BackButton';
 import { StatusBar } from 'expo-status-bar';
 import { Colors } from '@/theme/tokens';
 
@@ -12,17 +13,11 @@ const FEATURES = [
 ];
 
 export default function AboutScreen() {
-    const router = useRouter();
-
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen
                 options={{
-                    headerLeft: () => (
-                        <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn} activeOpacity={0.7}>
-                            <Ionicons name="chevron-back" size={24} color="#333" />
-                        </TouchableOpacity>
-                    ),
+                    headerLeft: () => <BackButton />,
                     headerTitle: () => <Text style={styles.headerTitle}>About</Text>,
                     headerTitleAlign: 'left',
                     headerShadowVisible: false,

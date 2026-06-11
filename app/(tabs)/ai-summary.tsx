@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Shadows } from '@/theme/shadows';
@@ -10,6 +11,7 @@ import { summaryService, SummaryResponse } from '@/services/summaryService';
 import { Colors, Radius, circle, SCREEN_PADDING } from '@/theme/tokens';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Calendar } from 'react-native-calendars';
+import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
@@ -138,7 +140,10 @@ export default function AISummaryScreen() {
         </TouchableOpacity>
     );
 
+    const swipeGesture = useSwipeTabs();
+
     return (
+        <GestureDetector gesture={swipeGesture}>
         <SafeAreaView style={styles.container} edges={['top']}>
             <StatusBar style="dark" />
             <ScrollView
@@ -260,6 +265,7 @@ export default function AISummaryScreen() {
                 </Pressable>
             </Modal>
         </SafeAreaView>
+        </GestureDetector>
     );
 }
 

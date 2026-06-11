@@ -14,6 +14,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Link } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
@@ -34,6 +35,7 @@ import {
 } from '../../../data/mockVitals';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { timelineService } from '@/services/timelineService';
+import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 
 const BACKGROUND_COLOR = '#F6F6F6';
 
@@ -238,7 +240,10 @@ export default function TimelineScreen() {
     router.push('/(tabs)/timeline/recycle-bin');
   }, [router]);
 
+  const swipeGesture = useSwipeTabs();
+
   return (
+    <GestureDetector gesture={swipeGesture}>
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -441,6 +446,7 @@ export default function TimelineScreen() {
         </Pressable>
       </Modal>
     </SafeAreaView>
+    </GestureDetector>
   );
 }
 
