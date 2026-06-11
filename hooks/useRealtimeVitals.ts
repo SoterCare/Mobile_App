@@ -87,6 +87,24 @@ export function useRealtimeVitals(deviceId?: string) {
           }
         });
 
+        // Alert resolved by any client (webapp, another mobile session, etc.)
+        socketInstance.on('alert.attended', (data: any) => {
+          if (!data?.id) return;
+          setRecentAlerts((prev) => prev.filter((a) => a.id !== data.id));
+        });
+
+        socketInstance.on('alert.dismissed', (data: any) => {
+          if (!data?.id) return;
+          setRecentAlerts((prev) => prev.filter((a) => a.id !== data.id));
+        });
+
+        socketInstance.on('alert.updated', (data: any) => {
+          if (!data?.id) return;
+          if (data.status === 'attended' || data.status === 'dismissed' || data.status === 'false_alarm') {
+            setRecentAlerts((prev) => prev.filter((a) => a.id !== data.id));
+          }
+        });
+
         // Backend broadcasts under 'device.logs.ingested'
         socketInstance.on('device.logs.ingested', (data: any) => {
           // Mark device as online/streaming whenever data arrives
