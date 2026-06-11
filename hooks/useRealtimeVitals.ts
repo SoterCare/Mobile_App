@@ -26,7 +26,7 @@ export function useRealtimeVitals(deviceId?: string) {
         const token = await AsyncStorage.getItem(TOKEN_KEY);
 
         socketInstance = io(API_CONFIG.REALTIME_URL, {
-          transports: ['websocket'],
+          transports: ['polling', 'websocket'],
           auth: {
             token: token || '',
           },
