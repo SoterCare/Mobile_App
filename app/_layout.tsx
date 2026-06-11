@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -79,13 +80,15 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <AuthProvider>
-      <VitalsProvider>
-        <RaspberryPiProvider>
-          <RootLayoutNav />
-        </RaspberryPiProvider>
-      </VitalsProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <VitalsProvider>
+          <RaspberryPiProvider>
+            <RootLayoutNav />
+          </RaspberryPiProvider>
+        </VitalsProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
 
