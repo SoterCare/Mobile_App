@@ -17,6 +17,7 @@ import {
   PiDevice,
   RecentAlert,
 } from '@/types/raspberryPi.types';
+import { parseToUnixMs } from '@/utils/timestamp';
 
 interface RaspberryPiContextType {
   connectionState: PiConnectionState;
@@ -75,8 +76,8 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
 
   const toDeviceLog = useCallback((log: HealthLogItem | DeviceLog): DeviceLog => {
     const deviceId = String((log as any).device_id || (log as any).deviceId || '');
-    const rawTimestamp = (log as any).timestamp || (log as any).ts || (log as any).createdAt;
-    const timestamp = String(rawTimestamp || new Date().toISOString());
+    const rawTimestamp = (log as any).timestamp ?? (log as any).ts ?? (log as any).createdAt;
+    const timestamp = parseToUnixMs(rawTimestamp);
     const id = (log as any).id ? String((log as any).id) : undefined;
     const type = String((log as any).type || (log as any).eventType || ((log as any).fallAlert ? 'fall' : 'movement'));
     const title = String((log as any).title || (log as any).message || ((log as any).fallAlert ? 'Fall Alert' : 'Log ingested'));
@@ -104,9 +105,7 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
       map.set(key, normalized);
     });
 
-    return Array.from(map.values()).sort((a, b) => {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    });
+    return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
   }, [toDeviceLog]);
 
   const refreshDevices = useCallback(async () => {

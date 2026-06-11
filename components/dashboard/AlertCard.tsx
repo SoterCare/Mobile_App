@@ -13,7 +13,8 @@ interface AlertCardProps {
     id: string;
     type: AlertType;
     title: string;
-    timestamp: string;
+    /** Unix milliseconds */
+    timestamp: number;
     onDismiss?: (id: string) => void;
 }
 
@@ -52,10 +53,8 @@ const ALERT_CONFIG: Record<AlertType, { icon: keyof typeof Ionicons.glyphMap; ic
 
 const DEFAULT_ALERT_CONFIG = ALERT_CONFIG.movement;
 
-const getRelativeTime = (timestamp: string): string => {
-    const now = new Date();
-    const alertTime = new Date(timestamp);
-    const diffMs = Math.max(0, now.getTime() - alertTime.getTime());
+const getRelativeTime = (timestampMs: number): string => {
+    const diffMs = Math.max(0, Date.now() - timestampMs);
     const diffSeconds = Math.floor(diffMs / 1000);
     const diffMinutes = Math.floor(diffSeconds / 60);
     const diffHours = Math.floor(diffMinutes / 60);

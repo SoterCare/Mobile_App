@@ -6,6 +6,7 @@ import {
   PiDeviceStatus,
   RecentAlert,
 } from '@/types/raspberryPi.types';
+import { parseToUnixMs } from '@/utils/timestamp';
 
 const unwrapData = <T>(payload: any): T => {
   if (payload && typeof payload === 'object' && 'success' in payload && 'data' in payload) {
@@ -34,7 +35,8 @@ export const deviceDataService = {
     const response = await apiClient.get<DashboardVitals>(endpoint, {
       params: { deviceId },
     });
-    return unwrapData<DashboardVitals>(response.data);
+    const raw = unwrapData<any>(response.data);
+    return { ...raw, timestamp: parseToUnixMs(raw?.timestamp ?? raw?.ts ?? raw?.createdAt) } as DashboardVitals;
   },
 
   getRecentAlerts: async (query: { deviceId: string; limit?: number }): Promise<RecentAlert[]> => {
@@ -44,18 +46,17 @@ export const deviceDataService = {
     });
     const data = unwrapData<any>(response.data);
 
-    if (Array.isArray(data)) {
-      return data as RecentAlert[];
-    }
+    const rawList: any[] = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.alerts)
+      ? data.alerts
+      : Array.isArray(data?.data)
+      ? data.data
+      : [];
 
-    if (Array.isArray(data?.alerts)) {
-      return data.alerts as RecentAlert[];
-    }
-
-    if (Array.isArray(data?.data)) {
-      return data.data as RecentAlert[];
-    }
-
-    return [];
+    return rawList.map((item) => ({
+      ...item,
+      timestamp: parseToUnixMs(item?.timestamp ?? item?.ts ?? item?.createdAt),
+    })) as RecentAlert[];
   },
 };

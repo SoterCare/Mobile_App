@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { DashboardVitals, RecentAlert } from '@/types/raspberryPi.types';
 import { API_CONFIG } from '@/api/config/api.config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { parseToUnixMs } from '@/utils/timestamp';
 
 const TOKEN_KEY = 'accessToken';
 // If no log arrives within this window, device is considered offline
@@ -78,8 +79,8 @@ export function useRealtimeVitals(deviceId?: string) {
 
             // If payload has no explicit deviceId, assume it's for the current device
             if (!deviceId || logDeviceId === deviceId) {
-              const rawTimestamp = latestLog.timestamp || (latestLog.ts ? latestLog.ts * 1000 : null);
-              const timestampStr = rawTimestamp ? new Date(rawTimestamp).toISOString() : new Date().toISOString();
+              // Normalize to Unix ms regardless of whether the backend sends ISO, Unix-s, or Unix-ms
+              const timestampMs = parseToUnixMs(latestLog.timestamp ?? latestLog.ts);
 
               const tempVal = latestLog.temperature ?? latestLog.temp;
               const ambientTempVal = latestLog.ambient_temp ?? latestLog.ambientTemp;
@@ -91,7 +92,7 @@ export function useRealtimeVitals(deviceId?: string) {
               setVitals((prev) => ({
                 ...(prev || {}),
                 deviceId: logDeviceId,
-                timestamp: timestampStr,
+                timestamp: timestampMs,
                 ...(tempVal !== undefined && { temperature: Number(tempVal) }),
                 ...(ambientTempVal !== undefined && { roomTemperature: Number(ambientTempVal) }),
                 ...(moistureVal !== undefined && { moisture: Number(moistureVal) }),
@@ -101,49 +102,46 @@ export function useRealtimeVitals(deviceId?: string) {
               const newAlerts: RecentAlert[] = [];
               if (fallAlertVal && String(fallAlertVal) !== '0' && String(fallAlertVal) !== 'false') {
                 newAlerts.push({
-                  id: `fall_${logDeviceId}_${rawTimestamp || Date.now()}`,
+                  id: `fall_${logDeviceId}_${timestampMs}`,
                   deviceId: logDeviceId,
                   type: 'fall',
                   title: 'Fall Detected',
-                  timestamp: new Date().toISOString(),
+                  timestamp: timestampMs,
                 } as RecentAlert);
               }
               if (sosVal && String(sosVal) !== '0' && String(sosVal) !== 'false') {
                 newAlerts.push({
-                  id: `sos_${logDeviceId}_${rawTimestamp || Date.now()}`,
+                  id: `sos_${logDeviceId}_${timestampMs}`,
                   deviceId: logDeviceId,
                   type: 'help_call',
                   title: 'Help Call',
-                  timestamp: new Date().toISOString(),
+                  timestamp: timestampMs,
                 } as RecentAlert);
               }
 
               if (moistureVal !== undefined && Number(moistureVal) > 25) {
                 newAlerts.push({
-                  id: `urine_${logDeviceId}_${rawTimestamp || Date.now()}`,
+                  id: `urine_${logDeviceId}_${timestampMs}`,
                   deviceId: logDeviceId,
                   type: 'urine',
                   title: 'High Moisture Detected',
-                  timestamp: new Date().toISOString(),
+                  timestamp: timestampMs,
                 } as RecentAlert);
               }
 
               if (newAlerts.length > 0) {
                 setRecentAlerts((prev) => {
                   let filteredNew = [...newAlerts];
-                  
-                  // Anti-spam: prevent duplicate continuous analogue alerts like moisture
-                  const moistureAlert = filteredNew.find(a => a.type === 'urine');
-                  if (moistureAlert) {
-                      const lastMoisture = prev.find(a => a.type === 'urine');
-                      if (lastMoisture) {
-                          const timeSinceLast = Date.now() - new Date(lastMoisture.timestamp).getTime();
-                          if (timeSinceLast < 5 * 60 * 1000) { // 5 minutes cooldown
-                              filteredNew = filteredNew.filter(a => a.type !== 'urine');
-                          }
-                      }
+
+                  // Anti-spam: suppress repeated moisture alerts within 5 minutes
+                  const hasMoistureAlert = filteredNew.some(a => a.type === 'urine');
+                  if (hasMoistureAlert) {
+                    const lastMoisture = prev.find(a => a.type === 'urine');
+                    if (lastMoisture && Date.now() - lastMoisture.timestamp < 5 * 60 * 1000) {
+                      filteredNew = filteredNew.filter(a => a.type !== 'urine');
+                    }
                   }
-                  
+
                   return [...filteredNew, ...prev].slice(0, 10);
                 });
               }

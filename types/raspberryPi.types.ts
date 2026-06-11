@@ -19,7 +19,8 @@ export interface PiDeviceStatus {
 
 export interface DashboardVitals {
   deviceId: string;
-  timestamp: string;
+  /** Unix milliseconds — use new Date(timestamp) to convert. */
+  timestamp: number;
   temperature?: number;
   roomTemperature?: number;
   moisture?: number;
@@ -30,7 +31,8 @@ export interface RecentAlert {
   id: string;
   type: 'movement' | 'fall' | 'urine' | string;
   title: string;
-  timestamp: string;
+  /** Unix milliseconds — use new Date(timestamp) to convert. */
+  timestamp: number;
 }
 
 export interface RecordingSession {
@@ -43,7 +45,8 @@ export interface DeviceLog {
   id?: string;
   device_id?: string;
   deviceId?: string;
-  timestamp: string;
+  /** Unix milliseconds — use new Date(timestamp) to convert. */
+  timestamp: number;
   type?: string;
   title?: string;
   eventType?: string;

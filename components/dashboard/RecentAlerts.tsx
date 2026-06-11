@@ -38,7 +38,7 @@ export const RecentAlerts = () => {
 
     const allAlerts = [...realtimeAlerts, ...contextAlerts];
     const uniqueAlerts = Array.from(new Map(allAlerts.map(item => [item.id, item])).values());
-    const sortedAlerts = uniqueAlerts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, PREVIEW_COUNT);
+    const sortedAlerts = uniqueAlerts.sort((a, b) => b.timestamp - a.timestamp).slice(0, PREVIEW_COUNT);
 
     const alertsToRender = sortedAlerts.map((a, index) => ({
         id: a.id || `alert_${index}`,

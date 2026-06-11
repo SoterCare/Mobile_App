@@ -17,7 +17,7 @@ export const syncService = {
             logBuffer.push({
                 data: JSON.stringify(data),
                 synced: false,
-                createdAt: new Date()
+                createdAt: Date.now(),
             });
 
             if (logBuffer.length >= BATCH_SIZE) {
