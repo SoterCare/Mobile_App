@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { GestureDetector } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Shadows } from '@/theme/shadows';
@@ -140,11 +139,10 @@ export default function AISummaryScreen() {
         </TouchableOpacity>
     );
 
-    const swipeGesture = useSwipeTabs();
+    const swipeHandlers = useSwipeTabs();
 
     return (
-        <GestureDetector gesture={swipeGesture}>
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={styles.container} edges={['top']} {...(swipeHandlers as any)}>
             <StatusBar style="dark" />
             <ScrollView
                 style={styles.scrollView}
@@ -265,7 +263,6 @@ export default function AISummaryScreen() {
                 </Pressable>
             </Modal>
         </SafeAreaView>
-        </GestureDetector>
     );
 }
 

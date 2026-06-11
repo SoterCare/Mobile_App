@@ -14,7 +14,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { GestureDetector } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Link } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
@@ -240,11 +239,10 @@ export default function TimelineScreen() {
     router.push('/(tabs)/timeline/recycle-bin');
   }, [router]);
 
-  const swipeGesture = useSwipeTabs();
+  const swipeHandlers = useSwipeTabs();
 
   return (
-    <GestureDetector gesture={swipeGesture}>
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']} {...(swipeHandlers as any)}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -446,7 +444,6 @@ export default function TimelineScreen() {
         </Pressable>
       </Modal>
     </SafeAreaView>
-    </GestureDetector>
   );
 }
 

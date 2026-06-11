@@ -1,6 +1,6 @@
+import { useRef } from 'react';
+import { PanResponder } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
-import { Gesture } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
 
 const TAB_HREFS = [
   '/(tabs)',
@@ -8,7 +8,7 @@ const TAB_HREFS = [
   '/(tabs)/ai-summary',
   '/(tabs)/device',
   '/(tabs)/profile',
-];
+] as const;
 
 function pathnameToTabIndex(pathname: string): number {
   if (pathname === '/' || pathname === '') return 0;
@@ -22,31 +22,34 @@ function pathnameToTabIndex(pathname: string): number {
 export function useSwipeTabs() {
   const router = useRouter();
   const pathname = usePathname();
-  const tabIndex = pathnameToTabIndex(pathname);
 
-  const goToTab = (href: string) => {
-    router.navigate(href as any);
-  };
+  // Refs keep the panResponder callback current without re-creating it
+  const tabIndexRef = useRef(pathnameToTabIndex(pathname));
+  tabIndexRef.current = pathnameToTabIndex(pathname);
 
-  return Gesture.Pan()
-    .activeOffsetX([-30, 30])
-    .failOffsetY([-20, 20])
-    .onEnd((event) => {
-      'worklet';
-      if (tabIndex < 0) return;
-      const swipeLeft = event.translationX < -60 && event.velocityX < -200;
-      const swipeRight = event.translationX > 60 && event.velocityX > 200;
-      const hrefs = [
-        '/(tabs)',
-        '/(tabs)/timeline',
-        '/(tabs)/ai-summary',
-        '/(tabs)/device',
-        '/(tabs)/profile',
-      ];
-      if (swipeLeft && tabIndex < hrefs.length - 1) {
-        runOnJS(goToTab)(hrefs[tabIndex + 1]);
-      } else if (swipeRight && tabIndex > 0) {
-        runOnJS(goToTab)(hrefs[tabIndex - 1]);
-      }
-    });
+  const routerRef = useRef(router);
+  routerRef.current = router;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponderCapture: () => false,
+      // Only claim gesture when horizontal movement is dominant — lets ScrollView keep vertical
+      onMoveShouldSetPanResponder: (_, { dx, dy }) =>
+        Math.abs(dx) > 20 && Math.abs(dx) > Math.abs(dy) * 2.5,
+      onMoveShouldSetPanResponderCapture: () => false,
+      onPanResponderRelease: (_, { dx, vx }) => {
+        const idx = tabIndexRef.current;
+        if (idx < 0) return;
+        if (dx < -60 && vx < -0.3 && idx < TAB_HREFS.length - 1) {
+          routerRef.current.navigate(TAB_HREFS[idx + 1] as any);
+        } else if (dx > 60 && vx > 0.3 && idx > 0) {
+          routerRef.current.navigate(TAB_HREFS[idx - 1] as any);
+        }
+      },
+      onPanResponderTerminationRequest: () => true,
+    })
+  ).current;
+
+  return panResponder.panHandlers;
 }
