@@ -122,8 +122,6 @@ export function useRealtimeVitals(deviceId?: string) {
               const ambientTempVal = latestLog.ambient_temp ?? latestLog.ambientTemp;
               const moistureVal = latestLog.moisture;
               const gaitLabelVal = latestLog.gait_label ?? latestLog.gaitLabel;
-              const fallAlertVal = latestLog.fall_alert ?? latestLog.fallAlert;
-              const sosVal = latestLog.sos;
 
               setVitals((prev) => ({
                 ...(prev || {}),
@@ -135,52 +133,8 @@ export function useRealtimeVitals(deviceId?: string) {
                 ...(gaitLabelVal !== undefined && { gaitAnalysis: String(gaitLabelVal) }),
               }) as DashboardVitals);
 
-              const newAlerts: RecentAlert[] = [];
-              if (fallAlertVal && String(fallAlertVal) !== '0' && String(fallAlertVal) !== 'false') {
-                newAlerts.push({
-                  id: `fall_${logDeviceId}_${timestampMs}`,
-                  deviceId: logDeviceId,
-                  type: 'fall',
-                  title: 'Fall Detected',
-                  timestamp: timestampMs,
-                } as RecentAlert);
-              }
-              if (sosVal && String(sosVal) !== '0' && String(sosVal) !== 'false') {
-                newAlerts.push({
-                  id: `sos_${logDeviceId}_${timestampMs}`,
-                  deviceId: logDeviceId,
-                  type: 'help_call',
-                  title: 'Help Call',
-                  timestamp: timestampMs,
-                } as RecentAlert);
-              }
-
-              if (moistureVal !== undefined && Number(moistureVal) > 25) {
-                newAlerts.push({
-                  id: `urine_${logDeviceId}_${timestampMs}`,
-                  deviceId: logDeviceId,
-                  type: 'urine',
-                  title: 'High Moisture Detected',
-                  timestamp: timestampMs,
-                } as RecentAlert);
-              }
-
-              if (newAlerts.length > 0) {
-                setRecentAlerts((prev) => {
-                  let filteredNew = [...newAlerts];
-
-                  // Anti-spam: suppress repeated moisture alerts within 5 minutes
-                  const hasMoistureAlert = filteredNew.some(a => a.type === 'urine');
-                  if (hasMoistureAlert) {
-                    const lastMoisture = prev.find(a => a.type === 'urine');
-                    if (lastMoisture && Date.now() - lastMoisture.timestamp < 5 * 60 * 1000) {
-                      filteredNew = filteredNew.filter(a => a.type !== 'urine');
-                    }
-                  }
-
-                  return [...filteredNew, ...prev].slice(0, 10);
-                });
-              }
+              // Alert cards come exclusively from the alert.new socket event (real backend IDs).
+              // device.logs.ingested is for vitals/analytics only — never generate alerts here.
             }
           }
         });
