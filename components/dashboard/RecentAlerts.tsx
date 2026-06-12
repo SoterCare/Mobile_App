@@ -32,7 +32,7 @@ export const RecentAlerts = () => {
     const handleAlertDismissed = (id: string) => {
         removeRecentAlert(id); // immediate — REST-polled list
         removeAlert(id);        // immediate — socket list
-        refreshRecentAlerts(); // background re-poll to confirm
+        // Background sync handled by 15-second poll and socket events
     };
 
     const allAlerts = [...realtimeAlerts, ...contextAlerts];
