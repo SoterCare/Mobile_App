@@ -11,7 +11,6 @@ import Animated, {
     Extrapolation,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { alertService } from '@/services/alertService';
 import { Colors, Radius, circle } from '@/theme/tokens';
 import { Shadows } from '@/theme/shadows';
@@ -46,7 +45,6 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
     const [isProcessing, setIsProcessing] = useState(false);
     const [, forceUpdate] = useState(0);
     const config = ALERT_CONFIG[type] ?? DEFAULT_ALERT_CONFIG;
-    const router = useRouter();
 
     const translateX = useSharedValue(0);
     const isBusy = useSharedValue(false);
@@ -60,7 +58,6 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
         try {
             if (id) await alertService.attendAlert(id);
             onDismiss?.(id);
-            router.navigate('/(tabs)/timeline');
         } catch (error) {
             console.error('Failed to attend alert:', error);
             isBusy.value = false;

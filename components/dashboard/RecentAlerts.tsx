@@ -1,43 +1,45 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     StyleSheet,
     View,
     Text,
     TouchableOpacity,
+    ScrollView,
+    Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertCard } from './AlertCard';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
+import { alertService } from '@/services/alertService';
 import { Colors, Radius } from '@/theme/tokens';
 import { Shadows } from '@/theme/shadows';
 
-// Number of alerts shown in the dashboard preview ("View All" reveals the rest)
-const PREVIEW_COUNT = 5;
-const POLL_INTERVAL_MS = 15_000; // Refresh backend alerts every 15 seconds
+// Approximate height of one AlertCard (paddingVertical 30 + icon 52 + marginBottom 12)
+const CARD_HEIGHT = 94;
+const VISIBLE_CARDS = 3;
+const POLL_INTERVAL_MS = 15_000;
 
 export const RecentAlerts = () => {
     const { recentAlerts: contextAlerts, selectedDeviceId, refreshRecentAlerts, removeRecentAlert } = useRaspberryPi();
     const { recentAlerts: realtimeAlerts, removeAlert } = useRealtimeVitals(selectedDeviceId || undefined);
+    const [attendingAll, setAttendingAll] = useState(false);
 
-    // Poll backend for fresh alerts every 15 seconds
     useEffect(() => {
-        refreshRecentAlerts(); // immediate fetch on mount
-        const interval = setInterval(() => {
-            refreshRecentAlerts();
-        }, POLL_INTERVAL_MS);
+        refreshRecentAlerts();
+        const interval = setInterval(refreshRecentAlerts, POLL_INTERVAL_MS);
         return () => clearInterval(interval);
     }, [refreshRecentAlerts]);
 
     const handleAlertDismissed = (id: string) => {
-        removeRecentAlert(id); // immediate — REST-polled list
-        removeAlert(id);        // immediate — socket list
-        // Background sync handled by 15-second poll and socket events
+        removeRecentAlert(id);
+        removeAlert(id);
     };
 
     const allAlerts = [...realtimeAlerts, ...contextAlerts];
     const uniqueAlerts = Array.from(new Map(allAlerts.map(item => [item.id, item])).values());
-    const sortedAlerts = uniqueAlerts.sort((a, b) => b.timestamp - a.timestamp).slice(0, PREVIEW_COUNT);
+    const sortedAlerts = uniqueAlerts.sort((a, b) => b.timestamp - a.timestamp);
 
     const alertsToRender = sortedAlerts.map((a, index) => ({
         id: a.id || `alert_${index}`,
@@ -46,33 +48,76 @@ export const RecentAlerts = () => {
         timestamp: a.timestamp,
     }));
 
+    const handleAttendAll = () => {
+        if (alertsToRender.length === 0) return;
+        Alert.alert(
+            'Attend All?',
+            `Mark all ${alertsToRender.length} alert${alertsToRender.length > 1 ? 's' : ''} as attended?`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Attend All',
+                    onPress: async () => {
+                        setAttendingAll(true);
+                        const ids = alertsToRender.map(a => a.id).filter(Boolean);
+                        await Promise.allSettled(ids.map(id => alertService.attendAlert(id)));
+                        ids.forEach(id => {
+                            removeRecentAlert(id);
+                            removeAlert(id);
+                        });
+                        setAttendingAll(false);
+                    },
+                },
+            ]
+        );
+    };
+
     return (
         <View style={styles.alertsContainer}>
             {/* Header */}
             <View style={styles.alertsHeader}>
                 <Text style={styles.alertsTitle}>Recent Alerts</Text>
-                <TouchableOpacity style={styles.viewAllBtn}>
-                    <Text style={styles.viewAllText}>View All</Text>
-                    <Ionicons name="chevron-forward" size={15} color="#888" />
-                </TouchableOpacity>
+                <View style={styles.headerActions}>
+                    {alertsToRender.length > 0 && (
+                        <TouchableOpacity
+                            style={styles.attendAllBtn}
+                            onPress={handleAttendAll}
+                            disabled={attendingAll}
+                        >
+                            {attendingAll
+                                ? <ActivityIndicator size="small" color={Colors.success} />
+                                : <Ionicons name="checkmark-done-circle-outline" size={22} color={Colors.success} />
+                            }
+                        </TouchableOpacity>
+                    )}
+                    <TouchableOpacity style={styles.viewAllBtn}>
+                        <Text style={styles.viewAllText}>View All</Text>
+                        <Ionicons name="chevron-forward" size={15} color="#888" />
+                    </TouchableOpacity>
+                </View>
             </View>
 
-            {/* Preview list — the parent screen handles scrolling */}
-            <View>
-                {alertsToRender.map((alert) => (
-                    <AlertCard
-                        key={alert.id}
-                        id={alert.id}
-                        type={alert.type}
-                        title={alert.title}
-                        timestamp={alert.timestamp}
-                        onDismiss={handleAlertDismissed}
-                    />
-                ))}
-                {alertsToRender.length === 0 && (
-                    <Text style={styles.emptyText}>No recent alerts</Text>
-                )}
-            </View>
+            {/* Alert list — scrollable, shows ~3 cards at a time */}
+            {alertsToRender.length === 0 ? (
+                <Text style={styles.emptyText}>No recent alerts</Text>
+            ) : (
+                <ScrollView
+                    style={{ maxHeight: CARD_HEIGHT * VISIBLE_CARDS }}
+                    showsVerticalScrollIndicator={false}
+                    nestedScrollEnabled
+                >
+                    {alertsToRender.map((alert) => (
+                        <AlertCard
+                            key={alert.id}
+                            id={alert.id}
+                            type={alert.type}
+                            title={alert.title}
+                            timestamp={alert.timestamp}
+                            onDismiss={handleAlertDismissed}
+                        />
+                    ))}
+                </ScrollView>
+            )}
         </View>
     );
 };
@@ -97,6 +142,14 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
         color: '#4A4A4A',
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    attendAllBtn: {
+        padding: 2,
     },
     viewAllBtn: {
         flexDirection: 'row',
