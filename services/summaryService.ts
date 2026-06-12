@@ -75,35 +75,26 @@ const appendHistory = async (entry: SummaryResponse): Promise<void> => {
     await writeHistory([entry, ...history]);
 };
 
+export interface UsageInfo {
+    usedToday: number;
+    limitPerDay: number;
+    nextAvailableAt: string | null;
+    cooldownSeconds: number;
+}
+
+const extractUsage = (data: any): UsageInfo => ({
+    usedToday: typeof data?.usedToday === 'number' ? data.usedToday : 0,
+    limitPerDay: typeof data?.limitPerDay === 'number' ? data.limitPerDay : 5,
+    nextAvailableAt: data?.nextAvailableAt ?? null,
+    cooldownSeconds: typeof data?.cooldownSeconds === 'number' ? data.cooldownSeconds : 0,
+});
+
 export const summaryService = {
-    generateSummary: async (type: 'today' | 'previous') => {
-        try {
-            const prompt =
-                type === 'today'
-                    ? 'Summarize today\'s patient vitals and important alerts in a concise paragraph.'
-                    : 'Summarize the selected day\'s patient vitals and important alerts in a concise paragraph.';
-
-            const response = await apiClient.post(API_CONFIG.ENDPOINTS.SUMMARY.GENERATE, { text: prompt });
-            const summary = normalizeSummaryText(response.data);
-
-            const item: SummaryResponse = {
-                id: `sum_${Date.now()}`,
-                content: summary,
-                createdAt: new Date().toISOString(),
-                type: type === 'today' ? 'daily' : 'custom',
-            };
-
-            await appendHistory(item);
-            return item;
-        } catch (error) {
-            throw error;
-        }
-    },
-
     generateTodaySummary: async () => {
         try {
             const response = await apiClient.post(API_CONFIG.ENDPOINTS.SUMMARY.GENERATE, {
-                text: 'Provide a summary for today\'s patient condition using latest vitals and notable events.',
+                text: 'today',
+                date: 'today',
             });
 
             const summary = normalizeSummaryText(response.data);
@@ -123,6 +114,10 @@ export const summaryService = {
                 summary,
                 from: '12.00 AM',
                 to: timeText,
+                report: response.data?.report ?? null,
+                hasCritical: response.data?.hasCritical ?? false,
+                cached: response.data?.cached ?? false,
+                ...extractUsage(response.data),
             };
         } catch (error) {
             throw error;
@@ -133,7 +128,8 @@ export const summaryService = {
         try {
             const day = date.toISOString().split('T')[0];
             const response = await apiClient.post(API_CONFIG.ENDPOINTS.SUMMARY.GENERATE, {
-                text: `Provide a summary for patient data on ${day}.`,
+                text: day,
+                date: day,
             });
 
             const summary = normalizeSummaryText(response.data);
@@ -149,9 +145,22 @@ export const summaryService = {
             return {
                 summary,
                 date: day,
+                report: response.data?.report ?? null,
+                hasCritical: response.data?.hasCritical ?? false,
+                cached: response.data?.cached ?? false,
+                ...extractUsage(response.data),
             };
         } catch (error) {
             throw error;
+        }
+    },
+
+    getUsage: async (): Promise<UsageInfo> => {
+        try {
+            const response = await apiClient.get(API_CONFIG.ENDPOINTS.SUMMARY.USAGE);
+            return extractUsage(response.data);
+        } catch {
+            return { usedToday: 0, limitPerDay: 5, nextAvailableAt: null, cooldownSeconds: 0 };
         }
     },
 

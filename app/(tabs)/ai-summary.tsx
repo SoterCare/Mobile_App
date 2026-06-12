@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Modal, Pressable } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Modal, Pressable, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import * as Speech from 'expo-speech';
 import { Shadows } from '@/theme/shadows';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
-import { summaryService, SummaryResponse } from '@/services/summaryService';
+import { summaryService, UsageInfo } from '@/services/summaryService';
 import { Colors, Radius, circle, SCREEN_PADDING } from '@/theme/tokens';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Calendar } from 'react-native-calendars';
@@ -15,63 +16,115 @@ import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
     const [isLoading, setIsLoading] = useState(false);
-    const [summary, setSummary] = useState<string | null>(null);
-    const [historyList, setHistoryList] = useState<SummaryResponse[]>([]);
-    const [selectedHistoryItem, setSelectedHistoryItem] = useState<SummaryResponse | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [summaryData, setSummaryData] = useState<any>(null);
+    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [usage, setUsage] = useState<UsageInfo>({
+        usedToday: 0,
+        limitPerDay: 5,
+        nextAvailableAt: null,
+        cooldownSeconds: 0,
+    });
+    const [countdown, setCountdown] = useState(0);
+
+    // Animated scale for each dot (springs when a dot becomes filled).
+    const DOT_COUNT = 5;
+    const dotAnims = useRef(Array.from({ length: DOT_COUNT }, () => new Animated.Value(1))).current;
+    const prevUsedToday = useRef(0);
+
+    const formatCountdown = (secs: number) => {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
+
+    const applyUsage = (next: UsageInfo) => {
+        setUsage(next);
+    };
+
+    // Countdown ticker driven by nextAvailableAt.
+    useEffect(() => {
+        if (!usage.nextAvailableAt) {
+            setCountdown(0);
+            return;
+        }
+        const target = new Date(usage.nextAvailableAt).getTime();
+        const getRemaining = () => Math.max(0, Math.ceil((target - Date.now()) / 1000));
+
+        const initial = getRemaining();
+        setCountdown(initial);
+        if (initial === 0) return;
+
+        const id = setInterval(() => {
+            const remaining = getRemaining();
+            setCountdown(remaining);
+            if (remaining === 0) clearInterval(id);
+        }, 1000);
+        return () => clearInterval(id);
+    }, [usage.nextAvailableAt]);
+
+    // Spring-animate each newly filled dot.
+    useEffect(() => {
+        const prev = prevUsedToday.current;
+        const curr = Math.min(usage.usedToday, DOT_COUNT);
+        if (curr > prev) {
+            for (let i = prev; i < curr; i++) {
+                dotAnims[i].setValue(0.4);
+                Animated.spring(dotAnims[i], {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    tension: 80,
+                    friction: 5,
+                }).start();
+            }
+        }
+        prevUsedToday.current = curr;
+    }, [usage.usedToday]);
 
     const handleTabToggle = (tab: 'today' | 'previous') => setActiveTab(tab);
+
+    const handleSpeak = async (text: string) => {
+        if (isSpeaking) {
+            await Speech.stop();
+            setIsSpeaking(false);
+            return;
+        }
+        setIsSpeaking(true);
+        Speech.speak(text, {
+            language: 'en',
+            rate: 0.9,
+            onDone: () => setIsSpeaking(false),
+            onError: () => setIsSpeaking(false),
+        });
+    };
 
     const formatTime = (date: Date) => {
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const renderMetricChip = (icon: React.ReactNode, label: string) => (
-        <View style={styles.metricChip}>
-            {icon}
-            <Text style={styles.metricLabel}>{label}</Text>
-        </View>
-    );
+    useEffect(() => {
+        summaryService.getUsage().then(applyUsage);
+    }, []);
 
     useEffect(() => {
-        if (activeTab === 'previous') {
-            fetchHistory();
-        } else {
-            setSummary(null);
-            setSelectedHistoryItem(null);
-        }
+        setSummaryData(null);
+        Speech.stop();
+        setIsSpeaking(false);
     }, [activeTab]);
 
     useEffect(() => {
         if (isLoading) {
             const timeout = setTimeout(() => {
-                console.warn('Loading state auto-reset after 30 seconds');
+                console.warn('Loading state auto-reset after 90 seconds');
                 setIsLoading(false);
-            }, 30000);
+            }, 90000);
             return () => clearTimeout(timeout);
         }
     }, [isLoading]);
 
-    const fetchHistory = async () => {
-        setIsLoading(true);
-        try {
-            const data = await summaryService.getHistory();
-            setHistoryList(data);
-            if (data.length > 0) {
-                setSelectedHistoryItem(data[0]);
-            }
-        } catch (error: any) {
-            console.error('Fetch history error:', error);
-            setHistoryList([]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     const handleGenerate = async () => {
-        if (isLoading) return;
+        if (isLoading || countdown > 0) return;
 
         setIsLoading(true);
 
@@ -79,31 +132,51 @@ export default function AISummaryScreen() {
             let data;
 
             const timeoutPromise = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Request timeout')), 15000)
+                setTimeout(() => reject(new Error('Request timeout')), 60000)
             );
 
             if (activeTab === 'today') {
                 data = await Promise.race([
                     summaryService.generateTodaySummary(),
-                    timeoutPromise
+                    timeoutPromise,
                 ]);
                 setSummaryData({
                     summary: data.summary || 'No summary available',
                     fromTime: data.from || '12.00 AM',
                     toTime: data.to || formatTime(new Date()),
+                    report: data.report ?? null,
+                    cached: data.cached ?? false,
                 });
             } else {
                 data = await Promise.race([
                     summaryService.generatePreviousSummary(selectedDate),
-                    timeoutPromise
+                    timeoutPromise,
                 ]);
                 setSummaryData({
                     summary: data.summary || 'No summary available',
                     date: data.date || formatDate(selectedDate),
+                    report: data.report ?? null,
+                    cached: data.cached ?? false,
                 });
             }
+            applyUsage({
+                usedToday: data.usedToday ?? usage.usedToday,
+                limitPerDay: data.limitPerDay ?? 5,
+                nextAvailableAt: data.nextAvailableAt ?? null,
+                cooldownSeconds: data.cooldownSeconds ?? 0,
+            });
         } catch (error: any) {
             console.error('Generate summary error:', error);
+            const errData = error?.response?.data;
+            // 403 daily-limit response carries updated usage info.
+            if (error?.response?.status === 403 && errData?.limitPerDay != null) {
+                applyUsage({
+                    usedToday: errData.usedToday ?? usage.usedToday,
+                    limitPerDay: errData.limitPerDay ?? 5,
+                    nextAvailableAt: errData.nextAvailableAt ?? null,
+                    cooldownSeconds: errData.cooldownSeconds ?? 0,
+                });
+            }
             if (activeTab === 'today') {
                 setSummaryData({
                     summary: 'Unable to generate summary. Please try again later.',
@@ -126,19 +199,6 @@ export default function AISummaryScreen() {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
-    const renderHistoryItem = ({ item }: { item: SummaryResponse }) => (
-        <TouchableOpacity
-            style={[
-                styles.historyCard,
-                selectedHistoryItem?.id === item.id && styles.historyCardActive
-            ]}
-            onPress={() => setSelectedHistoryItem(item)}
-        >
-            <Text style={styles.historyDate}>{formatDate(item.createdAt)}</Text>
-            <Text style={styles.historyType}>{item.type}</Text>
-        </TouchableOpacity>
-    );
-
     const swipeHandlers = useSwipeTabs();
 
     return (
@@ -156,6 +216,29 @@ export default function AISummaryScreen() {
                 <View style={styles.controlsRow}>
                     <ToggleSwitch activeTab={activeTab} onToggle={handleTabToggle} />
                 </View>
+
+                {/* Generation counter */}
+                <View style={styles.usageRow}>
+                    <Text style={styles.usageLabel}>Today</Text>
+                    <View style={styles.usageDots}>
+                        {Array.from({ length: DOT_COUNT }).map((_, i) => (
+                            <Animated.View
+                                key={i}
+                                style={[
+                                    styles.usageDot,
+                                    i < usage.usedToday && styles.usageDotFilled,
+                                    { transform: [{ scale: dotAnims[i] }] },
+                                ]}
+                            />
+                        ))}
+                    </View>
+                    <Text style={styles.usageCount}>{usage.usedToday} of {usage.limitPerDay}</Text>
+                </View>
+                {countdown > 0 && (
+                    <Text style={styles.cooldownText}>
+                        Next generate in {formatCountdown(countdown)}
+                    </Text>
+                )}
 
                 {/* Helper Text or Date Picker */}
                 {activeTab === 'today' ? (
@@ -177,7 +260,12 @@ export default function AISummaryScreen() {
 
                 {/* Generate Button */}
                 <View style={styles.generateButtonContainer}>
-                    <GenerateButton onPress={handleGenerate} isLoading={isLoading} />
+                    <GenerateButton
+                        onPress={handleGenerate}
+                        isLoading={isLoading}
+                        cooldownText={countdown > 0 ? formatCountdown(countdown) : undefined}
+                        limitReached={countdown === 0 && usage.usedToday >= usage.limitPerDay}
+                    />
                     {__DEV__ && isLoading && (
                         <TouchableOpacity
                             style={styles.resetButton}
@@ -195,34 +283,95 @@ export default function AISummaryScreen() {
                 {summaryData && (
                     <View style={styles.summarySection}>
                         <View style={styles.reportHeader}>
-                            {activeTab === 'today' ? (
-                                <>
-                                    <Text style={styles.reportLabel}>Today&apos;s Report from</Text>
-                                    <Text style={styles.reportTime}>
-                                        {summaryData.fromTime} - {summaryData.toTime}
-                                    </Text>
-                                </>
-                            ) : (
-                                <>
-                                    <Text style={styles.reportLabel}>Full Day Report</Text>
-                                    <Text style={styles.reportTime}>{summaryData.date}</Text>
-                                </>
+                            <View style={styles.reportHeaderTop}>
+                                {activeTab === 'today' ? (
+                                    <>
+                                        <Text style={styles.reportLabel}>Today&apos;s Report from</Text>
+                                        <Text style={styles.reportTime}>
+                                            {summaryData.fromTime} - {summaryData.toTime}
+                                        </Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Text style={styles.reportLabel}>Full Day Report</Text>
+                                        <Text style={styles.reportTime}>{summaryData.date}</Text>
+                                    </>
+                                )}
+                            </View>
+                            {summaryData.cached && (
+                                <View style={styles.cachedBadge}>
+                                    <Text style={styles.cachedBadgeText}>Cached</Text>
+                                </View>
                             )}
                         </View>
 
                         <View style={[styles.summaryCard, Shadows.card]}>
-                            <Text style={styles.summaryTitle}>Summary</Text>
-                            <Text style={styles.summaryText}>{summaryData.summary}</Text>
+                            <View style={styles.summaryCardHeader}>
+                                <Text style={styles.summaryTitle}>Summary</Text>
+                                <TouchableOpacity
+                                    style={[styles.ttsButton, isSpeaking && styles.ttsButtonActive]}
+                                    onPress={() => handleSpeak(
+                                        /^\s*\{/.test(summaryData.summary)
+                                            ? 'Summary unavailable. Please regenerate.'
+                                            : summaryData.summary
+                                    )}
+                                    activeOpacity={0.7}
+                                >
+                                    <Ionicons
+                                        name={isSpeaking ? 'stop-circle' : 'volume-high'}
+                                        size={20}
+                                        color={isSpeaking ? '#FFFFFF' : Colors.brand}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={styles.summaryText}>
+                                {/^\s*\{/.test(summaryData.summary) ? 'Summary unavailable — please regenerate.' : summaryData.summary}
+                            </Text>
                         </View>
 
-                        <View style={styles.metricsRow}>
-                            {renderMetricChip(
-                                <View style={[styles.iconWrapper, { backgroundColor: '#FFF5E6' }]}>
-                                    <FontAwesome5 name="thermometer-half" size={18} color="#FFA500" />
-                                </View>,
-                                'Temperature'
-                            )}
-                        </View>
+                        {summaryData.report && (
+                            <>
+                                <View style={[styles.statsCard, Shadows.card]}>
+                                    <Text style={styles.statsTitle}>Temperature</Text>
+                                    {[
+                                        { label: 'Patient', td: summaryData.report.patient_temp },
+                                        { label: 'Room', td: summaryData.report.room_temp },
+                                    ].map(({ label, td }) => td ? (
+                                        <View key={label} style={styles.tempRow}>
+                                            <Text style={styles.tempLabel}>{label}</Text>
+                                            <View style={styles.tempValues}>
+                                                <Text style={styles.tempStat}>Min {td.min?.toFixed(1)}°C</Text>
+                                                <Text style={styles.tempStat}>Avg {td.avg?.toFixed(1)}°C</Text>
+                                                <Text style={styles.tempStat}>Max {td.max?.toFixed(1)}°C</Text>
+                                            </View>
+                                        </View>
+                                    ) : null)}
+                                </View>
+
+                                {(summaryData.report.suggestions?.length ?? 0) > 0 && (
+                                    <View style={[styles.statsCard, Shadows.card]}>
+                                        <Text style={styles.statsTitle}>Suggestions</Text>
+                                        {summaryData.report.suggestions.map((s: string, i: number) => (
+                                            <View key={i} style={styles.suggestionRow}>
+                                                <Text style={styles.suggestionBullet}>{'•'}</Text>
+                                                <Text style={styles.suggestionText}>{s}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                )}
+
+                                <View style={[styles.statsCard, Shadows.card]}>
+                                    <Text style={styles.statsTitle}>Notable Events</Text>
+                                    {(summaryData.report.notable_events?.length ?? 0) === 0 ? (
+                                        <Text style={styles.noEvents}>No notable events today</Text>
+                                    ) : (
+                                        summaryData.report.notable_events.map((event: string, i: number) => (
+                                            <Text key={i} style={styles.eventItem}>{'•'} {event}</Text>
+                                        ))
+                                    )}
+                                </View>
+                            </>
+                        )}
                     </View>
                 )}
             </ScrollView>
@@ -337,6 +486,43 @@ const styles = StyleSheet.create({
         color: '#333333',
         fontWeight: '500',
     },
+    usageRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 20,
+        marginLeft: 4,
+    },
+    usageLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#888888',
+    },
+    usageDots: {
+        flexDirection: 'row',
+        gap: 6,
+    },
+    usageDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#E0E0E0',
+    },
+    usageDotFilled: {
+        backgroundColor: Colors.brand,
+    },
+    usageCount: {
+        fontSize: 13,
+        color: '#888888',
+        fontWeight: '500',
+    },
+    cooldownText: {
+        fontSize: 13,
+        color: Colors.brand,
+        fontWeight: '600',
+        marginBottom: 16,
+        marginLeft: 4,
+    },
     generateButtonContainer: {
         marginBottom: 24,
     },
@@ -357,17 +543,32 @@ const styles = StyleSheet.create({
     },
     reportHeader: {
         marginBottom: 20,
+        gap: 8,
+    },
+    reportHeaderTop: {
+        gap: 4,
     },
     reportLabel: {
         fontSize: 15,
         color: '#888888',
         fontWeight: 'bold',
-        marginBottom: 4,
     },
     reportTime: {
         fontSize: 15,
         color: '#888888',
         fontWeight: 'bold',
+    },
+    cachedBadge: {
+        alignSelf: 'flex-start',
+        backgroundColor: '#F0F0F0',
+        borderRadius: 8,
+        paddingVertical: 2,
+        paddingHorizontal: 10,
+    },
+    cachedBadgeText: {
+        fontSize: 12,
+        color: '#999999',
+        fontWeight: '500',
     },
     summaryCard: {
         backgroundColor: Colors.cardBg,
@@ -375,11 +576,27 @@ const styles = StyleSheet.create({
         padding: 24,
         marginBottom: 24,
     },
+    summaryCardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
     summaryTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#333333',
-        marginBottom: 16,
+    },
+    ttsButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: Colors.brandSurface,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    ttsButtonActive: {
+        backgroundColor: Colors.brand,
     },
     summaryText: {
         fontSize: 16,
@@ -414,6 +631,67 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#333333',
         fontWeight: '600',
+    },
+    statsCard: {
+        backgroundColor: Colors.cardBg,
+        borderRadius: Radius.xl,
+        padding: 20,
+        marginBottom: 16,
+    },
+    statsTitle: {
+        fontSize: 17,
+        fontWeight: '700',
+        color: '#333333',
+        marginBottom: 14,
+    },
+    tempRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    tempLabel: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#555555',
+        width: 60,
+    },
+    tempValues: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    tempStat: {
+        fontSize: 14,
+        color: '#777777',
+        fontWeight: '500',
+    },
+    noEvents: {
+        fontSize: 14,
+        color: '#AAAAAA',
+        fontStyle: 'italic',
+    },
+    eventItem: {
+        fontSize: 14,
+        color: '#555555',
+        lineHeight: 22,
+    },
+    suggestionRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 8,
+        marginBottom: 10,
+    },
+    suggestionBullet: {
+        fontSize: 16,
+        color: Colors.brand,
+        lineHeight: 22,
+        fontWeight: '700',
+    },
+    suggestionText: {
+        flex: 1,
+        fontSize: 14,
+        color: '#555555',
+        lineHeight: 22,
     },
     // Modal styles matching Timeline screen
     modalOverlay: {

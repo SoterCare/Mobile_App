@@ -6,20 +6,37 @@ import { Colors } from '@/theme/tokens';
 interface GenerateButtonProps {
     onPress: () => void;
     isLoading: boolean;
+    cooldownText?: string;
+    limitReached?: boolean;
 }
 
-export const GenerateButton: React.FC<GenerateButtonProps> = ({ onPress, isLoading }) => {
+export const GenerateButton: React.FC<GenerateButtonProps> = ({
+    onPress,
+    isLoading,
+    cooldownText,
+    limitReached,
+}) => {
+    const isDisabled = isLoading || !!cooldownText || limitReached;
+
+    const label = isLoading
+        ? null
+        : cooldownText
+          ? `Available in ${cooldownText}`
+          : limitReached
+            ? 'Daily Limit Reached'
+            : 'Generate Summary';
+
     return (
         <TouchableOpacity
-            style={[styles.generateButton, isLoading && styles.disabledButton]}
+            style={[styles.generateButton, isDisabled && styles.disabledButton]}
             activeOpacity={0.8}
             onPress={onPress}
-            disabled={isLoading}
+            disabled={isDisabled}
         >
             {isLoading ? (
                 <ActivityIndicator color={TimelineColors.textWhite} />
             ) : (
-                <Text style={styles.generateButtonText}>Generate Summary</Text>
+                <Text style={styles.generateButtonText}>{label}</Text>
             )}
         </TouchableOpacity>
     );
