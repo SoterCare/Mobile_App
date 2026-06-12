@@ -7,11 +7,16 @@ import * as Speech from 'expo-speech';
 import { Shadows } from '@/theme/shadows';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { summaryService, UsageInfo } from '@/services/summaryService';
 import { Colors, Radius, circle, SCREEN_PADDING } from '@/theme/tokens';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Calendar } from 'react-native-calendars';
 import { useSwipeTabs } from '@/hooks/useSwipeTabs';
+
+const COOLDOWN_MS = 30 * 60 * 1000;
+const COOLDOWN_KEY = '@summary_cooldown_until';
+const DOT_COUNT = 5;
 
 export default function AISummaryScreen() {
     const [activeTab, setActiveTab] = useState<'today' | 'previous'>('today');
@@ -20,18 +25,14 @@ export default function AISummaryScreen() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [summaryData, setSummaryData] = useState<any>(null);
     const [isSpeaking, setIsSpeaking] = useState(false);
-    const [usage, setUsage] = useState<UsageInfo>({
-        usedToday: 0,
-        limitPerDay: 5,
-        nextAvailableAt: null,
-        cooldownSeconds: 0,
-    });
+    const [usage, setUsage] = useState<UsageInfo>({ usedToday: 0, limitPerDay: 5 });
+    // nextAvailableAt is stored in AsyncStorage so it survives app restarts.
+    const [nextAvailableAt, setNextAvailableAt] = useState<string | null>(null);
     const [countdown, setCountdown] = useState(0);
 
-    // Animated scale for each dot (springs when a dot becomes filled).
-    const DOT_COUNT = 5;
     const dotAnims = useRef(Array.from({ length: DOT_COUNT }, () => new Animated.Value(1))).current;
     const prevUsedToday = useRef(0);
+    const shouldAnimateDots = useRef(false);
 
     const formatCountdown = (secs: number) => {
         const m = Math.floor(secs / 60);
@@ -39,17 +40,29 @@ export default function AISummaryScreen() {
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
-    const applyUsage = (next: UsageInfo) => {
-        setUsage(next);
-    };
-
-    // Countdown ticker driven by nextAvailableAt.
+    // On mount: load today's usage count and any persisted cooldown.
     useEffect(() => {
-        if (!usage.nextAvailableAt) {
+        const init = async () => {
+            const [usageData, stored] = await Promise.all([
+                summaryService.getUsage(),
+                AsyncStorage.getItem(COOLDOWN_KEY),
+            ]);
+            setUsage(usageData);
+            prevUsedToday.current = usageData.usedToday; // skip animation for pre-existing dots
+            if (stored && new Date(stored).getTime() > Date.now()) {
+                setNextAvailableAt(stored);
+            }
+        };
+        init();
+    }, []);
+
+    // Countdown ticker — restarts whenever nextAvailableAt changes.
+    useEffect(() => {
+        if (!nextAvailableAt) {
             setCountdown(0);
             return;
         }
-        const target = new Date(usage.nextAvailableAt).getTime();
+        const target = new Date(nextAvailableAt).getTime();
         const getRemaining = () => Math.max(0, Math.ceil((target - Date.now()) / 1000));
 
         const initial = getRemaining();
@@ -62,13 +75,13 @@ export default function AISummaryScreen() {
             if (remaining === 0) clearInterval(id);
         }, 1000);
         return () => clearInterval(id);
-    }, [usage.nextAvailableAt]);
+    }, [nextAvailableAt]);
 
-    // Spring-animate each newly filled dot.
+    // Spring-animate only dots added by a fresh generate (not pre-existing on load).
     useEffect(() => {
         const prev = prevUsedToday.current;
         const curr = Math.min(usage.usedToday, DOT_COUNT);
-        if (curr > prev) {
+        if (curr > prev && shouldAnimateDots.current) {
             for (let i = prev; i < curr; i++) {
                 dotAnims[i].setValue(0.4);
                 Animated.spring(dotAnims[i], {
@@ -78,6 +91,7 @@ export default function AISummaryScreen() {
                     friction: 5,
                 }).start();
             }
+            shouldAnimateDots.current = false;
         }
         prevUsedToday.current = curr;
     }, [usage.usedToday]);
@@ -104,10 +118,6 @@ export default function AISummaryScreen() {
     };
 
     useEffect(() => {
-        summaryService.getUsage().then(applyUsage);
-    }, []);
-
-    useEffect(() => {
         setSummaryData(null);
         Speech.stop();
         setIsSpeaking(false);
@@ -122,6 +132,12 @@ export default function AISummaryScreen() {
             return () => clearTimeout(timeout);
         }
     }, [isLoading]);
+
+    const startCooldown = () => {
+        const nextAt = new Date(Date.now() + COOLDOWN_MS).toISOString();
+        setNextAvailableAt(nextAt);
+        AsyncStorage.setItem(COOLDOWN_KEY, nextAt);
+    };
 
     const handleGenerate = async () => {
         if (isLoading || countdown > 0) return;
@@ -145,7 +161,6 @@ export default function AISummaryScreen() {
                     fromTime: data.from || '12.00 AM',
                     toTime: data.to || formatTime(new Date()),
                     report: data.report ?? null,
-                    cached: data.cached ?? false,
                 });
             } else {
                 data = await Promise.race([
@@ -156,26 +171,18 @@ export default function AISummaryScreen() {
                     summary: data.summary || 'No summary available',
                     date: data.date || formatDate(selectedDate),
                     report: data.report ?? null,
-                    cached: data.cached ?? false,
                 });
             }
-            applyUsage({
-                usedToday: data.usedToday ?? usage.usedToday,
-                limitPerDay: data.limitPerDay ?? 5,
-                nextAvailableAt: data.nextAvailableAt ?? null,
-                cooldownSeconds: data.cooldownSeconds ?? 0,
-            });
+
+            // Animate new dot then start 30-min frontend cooldown.
+            shouldAnimateDots.current = true;
+            setUsage({ usedToday: data.usedToday ?? usage.usedToday, limitPerDay: data.limitPerDay ?? 5 });
+            startCooldown();
         } catch (error: any) {
             console.error('Generate summary error:', error);
             const errData = error?.response?.data;
-            // 403 daily-limit response carries updated usage info.
-            if (error?.response?.status === 403 && errData?.limitPerDay != null) {
-                applyUsage({
-                    usedToday: errData.usedToday ?? usage.usedToday,
-                    limitPerDay: errData.limitPerDay ?? 5,
-                    nextAvailableAt: errData.nextAvailableAt ?? null,
-                    cooldownSeconds: errData.cooldownSeconds ?? 0,
-                });
+            if (error?.response?.status === 403 && typeof errData?.usedToday === 'number') {
+                setUsage({ usedToday: errData.usedToday, limitPerDay: errData.limitPerDay ?? 5 });
             }
             if (activeTab === 'today') {
                 setSummaryData({
@@ -283,25 +290,18 @@ export default function AISummaryScreen() {
                 {summaryData && (
                     <View style={styles.summarySection}>
                         <View style={styles.reportHeader}>
-                            <View style={styles.reportHeaderTop}>
-                                {activeTab === 'today' ? (
-                                    <>
-                                        <Text style={styles.reportLabel}>Today&apos;s Report from</Text>
-                                        <Text style={styles.reportTime}>
-                                            {summaryData.fromTime} - {summaryData.toTime}
-                                        </Text>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Text style={styles.reportLabel}>Full Day Report</Text>
-                                        <Text style={styles.reportTime}>{summaryData.date}</Text>
-                                    </>
-                                )}
-                            </View>
-                            {summaryData.cached && (
-                                <View style={styles.cachedBadge}>
-                                    <Text style={styles.cachedBadgeText}>Cached</Text>
-                                </View>
+                            {activeTab === 'today' ? (
+                                <>
+                                    <Text style={styles.reportLabel}>Today&apos;s Report from</Text>
+                                    <Text style={styles.reportTime}>
+                                        {summaryData.fromTime} - {summaryData.toTime}
+                                    </Text>
+                                </>
+                            ) : (
+                                <>
+                                    <Text style={styles.reportLabel}>Full Day Report</Text>
+                                    <Text style={styles.reportTime}>{summaryData.date}</Text>
+                                </>
                             )}
                         </View>
 

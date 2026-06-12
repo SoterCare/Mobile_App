@@ -78,15 +78,11 @@ const appendHistory = async (entry: SummaryResponse): Promise<void> => {
 export interface UsageInfo {
     usedToday: number;
     limitPerDay: number;
-    nextAvailableAt: string | null;
-    cooldownSeconds: number;
 }
 
 const extractUsage = (data: any): UsageInfo => ({
     usedToday: typeof data?.usedToday === 'number' ? data.usedToday : 0,
     limitPerDay: typeof data?.limitPerDay === 'number' ? data.limitPerDay : 5,
-    nextAvailableAt: data?.nextAvailableAt ?? null,
-    cooldownSeconds: typeof data?.cooldownSeconds === 'number' ? data.cooldownSeconds : 0,
 });
 
 export const summaryService = {
@@ -160,7 +156,7 @@ export const summaryService = {
             const response = await apiClient.get(API_CONFIG.ENDPOINTS.SUMMARY.USAGE);
             return extractUsage(response.data);
         } catch {
-            return { usedToday: 0, limitPerDay: 5, nextAvailableAt: null, cooldownSeconds: 0 };
+            return { usedToday: 0, limitPerDay: 5 };
         }
     },
 
