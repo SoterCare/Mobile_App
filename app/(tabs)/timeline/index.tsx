@@ -44,7 +44,7 @@ const PERIOD_OPTIONS = [
   { key: 'custom', label: 'Custom' },
 ];
 
-const FILTER_OPTIONS = ['All', 'Movements', 'Falls', 'Urine'];
+const FILTER_OPTIONS = ['All', 'Falls', 'Urine', 'SOS'];
 
 export default function TimelineScreen() {
   const router = useRouter();
@@ -138,7 +138,7 @@ export default function TimelineScreen() {
 
     const apiMetric = vital;
 
-    const filterMap: Record<string, string> = { All: 'all', Movements: 'movement', Falls: 'fall', Urine: 'urine' };
+    const filterMap: Record<string, string> = { All: 'all', Falls: 'fall', Urine: 'urine', SOS: 'sos' };
     const apiFilter = filterMap[activeFilter] || 'all';
 
     setIsLoading(true);
