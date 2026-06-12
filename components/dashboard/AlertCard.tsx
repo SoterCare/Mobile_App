@@ -3,7 +3,6 @@ import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { alertService } from '@/services/alertService';
-import { recycleBinService } from '@/services/recycleBinService';
 import { Colors, Radius, circle } from '@/theme/tokens';
 import { Shadows } from '@/theme/shadows';
 import { relativeTime } from '@/utils/timestamp';
@@ -103,12 +102,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ id, type, title, timestamp
                     onPress: async () => {
                         try {
                             setIsProcessing(true);
-                            if (id) {
-                                await Promise.all([
-                                    alertService.falseAlarmAlert(id),
-                                    recycleBinService.dismiss({ id }),
-                                ]);
-                            }
+                            if (id) await alertService.falseAlarmAlert(id);
                             onDismiss?.(id);
                         } catch (error) {
                             console.error('Failed to mark false alarm:', error);
