@@ -10,9 +10,12 @@ const unwrapData = <T>(payload: any): T => {
   return payload as T;
 };
 
+/** Device timezone offset in minutes: positive for UTC+, negative for UTC-. */
+const tzOffsetMinutes = () => -new Date().getTimezoneOffset();
+
 export const timelineService = {
   getVitalsTimeline: async (deviceId: string, metric: string, period: string, date: string, startDate?: string, endDate?: string) => {
-    const params: any = { deviceId, metric, period };
+    const params: any = { deviceId, metric, period, tzOffsetMinutes: tzOffsetMinutes() };
     if (date) params.date = date;
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
@@ -22,7 +25,7 @@ export const timelineService = {
   },
 
   getEventsTimeline: async (deviceId: string, period: string, date: string, filter: string, startDate?: string, endDate?: string) => {
-    const params: any = { deviceId, period, filter };
+    const params: any = { deviceId, period, filter, tzOffsetMinutes: tzOffsetMinutes() };
     if (date) params.date = date;
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
@@ -54,14 +57,14 @@ export const timelineService = {
 
   getTimelineStats: async (deviceId: string, period: string, date: string, month: string) => {
     const response = await apiClient.get<any>(API_CONFIG.ENDPOINTS.TIMELINE.STATS, {
-      params: { deviceId, period, date, month },
+      params: { deviceId, period, date, month, tzOffsetMinutes: tzOffsetMinutes() },
     });
     return unwrapData<any>(response.data);
   },
 
   getDateOptions: async (deviceId: string, period: string) => {
     const response = await apiClient.get<any>(API_CONFIG.ENDPOINTS.TIMELINE.DATE_OPTIONS, {
-      params: { deviceId, period },
+      params: { deviceId, period, tzOffsetMinutes: tzOffsetMinutes() },
     });
     return unwrapData<{ options: string[] }>(response.data);
   },

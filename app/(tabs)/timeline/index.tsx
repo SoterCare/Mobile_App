@@ -55,12 +55,14 @@ export default function TimelineScreen() {
   const { vitals: liveVitals } = useRealtimeVitals(selectedDeviceId || undefined);
 
   const [period, setPeriod]           = useState<PeriodType>('day');
-  const [selectedDay, setSelectedDay] = useState<string>(
-    new Date().toISOString().slice(0, 10).replace(/-/g, '/')
-  );
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    new Date().toISOString().slice(0, 7).replace(/-/g, '/')
-  );
+  const [selectedDay, setSelectedDay] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+  });
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [selectedRange, setSelectedRange] = useState<string>('');
   const [activeFilter, setActiveFilter]   = useState('All');
 
@@ -192,7 +194,10 @@ export default function TimelineScreen() {
   );
 
   // ── Live socket → patch today's day-view chart in local time ────────────
-  const todayISO = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayISO = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }, []);
 
   React.useEffect(() => {
     if (period !== 'day' || !liveVitals?.timestamp) return;
