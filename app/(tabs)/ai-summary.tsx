@@ -7,15 +7,12 @@ import * as Speech from 'expo-speech';
 import { Shadows } from '@/theme/shadows';
 import { ToggleSwitch } from '@/components/ai-summary/ToggleSwitch';
 import { GenerateButton } from '@/components/ai-summary/GenerateButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { summaryService, UsageInfo } from '@/services/summaryService';
 import { Colors, Radius, circle, SCREEN_PADDING } from '@/theme/tokens';
 import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Calendar } from 'react-native-calendars';
 import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 
-const COOLDOWN_MS = 10 * 1000; // 10s for testing — change to 30 * 60 * 1000 for production
-const COOLDOWN_KEY = '@summary_cooldown_until';
 const DOT_COUNT = 5;
 
 export default function AISummaryScreen() {
@@ -31,56 +28,18 @@ export default function AISummaryScreen() {
     const summaryData = activeTab === 'today' ? todaySummary : previousSummary;
     const setSummaryData = activeTab === 'today' ? setTodaySummary : setPreviousSummary;
     const [usage, setUsage] = useState<UsageInfo>({ usedToday: 0, limitPerDay: 5 });
-    // nextAvailableAt is stored in AsyncStorage so it survives app restarts.
-    const [nextAvailableAt, setNextAvailableAt] = useState<string | null>(null);
-    const [countdown, setCountdown] = useState(0);
 
     const dotAnims = useRef(Array.from({ length: DOT_COUNT }, () => new Animated.Value(1))).current;
     const prevUsedToday = useRef(0);
     const shouldAnimateDots = useRef(false);
 
-    const formatCountdown = (secs: number) => {
-        const m = Math.floor(secs / 60);
-        const s = secs % 60;
-        return `${m}:${s.toString().padStart(2, '0')}`;
-    };
-
-    // On mount: load today's usage count and any persisted cooldown.
+    // On mount: load today's usage count.
     useEffect(() => {
-        const init = async () => {
-            const [usageData, stored] = await Promise.all([
-                summaryService.getUsage(),
-                AsyncStorage.getItem(COOLDOWN_KEY),
-            ]);
-            setUsage(usageData);
-            prevUsedToday.current = usageData.usedToday; // skip animation for pre-existing dots
-            if (stored && new Date(stored).getTime() > Date.now()) {
-                setNextAvailableAt(stored);
-            }
-        };
-        init();
+        summaryService.getUsage().then((data) => {
+            setUsage(data);
+            prevUsedToday.current = data.usedToday; // skip animation for pre-existing dots
+        });
     }, []);
-
-    // Countdown ticker — restarts whenever nextAvailableAt changes.
-    useEffect(() => {
-        if (!nextAvailableAt) {
-            setCountdown(0);
-            return;
-        }
-        const target = new Date(nextAvailableAt).getTime();
-        const getRemaining = () => Math.max(0, Math.ceil((target - Date.now()) / 1000));
-
-        const initial = getRemaining();
-        setCountdown(initial);
-        if (initial === 0) return;
-
-        const id = setInterval(() => {
-            const remaining = getRemaining();
-            setCountdown(remaining);
-            if (remaining === 0) clearInterval(id);
-        }, 1000);
-        return () => clearInterval(id);
-    }, [nextAvailableAt]);
 
     // Spring-animate only dots added by a fresh generate (not pre-existing on load).
     useEffect(() => {
@@ -137,14 +96,8 @@ export default function AISummaryScreen() {
         }
     }, [isLoading]);
 
-    const startCooldown = () => {
-        const nextAt = new Date(Date.now() + COOLDOWN_MS).toISOString();
-        setNextAvailableAt(nextAt);
-        AsyncStorage.setItem(COOLDOWN_KEY, nextAt);
-    };
-
     const handleGenerate = async () => {
-        if (isLoading || countdown > 0) return;
+        if (isLoading) return;
 
         setIsLoading(true);
 
@@ -178,10 +131,8 @@ export default function AISummaryScreen() {
                 });
             }
 
-            // Animate new dot then start 30-min frontend cooldown.
             shouldAnimateDots.current = true;
             setUsage({ usedToday: data.usedToday ?? usage.usedToday, limitPerDay: data.limitPerDay ?? 5 });
-            startCooldown();
         } catch (error: any) {
             console.error('Generate summary error:', error);
             const errData = error?.response?.data;
@@ -245,11 +196,6 @@ export default function AISummaryScreen() {
                     </View>
                     <Text style={styles.usageCount}>{usage.usedToday} of {usage.limitPerDay}</Text>
                 </View>
-                {countdown > 0 && (
-                    <Text style={styles.cooldownText}>
-                        Next generate in {formatCountdown(countdown)}
-                    </Text>
-                )}
 
                 {/* Helper Text or Date Picker */}
                 {activeTab === 'today' ? (
@@ -274,8 +220,7 @@ export default function AISummaryScreen() {
                     <GenerateButton
                         onPress={handleGenerate}
                         isLoading={isLoading}
-                        cooldownText={countdown > 0 ? formatCountdown(countdown) : undefined}
-                        limitReached={countdown === 0 && usage.usedToday >= usage.limitPerDay}
+                        limitReached={usage.usedToday >= usage.limitPerDay}
                     />
                     {__DEV__ && isLoading && (
                         <TouchableOpacity
@@ -519,13 +464,6 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#888888',
         fontWeight: '500',
-    },
-    cooldownText: {
-        fontSize: 13,
-        color: Colors.brand,
-        fontWeight: '600',
-        marginBottom: 16,
-        marginLeft: 4,
     },
     generateButtonContainer: {
         marginBottom: 24,
