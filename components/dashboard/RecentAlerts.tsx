@@ -17,7 +17,7 @@ const PREVIEW_COUNT = 5;
 const POLL_INTERVAL_MS = 15_000; // Refresh backend alerts every 15 seconds
 
 export const RecentAlerts = () => {
-    const { recentAlerts: contextAlerts, selectedDeviceId, refreshRecentAlerts } = useRaspberryPi();
+    const { recentAlerts: contextAlerts, selectedDeviceId, refreshRecentAlerts, removeRecentAlert } = useRaspberryPi();
     const { recentAlerts: realtimeAlerts, removeAlert } = useRealtimeVitals(selectedDeviceId || undefined);
 
     // Poll backend for fresh alerts every 15 seconds
@@ -30,10 +30,9 @@ export const RecentAlerts = () => {
     }, [refreshRecentAlerts]);
 
     const handleAlertDismissed = (id: string) => {
-        // Refresh backend alerts
-        refreshRecentAlerts();
-        // Remove from realtime state (if it was from there)
-        removeAlert(id);
+        removeRecentAlert(id); // immediate — REST-polled list
+        removeAlert(id);        // immediate — socket list
+        refreshRecentAlerts(); // background re-poll to confirm
     };
 
     const allAlerts = [...realtimeAlerts, ...contextAlerts];
