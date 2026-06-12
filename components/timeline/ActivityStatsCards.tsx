@@ -18,11 +18,10 @@ interface ActivityStatsCardsProps {
   style?: ViewStyle;
 }
 
-// Design-specific color constants to ensure exact Figma matching
 const FIGMA_COLORS = {
   movement: { main: '#42dfdf', bg: '#dffcfc' },
-  fall: { main: '#FF9D93', bg: '#FFF0F0' },
-  urine: { main: Colors.brand, bg: '#F0F7FF' },
+  fall:     { main: '#FF9D93', bg: '#FFF0F0' },
+  moisture: { main: Colors.brand, bg: '#F0F7FF' },
 };
 
 const ActivityStatsCards: React.FC<ActivityStatsCardsProps> = ({
@@ -80,20 +79,16 @@ const ActivityStatsCards: React.FC<ActivityStatsCardsProps> = ({
           </View>
         </View>
 
-        {/* Urine Card */}
-        <View style={[styles.card, styles.urineCard, Shadows.card]}>
+        {/* Moisture Card */}
+        <View style={[styles.card, styles.moistureCard, Shadows.card]}>
           <View style={styles.cardContent}>
-            <Text style={styles.cardLabel}>Urine{'\n'}Detected</Text>
+            <Text style={styles.cardLabel}>Moisture{'\n'}Detected</Text>
             <View style={styles.cardBottom}>
-              <View style={[styles.iconCircle, { backgroundColor: FIGMA_COLORS.urine.main }]}>
-                <Ionicons
-                  name="water"
-                  size={18}
-                  color="white"
-                />
+              <View style={[styles.iconCircle, { backgroundColor: FIGMA_COLORS.moisture.main }]}>
+                <Ionicons name="water" size={18} color="white" />
               </View>
-              <Text style={[styles.cardCount, { color: FIGMA_COLORS.urine.main }]}>
-                {formatCount(stats.urine)}
+              <Text style={[styles.cardCount, { color: FIGMA_COLORS.moisture.main }]}>
+                {formatCount(stats.moisture ?? stats.urine ?? 0)}
               </Text>
             </View>
           </View>
@@ -138,9 +133,9 @@ const styles = StyleSheet.create({
     borderLeftColor: FIGMA_COLORS.fall.main,
     backgroundColor: FIGMA_COLORS.fall.bg,
   },
-  urineCard: {
-    borderLeftColor: FIGMA_COLORS.urine.main,
-    backgroundColor: FIGMA_COLORS.urine.bg,
+  moistureCard: {
+    borderLeftColor: FIGMA_COLORS.moisture.main,
+    backgroundColor: FIGMA_COLORS.moisture.bg,
   },
   cardContent: {
     flex: 1,

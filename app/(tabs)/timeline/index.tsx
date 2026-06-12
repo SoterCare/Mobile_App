@@ -42,7 +42,7 @@ const PERIOD_OPTIONS = [
   { key: 'custom', label: 'Custom' },
 ];
 
-const FILTER_OPTIONS = ['All', 'Falls', 'Urine', 'SOS'];
+const FILTER_OPTIONS = ['All', 'Falls', 'Moisture', 'SOS'];
 
 // Always display body temp — only metric shown in the chart
 const TEMP_METRIC = METRIC_CONFIG['temp'];
@@ -135,27 +135,46 @@ export default function TimelineScreen() {
     }
 
     const formattedMonth = selectedMonth.replace(/\//g, '-');
-    const apiFilter = ({ All: 'all', Falls: 'fall', Urine: 'urine', SOS: 'sos' } as Record<string,string>)[activeFilter] || 'all';
+    const apiFilter = ({ All: 'all', Falls: 'fall', Moisture: 'moisture', SOS: 'sos' } as Record<string,string>)[activeFilter] || 'all';
 
     setIsLoading(true);
     setChartError(null);
 
     try {
-      const [vitalsResponse, eventsResponse, statsResponse] = await Promise.all([
+      const [vitalsResponse, eventsResponse, statsResponse, moistureVitalsResponse] = await Promise.all([
         timelineService.getVitalsTimeline(
           selectedDeviceId, TEMP_METRIC.apiMetric, period, apiDate, apiStartDate, apiEndDate
         ),
         timelineService.getEventsTimeline(
           selectedDeviceId, period, apiDate, apiFilter, apiStartDate, apiEndDate
         ),
-        period === 'month'
+        (period === 'month' || period === 'custom')
           ? timelineService.getTimelineStats(selectedDeviceId, period, apiDate, formattedMonth)
+          : Promise.resolve(null),
+        (period === 'month' || period === 'custom')
+          ? timelineService.getVitalsTimeline(
+              selectedDeviceId, 'moisture', period, apiDate, apiStartDate, apiEndDate
+            ).catch(() => null)
           : Promise.resolve(null),
       ]);
 
       setVitalsData(vitalsResponse);
       setTimelineEvents(eventsResponse?.events || []);
-      if (statsResponse) setStats(statsResponse);
+
+      if (statsResponse || moistureVitalsResponse) {
+        // Count moisture readings that exceeded 5% threshold
+        const moisturePoints: any[] = moistureVitalsResponse?.points ?? [];
+        const moistureCount = moisturePoints.filter(
+          (p: any) => p.value !== null && p.value !== undefined && Number(p.value) > 5
+        ).length;
+
+        setStats({
+          movements: statsResponse?.movements ?? 0,
+          falls:     statsResponse?.falls     ?? 0,
+          // prefer backend moisture count if provided, otherwise count from raw vitals > 5%
+          moisture:  statsResponse?.moisture ?? (moistureCount > 0 ? moistureCount : (statsResponse?.urine ?? 0)),
+        });
+      }
     } catch (e) {
       console.error('Failed to fetch timeline data', e);
       setChartError('Could not load data.');
@@ -230,7 +249,7 @@ export default function TimelineScreen() {
     }
   }, [period, dayOptions, monthOptions, customRangeOptions]);
 
-  const activityStats = useMemo(() => stats ?? { movements: 0, falls: 0, urine: 0 }, [stats]);
+  const activityStats = useMemo(() => stats ?? { movements: 0, falls: 0, moisture: 0 }, [stats]);
   const activityTitle = useMemo(() => {
     switch (period) {
       case 'day':    return 'Activity Timeline';

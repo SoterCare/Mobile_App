@@ -20,7 +20,10 @@ export interface ActivityEvent {
 export interface ActivityStats {
   movements: number;
   falls: number;
-  urine: number;
+  /** Moisture readings that exceeded 5% threshold */
+  moisture: number;
+  /** @deprecated use moisture */
+  urine?: number;
 }
 
 export type VitalType = 'temp' | 'roomTemp' | 'moisture';
@@ -63,7 +66,6 @@ export const METRIC_CONFIG: Record<MetricType, MetricConfig> = {
   },
 };
 
-// Kept for any remaining import references — components should use METRIC_CONFIG instead.
 export const vitalYAxisConfig: Record<MetricType, { label: string; minValue: number; maxValue: number; unit: string }> = {
   temp:     { label: 'Temperature (°C)',      minValue: 36, maxValue: 38,  unit: '°C' },
   roomTemp: { label: 'Room Temperature (°C)', minValue: 18, maxValue: 30,  unit: '°C' },
