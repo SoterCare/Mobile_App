@@ -14,7 +14,7 @@ import { ScreenTitle } from '@/components/ui/ScreenTitle';
 import { Calendar } from 'react-native-calendars';
 import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 
-const COOLDOWN_MS = 30 * 60 * 1000;
+const COOLDOWN_MS = 10 * 1000; // 10s for testing — change to 30 * 60 * 1000 for production
 const COOLDOWN_KEY = '@summary_cooldown_until';
 const DOT_COUNT = 5;
 
@@ -23,8 +23,13 @@ export default function AISummaryScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [summaryData, setSummaryData] = useState<any>(null);
+    const [todaySummary, setTodaySummary] = useState<any>(null);
+    const [previousSummary, setPreviousSummary] = useState<any>(null);
     const [isSpeaking, setIsSpeaking] = useState(false);
+
+    // Active tab's summary — each tab keeps its own result.
+    const summaryData = activeTab === 'today' ? todaySummary : previousSummary;
+    const setSummaryData = activeTab === 'today' ? setTodaySummary : setPreviousSummary;
     const [usage, setUsage] = useState<UsageInfo>({ usedToday: 0, limitPerDay: 5 });
     // nextAvailableAt is stored in AsyncStorage so it survives app restarts.
     const [nextAvailableAt, setNextAvailableAt] = useState<string | null>(null);
@@ -118,7 +123,6 @@ export default function AISummaryScreen() {
     };
 
     useEffect(() => {
-        setSummaryData(null);
         Speech.stop();
         setIsSpeaking(false);
     }, [activeTab]);
