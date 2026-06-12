@@ -85,12 +85,32 @@ const extractUsage = (data: any): UsageInfo => ({
     limitPerDay: typeof data?.limitPerDay === 'number' ? data.limitPerDay : 5,
 });
 
+/** Epoch ms for local midnight (00:00:00.000) on the given date. */
+const localMidnightMs = (date: Date): number => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+};
+
+/** YYYY-MM-DD in the device's local timezone. */
+const localDateStr = (date: Date): string => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
 export const summaryService = {
     generateTodaySummary: async () => {
         try {
+            const now = new Date();
+            const startMs = localMidnightMs(now);
+            const endMs = now.getTime();
             const response = await apiClient.post(API_CONFIG.ENDPOINTS.SUMMARY.GENERATE, {
                 text: 'today',
                 date: 'today',
+                startMs,
+                endMs,
             });
 
             const summary = normalizeSummaryText(response.data);
@@ -103,7 +123,6 @@ export const summaryService = {
             };
             await appendHistory(item);
 
-            const now = new Date();
             const timeText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
             return {
@@ -122,10 +141,18 @@ export const summaryService = {
 
     generatePreviousSummary: async (date: Date) => {
         try {
-            const day = date.toISOString().split('T')[0];
+            const startMs = localMidnightMs(date);
+            // End = midnight of the next day in local time (handles DST correctly)
+            const nextDay = new Date(date);
+            nextDay.setDate(nextDay.getDate() + 1);
+            nextDay.setHours(0, 0, 0, 0);
+            const endMs = nextDay.getTime();
+            const day = localDateStr(date);
             const response = await apiClient.post(API_CONFIG.ENDPOINTS.SUMMARY.GENERATE, {
                 text: day,
                 date: day,
+                startMs,
+                endMs,
             });
 
             const summary = normalizeSummaryText(response.data);
