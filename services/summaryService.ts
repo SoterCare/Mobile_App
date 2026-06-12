@@ -80,9 +80,11 @@ export interface UsageInfo {
     limitPerDay: number;
 }
 
+const FRONTEND_LIMIT = 5;
+
 const extractUsage = (data: any): UsageInfo => ({
-    usedToday: typeof data?.usedToday === 'number' ? data.usedToday : 0,
-    limitPerDay: typeof data?.limitPerDay === 'number' ? data.limitPerDay : 5,
+    usedToday: typeof data?.usedToday === 'number' ? Math.min(data.usedToday, FRONTEND_LIMIT) : 0,
+    limitPerDay: FRONTEND_LIMIT,
 });
 
 /** Epoch ms for local midnight (00:00:00.000) on the given date. */

@@ -97,7 +97,7 @@ export default function AISummaryScreen() {
     }, [isLoading]);
 
     const handleGenerate = async () => {
-        if (isLoading) return;
+        if (isLoading || usage.usedToday >= DOT_COUNT) return;
 
         setIsLoading(true);
 
