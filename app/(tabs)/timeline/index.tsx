@@ -26,7 +26,6 @@ import { TimelineColors } from '../../../theme/colors';
 import { Shadows } from '../../../theme/shadows';
 import { Colors, Radius } from '@/theme/tokens';
 import {
-  MetricType,
   PeriodType,
   ActivityEvent,
   METRIC_CONFIG,
@@ -37,44 +36,26 @@ import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 import { timelineService } from '@/services/timelineService';
 import { useSwipeTabs } from '@/hooks/useSwipeTabs';
 
-const BACKGROUND_COLOR = '#F6F6F6';
-
 const PERIOD_OPTIONS = [
   { key: 'day',    label: 'Day'    },
-  { key: 'week',   label: 'Week'   },
   { key: 'month',  label: 'Month'  },
   { key: 'custom', label: 'Custom' },
 ];
 
 const FILTER_OPTIONS = ['All', 'Falls', 'Urine', 'SOS'];
 
-const MONTH_ABBR = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-function fmtMonthAbbr(d: Date) {
-  return `${MONTH_ABBR[d.getUTCMonth()]} ${d.getUTCDate()}`;
-}
+// Always display body temp — only metric shown in the chart
+const TEMP_METRIC = METRIC_CONFIG['temp'];
 
 export default function TimelineScreen() {
   const router = useRouter();
-  const {
-    selectedDeviceId,
-    historicalLogs,
-    liveLogs,
-    logsError,
-    isLoadingLogs,
-    loadLogsByRange,
-    connectionState,
-  } = useRaspberryPi();
+  const { selectedDeviceId } = useRaspberryPi();
 
-  // ── Vitals live socket (for chart live-update when period=day & today) ──
+  // Live socket for chart patching (period=day, today only)
   const { vitals: liveVitals } = useRealtimeVitals(selectedDeviceId || undefined);
 
-  const [period, setPeriod]               = useState<PeriodType>('day');
-  const [selectedMetric, setSelectedMetric] = useState<MetricType>('temp');
-  const [selectedDay, setSelectedDay]     = useState<string>(
-    new Date().toISOString().slice(0, 10).replace(/-/g, '/')
-  );
-  const [selectedWeekEnd, setSelectedWeekEnd] = useState<string>(
+  const [period, setPeriod]           = useState<PeriodType>('day');
+  const [selectedDay, setSelectedDay] = useState<string>(
     new Date().toISOString().slice(0, 10).replace(/-/g, '/')
   );
   const [selectedMonth, setSelectedMonth] = useState<string>(
@@ -105,7 +86,6 @@ export default function TimelineScreen() {
     return [`${start} - ${end}`];
   }, [dayOptions]);
 
-  // Fetch available dates once device is known
   React.useEffect(() => {
     if (!selectedDeviceId) return;
     timelineService.getDateOptions(selectedDeviceId, 'day').then(res => {
@@ -113,50 +93,38 @@ export default function TimelineScreen() {
     }).catch(e => console.error('Failed to load date options:', e));
   }, [selectedDeviceId]);
 
-  // Default selections when options load
   React.useEffect(() => {
     if (!selectedDay   && dayOptions.length   > 0) setSelectedDay(dayOptions[dayOptions.length - 1]);
     if (!selectedMonth && monthOptions.length > 0) setSelectedMonth(monthOptions[monthOptions.length - 1]);
     if (!selectedRange && customRangeOptions.length > 0) setSelectedRange(customRangeOptions[0]);
   }, [dayOptions, monthOptions, customRangeOptions, selectedDay, selectedMonth, selectedRange]);
 
-  // ── Chart + timeline state ──────────────────────────────────────────────
-  const [vitalsData, setVitalsData]       = useState<any>(null);
+  // ── Chart + timeline state ───────────────────────────────────────────────
+  const [vitalsData, setVitalsData]         = useState<any>(null);
   const [timelineEvents, setTimelineEvents] = useState<ActivityEvent[]>([]);
-  const [stats, setStats]                 = useState<any>(null);
-  const [isLoading, setIsLoading]         = useState(false);
-  const [chartError, setChartError]       = useState<string | null>(null);
+  const [stats, setStats]                   = useState<any>(null);
+  const [isLoading, setIsLoading]           = useState(false);
+  const [chartError, setChartError]         = useState<string | null>(null);
 
-  // ── Fetch timeline data ─────────────────────────────────────────────────
+  // ── Fetch timeline data ──────────────────────────────────────────────────
   const fetchTimelineData = useCallback(async () => {
     if (!selectedDeviceId) return;
 
     const dateQuery =
       period === 'day'    ? selectedDay   :
-      period === 'week'   ? selectedWeekEnd :
       period === 'month'  ? selectedMonth :
       selectedRange;
 
     if (!dateQuery) return;
-    if (period === 'month' && !selectedMonth) return;
 
-    let apiDate       = '';
+    let apiDate      = '';
     let apiStartDate: string | undefined;
     let apiEndDate:   string | undefined;
 
     if (period === 'day') {
       apiDate = selectedDay.replace(/\//g, '-');
 
-    } else if (period === 'week') {
-      const endISO = selectedWeekEnd.replace(/\//g, '-');
-      const endD   = new Date(endISO + 'T00:00:00Z');
-      const startD = new Date(endD);
-      startD.setUTCDate(startD.getUTCDate() - 6);
-      apiStartDate = startD.toISOString().slice(0, 10);
-      apiEndDate   = endISO;
-
     } else if (period === 'month') {
-      // Pass YYYY-MM-01 as date; backend accepts month period
       const raw = selectedMonth.replace(/\//g, '-');
       apiDate = raw.length === 7 ? `${raw}-01` : raw;
 
@@ -168,7 +136,6 @@ export default function TimelineScreen() {
 
     const formattedMonth = selectedMonth.replace(/\//g, '-');
     const apiFilter = ({ All: 'all', Falls: 'fall', Urine: 'urine', SOS: 'sos' } as Record<string,string>)[activeFilter] || 'all';
-    const apiMetric = METRIC_CONFIG[selectedMetric].apiMetric;
 
     setIsLoading(true);
     setChartError(null);
@@ -176,7 +143,7 @@ export default function TimelineScreen() {
     try {
       const [vitalsResponse, eventsResponse, statsResponse] = await Promise.all([
         timelineService.getVitalsTimeline(
-          selectedDeviceId, apiMetric, period, apiDate, apiStartDate, apiEndDate
+          selectedDeviceId, TEMP_METRIC.apiMetric, period, apiDate, apiStartDate, apiEndDate
         ),
         timelineService.getEventsTimeline(
           selectedDeviceId, period, apiDate, apiFilter, apiStartDate, apiEndDate
@@ -196,8 +163,7 @@ export default function TimelineScreen() {
       setIsLoading(false);
     }
   }, [
-    selectedDeviceId, period, selectedDay, selectedWeekEnd,
-    selectedMonth, selectedRange, activeFilter, selectedMetric,
+    selectedDeviceId, period, selectedDay, selectedMonth, selectedRange, activeFilter,
   ]);
 
   React.useEffect(() => { fetchTimelineData(); }, [fetchTimelineData]);
@@ -206,7 +172,7 @@ export default function TimelineScreen() {
     useCallback(() => { fetchTimelineData(); }, [fetchTimelineData])
   );
 
-  // ── Live socket → update today's day-view chart ─────────────────────────
+  // ── Live socket → patch today's day-view chart in local time ────────────
   const todayISO = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   React.useEffect(() => {
@@ -214,14 +180,11 @@ export default function TimelineScreen() {
     const selISO = selectedDay.replace(/\//g, '-');
     if (selISO !== todayISO) return;
 
-    const hour = new Date(liveVitals.timestamp).getUTCHours();
+    // Use LOCAL hour so it aligns with how the backend buckets day data
+    const hour = new Date(liveVitals.timestamp).getHours();
     if (hour < 0 || hour > 23) return;
 
-    let newValue: number | null = null;
-    if (selectedMetric === 'temp')     newValue = liveVitals.temperature    ?? null;
-    if (selectedMetric === 'roomTemp') newValue = liveVitals.roomTemperature ?? null;
-    if (selectedMetric === 'moisture') newValue = typeof liveVitals.moisture === 'number' ? liveVitals.moisture : null;
-
+    const newValue = liveVitals.temperature ?? null;
     if (newValue === null) return;
 
     setVitalsData((prev: any) => {
@@ -232,64 +195,48 @@ export default function TimelineScreen() {
       pts[hour] = {
         ...pts[hour],
         value: existing !== null && existing !== undefined
-          ? (Number(existing) + newValue!) / 2
-          : newValue!,
+          ? (Number(existing) + newValue) / 2
+          : newValue,
       };
       return { ...prev, points: pts };
     });
-  }, [liveVitals, period, selectedDay, selectedMetric, todayISO]);
+  }, [liveVitals, period, selectedDay, todayISO]);
 
-  // ── Derived chart data ──────────────────────────────────────────────────
-  const chartData = useMemo(
-    () => (vitalsData?.points ?? []),
-    [vitalsData]
-  );
+  // ── Derived chart data ───────────────────────────────────────────────────
+  const chartData = useMemo(() => vitalsData?.points ?? [], [vitalsData]);
 
   const yAxisCfg = useMemo(() => {
     if (vitalsData?.yAxis) return vitalsData.yAxis;
-    const fallback = vitalYAxisConfig[selectedMetric];
-    return { label: fallback.label, minValue: fallback.minValue, maxValue: fallback.maxValue };
-  }, [vitalsData, selectedMetric]);
+    const fb = vitalYAxisConfig['temp'];
+    return { label: fb.label, minValue: fb.minValue, maxValue: fb.maxValue };
+  }, [vitalsData]);
 
-  const unit = METRIC_CONFIG[selectedMetric].unit;
-
-  // ── Period label (shown in chart card header) ───────────────────────────
+  // ── Period label ─────────────────────────────────────────────────────────
   const periodLabel = useMemo(() => {
     switch (period) {
       case 'day':    return selectedDay.replace(/\//g, '-');
-      case 'week': {
-        const end = new Date(selectedWeekEnd.replace(/\//g, '-') + 'T00:00:00Z');
-        const start = new Date(end);
-        start.setUTCDate(start.getUTCDate() - 6);
-        return `${fmtMonthAbbr(start)} – ${fmtMonthAbbr(end)}`;
-      }
       case 'month':  return selectedMonth.replace(/\//g, '-');
       case 'custom': return selectedRange || 'Custom range';
+      default:       return selectedDay.replace(/\//g, '-');
     }
-  }, [period, selectedDay, selectedWeekEnd, selectedMonth, selectedRange]);
-
-  // ── Date selector display text (above chart) ────────────────────────────
-  const dateDisplayText = periodLabel;
+  }, [period, selectedDay, selectedMonth, selectedRange]);
 
   const datePickerOptions = useMemo(() => {
     switch (period) {
       case 'day':    return dayOptions;
-      case 'week':   return dayOptions;  // user picks the week's end date
       case 'month':  return monthOptions;
       case 'custom': return customRangeOptions;
+      default:       return dayOptions;
     }
   }, [period, dayOptions, monthOptions, customRangeOptions]);
 
-  const activityStats = useMemo(
-    () => stats ?? { movements: 0, falls: 0, urine: 0 },
-    [stats]
-  );
+  const activityStats = useMemo(() => stats ?? { movements: 0, falls: 0, urine: 0 }, [stats]);
   const activityTitle = useMemo(() => {
     switch (period) {
       case 'day':    return 'Activity Timeline';
-      case 'week':   return 'Weekly Activity';
       case 'month':  return 'Monthly Activity';
       case 'custom': return 'Custom Activity';
+      default:       return 'Activity';
     }
   }, [period]);
 
@@ -299,18 +246,11 @@ export default function TimelineScreen() {
     setChartError(null);
   }, []);
 
-  const handleMetricChange = useCallback((m: MetricType) => {
-    setSelectedMetric(m);
-    setVitalsData(null);
-    setChartError(null);
-  }, []);
-
-  const handleDateSelect = useCallback(async (option: string) => {
+  const handleDateSelect = useCallback((option: string) => {
     switch (period) {
-      case 'day':    setSelectedDay(option);      break;
-      case 'week':   setSelectedWeekEnd(option);  break;
-      case 'month':  setSelectedMonth(option);    break;
-      case 'custom': setSelectedRange(option);    break;
+      case 'day':    setSelectedDay(option);   break;
+      case 'month':  setSelectedMonth(option); break;
+      case 'custom': setSelectedRange(option); break;
     }
     setDatePickerVisible(false);
   }, [period]);
@@ -328,10 +268,7 @@ export default function TimelineScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']} {...(swipeHandlers as any)}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.mainContent}>
           {/* ── Top row ── */}
           <View style={styles.topHeader}>
@@ -362,21 +299,19 @@ export default function TimelineScreen() {
             onPress={() => setDatePickerVisible(true)}
             activeOpacity={0.7}
           >
-            <Text style={styles.dateSelectorText}>{dateDisplayText}</Text>
+            <Text style={styles.dateSelectorText}>{periodLabel}</Text>
             <Ionicons name="caret-down" size={16} color="#666" />
           </TouchableOpacity>
 
           {/* ── Vitals chart card ── */}
           <VitalsChartCard
             data={chartData}
-            unit={unit}
-            yAxisLabel={yAxisCfg.label ?? METRIC_CONFIG[selectedMetric].yAxisLabel}
-            minValue={yAxisCfg.minValue ?? METRIC_CONFIG[selectedMetric].fallbackMin}
-            maxValue={yAxisCfg.maxValue ?? METRIC_CONFIG[selectedMetric].fallbackMax}
+            unit={TEMP_METRIC.unit}
+            yAxisLabel={yAxisCfg.label ?? TEMP_METRIC.yAxisLabel}
+            minValue={yAxisCfg.minValue ?? TEMP_METRIC.fallbackMin}
+            maxValue={yAxisCfg.maxValue ?? TEMP_METRIC.fallbackMax}
             period={period}
             periodLabel={periodLabel}
-            selectedMetric={selectedMetric}
-            onMetricChange={handleMetricChange}
             isLoading={isLoading}
             error={chartError}
             onRetry={fetchTimelineData}
@@ -413,23 +348,17 @@ export default function TimelineScreen() {
         <Pressable style={styles.modalOverlay} onPress={() => setDatePickerVisible(false)}>
           <Pressable style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {period === 'day'
-                ? 'Select Date'
-                : period === 'week'
-                ? 'Select Week End Date'
-                : period === 'month'
-                ? 'Select Month'
-                : 'Select Range'}
+              {period === 'day'   ? 'Select Date'  :
+               period === 'month' ? 'Select Month' :
+                                    'Select Range'}
             </Text>
 
-            {(period === 'day' || period === 'week') ? (
+            {period === 'day' ? (
               <Calendar
-                current={(period === 'day' ? selectedDay : selectedWeekEnd).replace(/\//g, '-')}
-                onDayPress={(day: any) => {
-                  handleDateSelect(day.dateString.replace(/-/g, '/'));
-                }}
+                current={selectedDay.replace(/\//g, '-')}
+                onDayPress={(day: any) => handleDateSelect(day.dateString.replace(/-/g, '/'))}
                 markedDates={{
-                  [(period === 'day' ? selectedDay : selectedWeekEnd).replace(/\//g, '-')]: {
+                  [selectedDay.replace(/\//g, '-')]: {
                     selected: true,
                     selectedColor: TimelineColors.primaryCyan,
                   },
@@ -563,7 +492,6 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   activitySection: {},
-  // Modals
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
