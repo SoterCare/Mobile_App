@@ -9,7 +9,7 @@ const TOKEN_KEY = 'accessToken';
 // If no log arrives within this window, device is considered offline
 const DEVICE_OFFLINE_TIMEOUT_MS = 10_000;
 
-export function useRealtimeVitals(deviceId?: string) {
+export function useRealtimeVitals(deviceId?: string, options?: { onNewAlert?: () => void }) {
   const [vitals, setVitals] = useState<DashboardVitals | null>(null);
   const [recentAlerts, setRecentAlerts] = useState<RecentAlert[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -84,6 +84,8 @@ export function useRealtimeVitals(deviceId?: string) {
               };
               return [newAlert, ...prev].slice(0, 10);
             });
+            // Also kick the REST poll so contextAlerts stays in sync
+            options?.onNewAlert?.();
           }
         });
 

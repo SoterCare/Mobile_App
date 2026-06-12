@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     StyleSheet,
     View,
@@ -7,7 +7,10 @@ import {
     ScrollView,
     Alert,
     ActivityIndicator,
+    AppState,
+    AppStateStatus,
 } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertCard } from './AlertCard';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
@@ -16,20 +19,47 @@ import { alertService } from '@/services/alertService';
 import { Colors, Radius } from '@/theme/tokens';
 import { Shadows } from '@/theme/shadows';
 
-// Approximate height of one AlertCard (paddingVertical 30 + icon 52 + marginBottom 12)
+// Approximate rendered height of one AlertCard (paddingVertical 30 + icon 52 + marginBottom 12)
 const CARD_HEIGHT = 94;
 const VISIBLE_CARDS = 3;
-const POLL_INTERVAL_MS = 15_000;
+const POLL_INTERVAL_MS = 5_000;
 
 export const RecentAlerts = () => {
-    const { recentAlerts: contextAlerts, selectedDeviceId, refreshRecentAlerts, removeRecentAlert } = useRaspberryPi();
-    const { recentAlerts: realtimeAlerts, removeAlert } = useRealtimeVitals(selectedDeviceId || undefined);
+    const {
+        recentAlerts: contextAlerts,
+        selectedDeviceId,
+        refreshRecentAlerts,
+        removeRecentAlert,
+    } = useRaspberryPi();
+
+    const { recentAlerts: realtimeAlerts, removeAlert } = useRealtimeVitals(
+        selectedDeviceId || undefined,
+        { onNewAlert: refreshRecentAlerts }
+    );
+
     const [attendingAll, setAttendingAll] = useState(false);
 
+    // Tight background poll — safety net when socket misses events
     useEffect(() => {
         refreshRecentAlerts();
         const interval = setInterval(refreshRecentAlerts, POLL_INTERVAL_MS);
         return () => clearInterval(interval);
+    }, [refreshRecentAlerts]);
+
+    // Re-fetch whenever the home tab comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            refreshRecentAlerts();
+        }, [refreshRecentAlerts])
+    );
+
+    // Re-fetch when app returns to foreground from background
+    useEffect(() => {
+        const onAppStateChange = (state: AppStateStatus) => {
+            if (state === 'active') refreshRecentAlerts();
+        };
+        const sub = AppState.addEventListener('change', onAppStateChange);
+        return () => sub.remove();
     }, [refreshRecentAlerts]);
 
     const handleAlertDismissed = (id: string) => {
