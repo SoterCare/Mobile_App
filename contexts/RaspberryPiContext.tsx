@@ -39,6 +39,7 @@ interface RaspberryPiContextType {
   refreshDevices: () => Promise<void>;
   refreshLatestVitals: () => Promise<void>;
   refreshRecentAlerts: () => Promise<void>;
+  removeRecentAlert: (id: string) => void;
   setSelectedDeviceId: (deviceId: string) => void;
 }
 
@@ -151,6 +152,10 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
       setLastError(parseApiError(error, 'Failed to load recent alerts'));
     }
   }, [isAuthenticated, parseApiError, selectedDeviceId]);
+
+  const removeRecentAlert = useCallback((id: string) => {
+    setRecentAlerts((prev) => prev.filter((a) => a.id !== id));
+  }, []);
 
   const claimDevice = useCallback(async (deviceId: string) => {
     try {
@@ -298,6 +303,7 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
       refreshDevices,
       refreshLatestVitals,
       refreshRecentAlerts,
+      removeRecentAlert,
       setSelectedDeviceId,
     }),
     [
@@ -319,6 +325,7 @@ export function RaspberryPiProvider({ children }: { children: ReactNode }) {
       refreshDevices,
       refreshLatestVitals,
       refreshRecentAlerts,
+      removeRecentAlert,
     ]
   );
 
