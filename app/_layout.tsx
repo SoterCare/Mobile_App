@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { VitalsProvider } from '@/contexts/VitalsContext';
 import { RaspberryPiProvider } from '@/contexts/RaspberryPiContext';
@@ -21,6 +22,9 @@ function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
   const [isSplashAnimationFinished, setIsSplashAnimationFinished] = useState(false);
+
+  // Register for push notifications once authenticated; route taps to dashboard.
+  usePushNotifications(isAuthenticated);
 
   useEffect(() => {
     // Database initialization has been removed

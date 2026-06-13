@@ -30,8 +30,9 @@ export const API_CONFIG = {
     SUMMARY: {
       GENERATE: '/summary',
       HISTORY: '/summary/history',
-      UPLOAD_PRESCRIPTION: '/summary/upload_prescription',
-      QUERY_PRESCRIPTION: '/summary/query_prescription',
+      USAGE: '/summary/usage',
+      UPLOAD_PRESCRIPTION: '/summary/upload-prescription',
+      QUERY_PRESCRIPTION: '/summary/query-prescription',
     },
     LOGS: {
       SYNC: '/logs/sync',
@@ -63,6 +64,10 @@ export const API_CONFIG = {
       DISMISSED: '/timeline/dismissed',
       RESTORE: '/timeline/restore',
       DISMISS: '/timeline/dismiss',
+    },
+    NOTIFICATIONS: {
+      REGISTER_TOKEN: '/notifications/register-token',
+      UNREGISTER_TOKEN: '/notifications/unregister-token',
     },
   },
 };

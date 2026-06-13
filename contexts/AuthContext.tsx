@@ -8,6 +8,7 @@ import {
   JWTPayload,
 } from '@/types/auth.types';
 import { jwtDecode } from "jwt-decode";
+import { unregisterPushTokenOnLogout } from '@/services/notificationService';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -138,6 +139,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async (): Promise<void> => {
     try {
+      // Unregister this device's push token while the auth token is still valid.
+      await unregisterPushTokenOnLogout();
+
       await AsyncStorage.removeItem('accessToken');
       await AsyncStorage.removeItem('user');
 
