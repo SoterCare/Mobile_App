@@ -16,12 +16,13 @@ import { Buffer } from 'buffer';
  *   standingUp   -> 121..151 (rises back to standing, plays once)
  *   idle         -> 150..156 (standing hold, loops)
  */
-export type AvatarActivity = 'walking' | 'standingUp' | 'standingDown' | 'idle';
+export type AvatarActivity = 'walking' | 'standingUp' | 'standingDown' | 'sitting' | 'idle';
 
 export const AVATAR_ACTIVITIES: AvatarActivity[] = [
   'walking',
   'standingUp',
   'standingDown',
+  'sitting',
   'idle',
 ];
 
@@ -33,6 +34,9 @@ const CLIP_RANGES: Record<
   walking: { start: 1, end: 86, loop: true },
   standingDown: { start: 90, end: 121, loop: false },
   standingUp: { start: 121, end: 151, loop: false },
+  // Calm seated idle: a slow, subtle sway around the fully-seated pose (~f121),
+  // so a patient who stays sitting reads as resting rather than frozen.
+  sitting: { start: 119, end: 123, loop: true, timeScale: 0.4 },
   // Gentle, near-seamless standing sway (poses at 146 and 156 nearly match),
   // played slow so the loop reads as a calm idle rather than a fast twitch.
   idle: { start: 146, end: 156, loop: true, timeScale: 0.5 },
@@ -104,6 +108,18 @@ export function PatientAvatar({ activity = 'idle', backgroundColor = '#f2f3f7', 
   const onContextCreate = async (gl: ExpoWebGLRenderingContext) => {
     const width = gl.drawingBufferWidth;
     const height = gl.drawingBufferHeight;
+
+    // three uploads the skinning bone-texture every frame and calls pixelStorei
+    // with WebGL params expo-gl doesn't implement, spamming the console each
+    // frame. Pass through only the param expo-gl supports (UNPACK_ALIGNMENT)
+    // and silently drop the rest — expo-gl ignores them anyway.
+    const glAny = gl as any;
+    const realPixelStorei = glAny.pixelStorei.bind(gl);
+    glAny.pixelStorei = (pname: number, param: number) => {
+      if (pname === gl.UNPACK_ALIGNMENT || pname === gl.PACK_ALIGNMENT) {
+        realPixelStorei(pname, param);
+      }
+    };
 
     const renderer = new Renderer({ gl });
     renderer.setSize(width, height);

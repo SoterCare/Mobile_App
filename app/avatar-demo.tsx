@@ -9,6 +9,7 @@ const LABELS: Record<AvatarActivity, string> = {
   walking: 'Walking',
   standingUp: 'Standing Up',
   standingDown: 'Sitting Down',
+  sitting: 'Sitting',
   idle: 'Idle',
 };
 

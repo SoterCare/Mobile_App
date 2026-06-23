@@ -9,14 +9,15 @@ import { Shadows } from '@/theme/shadows';
 
 const OFFLINE_COLOR = '#BBBBBB';
 
-// Map the device's gait/activity reading to an avatar animation.
+// Map the device's gait/activity state to an avatar animation.
 function gaitToActivity(gaitRaw?: string | null, offline?: boolean): AvatarActivity {
     if (offline) return 'idle';
     const g = (gaitRaw ?? '').toLowerCase();
     if (g.includes('walk')) return 'walking';
-    if (g.includes('sit') || g.includes('lying') || g.includes('down')) return 'standingDown';
-    if (g.includes('up')) return 'standingUp';
-    return 'idle';
+    if (g.includes('sit') && g.includes('down')) return 'standingDown'; // sitting-down transition
+    if (g.includes('sit')) return 'sitting';                            // sustained sitting (idle)
+    if (g.includes('stand') && g.includes('up')) return 'standingUp';   // standing-up transition
+    return 'idle';                                                      // standing / unknown
 }
 
 const GaitAnalysisCard = ({
