@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
@@ -37,7 +36,6 @@ export default function DeviceScreen() {
     } = useRaspberryPi();
 
     const { isDeviceStreaming } = useRealtimeVitals(selectedDeviceId || undefined);
-    const router = useRouter();
 
     const [claimInput, setClaimInput] = useState('');
     const [isClaiming, setIsClaiming] = useState(false);
@@ -155,21 +153,6 @@ export default function DeviceScreen() {
                 </View>
             </View>
 
-            <TouchableOpacity
-                style={styles.avatarLink}
-                onPress={() => router.push('/avatar-demo')}
-                activeOpacity={0.8}
-            >
-                <View style={styles.avatarLinkIcon}>
-                    <Ionicons name="walk" size={20} color="#fff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                    <Text style={styles.avatarLinkTitle}>3D Patient Avatar</Text>
-                    <Text style={styles.avatarLinkSubtitle}>Visualize walking, sitting & standing</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9aa3ad" />
-            </TouchableOpacity>
-
             <View style={styles.claimContainer}>
                 <Text style={styles.sectionTitle}>Claim Device (QR device_id)</Text>
                 <View style={styles.claimRow}>
@@ -272,33 +255,6 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         color: '#fff',
     },
-    avatarLink: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        marginHorizontal: 20,
-        marginBottom: 12,
-        backgroundColor: Colors.cardBg,
-        borderRadius: Radius.md,
-        padding: 14,
-        borderWidth: 1,
-        borderColor: '#e6e8ee',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
-    },
-    avatarLinkIcon: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        backgroundColor: '#91D7E4',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    avatarLinkTitle: { fontSize: 15, fontWeight: '700', color: '#4A4A4A' },
-    avatarLinkSubtitle: { fontSize: 12, color: '#8a929c', marginTop: 2 },
     claimContainer: {
         marginHorizontal: 20,
         marginBottom: 12,
