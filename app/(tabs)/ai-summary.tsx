@@ -171,13 +171,6 @@ export default function AINurseScreen() {
 
             {/* Header */}
             <View style={styles.header} {...(swipeHandlers as any)}>
-                <TouchableOpacity
-                    onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
-                    style={styles.headerBack}
-                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                >
-                    <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
-                </TouchableOpacity>
                 <View style={styles.headerCenter}>
                     <View style={styles.headerNameRow}>
                         <Text style={styles.headerName}>Aria</Text>
@@ -185,7 +178,6 @@ export default function AINurseScreen() {
                     </View>
                     <Text style={styles.headerSubtitle}>AI Nurse</Text>
                 </View>
-                <View style={styles.headerBack} />
             </View>
 
             <KeyboardAvoidingView

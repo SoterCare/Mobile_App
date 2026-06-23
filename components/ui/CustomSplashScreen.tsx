@@ -1,181 +1,115 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, Dimensions, Image } from 'react-native';
+import { StyleSheet, View, Text, Image } from 'react-native';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withTiming,
     withDelay,
     Easing,
-    runOnJS
+    runOnJS,
 } from 'react-native-reanimated';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const EASE_OUT = Easing.out(Easing.cubic);
+const EASE_IN  = Easing.in(Easing.cubic);
 
-interface CustomSplashScreenProps {
-    onFinish: () => void;
-}
+interface Props { onFinish: () => void; }
 
-export const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({ onFinish }) => {
-    // Shared Values for Animation
-    const textTranslateY = useSharedValue(50);
-    const textOpacity = useSharedValue(0.1);
+export const CustomSplashScreen: React.FC<Props> = ({ onFinish }) => {
+    // Container fades to 0 at the end for a smooth hand-off
+    const screenOpacity = useSharedValue(1);
 
-    // Box Expansion
-    const boxWidth = useSharedValue(0);
-    const boxHeight = useSharedValue(60);
+    // Logo: scale + fade in
+    const logoOpacity = useSharedValue(0);
+    const logoScale   = useSharedValue(0.78);
 
-    // Text Separation
-    const leftTextTranslateX = useSharedValue(0);
-    const rightTextTranslateX = useSharedValue(0);
+    // App name: fade + slide up
+    const nameOpacity = useSharedValue(0);
+    const nameY       = useSharedValue(22);
 
-    // Cover Image
-    const imageOpacity = useSharedValue(0);
-    const imageScale = useSharedValue(0.5);
-
-    // Image container
-    const imageContainerWidth = useSharedValue(60);
-    const imageContainerHeight = useSharedValue(60);
+    // Tagline: fade only, slightly later
+    const tagOpacity  = useSharedValue(0);
 
     useEffect(() => {
-        // 1. Text Slide Up
-        textTranslateY.value = withTiming(0, { duration: 800, easing: Easing.out(Easing.exp) });
-        textOpacity.value = withTiming(1, { duration: 800 });
+        // ── Phase 1: logo appears (0 – 750ms) ──
+        logoOpacity.value = withTiming(1, { duration: 750, easing: EASE_OUT });
+        logoScale.value   = withTiming(1, { duration: 750, easing: EASE_OUT });
 
-        // 2. Box Expands Width
-        boxWidth.value = withDelay(800, withTiming(80, { duration: 800, easing: Easing.inOut(Easing.quad) }));
+        // ── Phase 2: name slides up (350 – 950ms) ──
+        nameOpacity.value = withDelay(350, withTiming(1, { duration: 600, easing: EASE_OUT }));
+        nameY.value       = withDelay(350, withTiming(0,  { duration: 600, easing: EASE_OUT }));
 
-        // Image fades in and scales up smoothly
-        imageOpacity.value = withDelay(1000, withTiming(1, { duration: 600 }));
-        imageScale.value = withDelay(1000, withTiming(1, { duration: 600, easing: Easing.out(Easing.quad) }));
+        // ── Phase 3: tagline fades in (600 – 1100ms) ──
+        tagOpacity.value  = withDelay(600, withTiming(1, { duration: 500, easing: EASE_OUT }));
 
-        // Image container grows with box
-        imageContainerWidth.value = withDelay(800, withTiming(80, { duration: 800 }));
+        // ── Phase 4: everything fades out (1700 – 2200ms) ──
+        screenOpacity.value = withDelay(1700, withTiming(0, { duration: 500, easing: EASE_IN }));
 
-        // 3. Text Separates - move BOTH texts outward from center
-        leftTextTranslateX.value = withDelay(800, withTiming(-50, { duration: 800 }));
-        rightTextTranslateX.value = withDelay(800, withTiming(50, { duration: 800 }));
-
-        // 4. Box Fills Screen
-        boxWidth.value = withDelay(2000, withTiming(SCREEN_WIDTH * 2, { duration: 800, easing: Easing.inOut(Easing.exp) }));
-        boxHeight.value = withDelay(2000, withTiming(SCREEN_HEIGHT, { duration: 800, easing: Easing.inOut(Easing.exp) }));
-
-        // Scale image to fill screen
-        imageContainerWidth.value = withDelay(2000, withTiming(SCREEN_WIDTH * 0.6, { duration: 800 }));
-        imageContainerHeight.value = withDelay(2000, withTiming(SCREEN_HEIGHT * 0.6, { duration: 800 }));
-        imageScale.value = withDelay(2000, withTiming(1.2, { duration: 800 }));
-
-        // Fade out text as box expands
-        textOpacity.value = withDelay(2200, withTiming(0, { duration: 600 }));
-
-        // 5. Finish
-        const timeout = setTimeout(() => {
-            if (onFinish) runOnJS(onFinish)();
-        }, 3200);
-
-        return () => clearTimeout(timeout);
+        const t = setTimeout(() => runOnJS(onFinish)(), 2250);
+        return () => clearTimeout(t);
     }, []);
 
-    const leftTextStyle = useAnimatedStyle(() => ({
-        transform: [
-            { translateY: textTranslateY.value },
-            { translateX: leftTextTranslateX.value }
-        ],
-        opacity: textOpacity.value,
+    const screenStyle = useAnimatedStyle(() => ({ opacity: screenOpacity.value }));
+    const logoStyle   = useAnimatedStyle(() => ({
+        opacity: logoOpacity.value,
+        transform: [{ scale: logoScale.value }],
     }));
-
-    const rightTextStyle = useAnimatedStyle(() => ({
-        transform: [
-            { translateY: textTranslateY.value },
-            { translateX: rightTextTranslateX.value }
-        ],
-        opacity: textOpacity.value,
+    const nameStyle   = useAnimatedStyle(() => ({
+        opacity: nameOpacity.value,
+        transform: [{ translateY: nameY.value }],
     }));
-
-    const boxStyle = useAnimatedStyle(() => ({
-        width: boxWidth.value,
-        height: boxHeight.value,
-        opacity: 1,
-    }));
-
-    const imageContainerStyle = useAnimatedStyle(() => ({
-        width: imageContainerWidth.value,
-        height: imageContainerHeight.value,
-        opacity: imageOpacity.value,
-        transform: [{ scale: imageScale.value }],
-    }));
+    const tagStyle    = useAnimatedStyle(() => ({ opacity: tagOpacity.value }));
 
     return (
-        <View style={styles.container}>
-            <View style={styles.centeredRow}>
-                <View style={styles.overflowHidden}>
-                    <Animated.Text style={[styles.title, leftTextStyle]}>SOTER</Animated.Text>
-                </View>
+        <Animated.View style={[styles.container, screenStyle]}>
+            {/* Logo */}
+            <Animated.View style={logoStyle}>
+                <Image
+                    source={require('@/assets/images/Insta-highlights.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                />
+            </Animated.View>
 
-                {/* The Growing Box */}
-                <Animated.View style={[styles.growingBox, boxStyle]}>
-                    <Animated.View style={[styles.imageContainer, imageContainerStyle]}>
-                        <Image
-                            source={require('@/assets/images/SoterCare-Primary-logo.png')}
-                            style={styles.boxImage}
-                            resizeMode="contain"
-                        />
-                    </Animated.View>
-                </Animated.View>
+            {/* App name */}
+            <Animated.View style={[styles.nameWrapper, nameStyle]}>
+                <Text style={styles.appName}>SoterCare</Text>
+            </Animated.View>
 
-                <View style={styles.overflowHidden}>
-                    <Animated.Text style={[styles.title, rightTextStyle]}>CARE</Animated.Text>
-                </View>
-            </View>
-        </View>
+            {/* Tagline */}
+            <Animated.View style={tagStyle}>
+                <Text style={styles.tagline}>Wellness Simplified</Text>
+            </Animated.View>
+        </Animated.View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: '#f4f4f4',
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#fafafa',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
     },
-    centeredRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        width: SCREEN_WIDTH,
+    logo: {
+        width: 220,
+        height: 220,
     },
-    overflowHidden: {
-        overflow: 'hidden',
-        height: 70,
-        justifyContent: 'flex-end',
-    },
-    title: {
-        fontSize: 48,
-        fontWeight: '500',
-        color: '#201d1d',
-        letterSpacing: 2,
-    },
-    growingBox: {
-        height: 60,
-        backgroundColor: 'transparent',
-        overflow: 'hidden',
-        marginHorizontal: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 10,
-    },
-    imageContainer: {
-        justifyContent: 'center',
+    nameWrapper: {
+        marginTop: 12,
         alignItems: 'center',
     },
-    boxImage: {
-        width: '100%',
-        height: '100%',
-    }
+    appName: {
+        fontSize: 34,
+        fontWeight: '700',
+        color: '#1a1a1a',
+        letterSpacing: 0.4,
+    },
+    tagline: {
+        marginTop: 8,
+        fontSize: 14,
+        fontWeight: '400',
+        color: '#aaa',
+        letterSpacing: 0.6,
+    },
 });
