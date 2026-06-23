@@ -34,6 +34,10 @@ export const API_CONFIG = {
       UPLOAD_PRESCRIPTION: '/summary/upload_prescription',
       QUERY_PRESCRIPTION: '/summary/query_prescription',
     },
+    NURSE: {
+      CHAT: '/nurse/chat',
+      UPLOAD_PRESCRIPTION: '/nurse/upload-prescription',
+    },
     LOGS: {
       SYNC: '/logs/sync',
       DATES: '/logs/dates',

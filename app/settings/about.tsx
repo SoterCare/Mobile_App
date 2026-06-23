@@ -1,4 +1,5 @@
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
+import { DottedBackground } from "@/components/ui/DottedBackground";
 import { Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BackButton } from '@/components/ui/BackButton';

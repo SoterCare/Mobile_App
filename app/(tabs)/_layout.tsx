@@ -20,7 +20,6 @@ export default function TabLayout() {
           tabBarInactiveTintColor: '#999',
           headerShown: false,
           tabBarButton: HapticTab,
-          sceneContainerStyle: { backgroundColor: 'transparent' },
           tabBarStyle: {
             backgroundColor: '#fafafa',
             borderTopWidth: 0,
@@ -48,8 +47,8 @@ export default function TabLayout() {
         <Tabs.Screen
           name="ai-summary"
           options={{
-            title: 'AI Summary',
-            tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="bulb" color={color} />,
+            title: 'Ask Aria',
+            tabBarIcon: ({ color }: { color: string }) => <Ionicons size={24} name="chatbubble-ellipses" color={color} />,
           }}
         />
         <Tabs.Screen

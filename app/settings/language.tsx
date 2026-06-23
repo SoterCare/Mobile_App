@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { DottedBackground } from "@/components/ui/DottedBackground";
 import {
     StyleSheet,
     View,

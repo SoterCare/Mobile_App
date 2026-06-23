@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { DottedBackground } from "@/components/ui/DottedBackground";
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { BackButton } from '@/components/ui/BackButton';

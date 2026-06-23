@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DottedBackground } from "@/components/ui/DottedBackground";
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
