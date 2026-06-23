@@ -29,6 +29,7 @@ export const API_CONFIG = {
     },
     SUMMARY: {
       GENERATE: '/summary',
+      USAGE: '/summary/usage',
       HISTORY: '/summary/history',
       UPLOAD_PRESCRIPTION: '/summary/upload_prescription',
       QUERY_PRESCRIPTION: '/summary/query_prescription',
