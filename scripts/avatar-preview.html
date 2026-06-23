@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SoterCare — Patient Avatar Preview</title>
+  <style>
+    :root { --bg:#f2f3f7; --cyan:#91D7E4; --ink:#4A4A4A; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; height:100%; background:var(--bg); font-family:-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink); }
+    #app { position:fixed; inset:0; }
+    #canvas { width:100%; height:100%; display:block; }
+    #title { position:fixed; top:16px; left:0; right:0; text-align:center; font-weight:700; font-size:18px; pointer-events:none; }
+    #status { position:fixed; top:44px; left:0; right:0; text-align:center; font-size:13px; color:#8a929c; pointer-events:none; }
+    #controls { position:fixed; bottom:24px; left:0; right:0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding:0 16px; }
+    button { padding:12px 18px; border-radius:16px; border:1px solid #e6e8ee; background:#fff; color:var(--ink); font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.05); }
+    button.active { background:var(--cyan); border-color:var(--cyan); color:#fff; }
+    #hint { position:fixed; bottom:4px; left:0; right:0; text-align:center; font-size:11px; color:#aeb4bd; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/node_modules/three/build/three.module.js",
+      "three/addons/": "/node_modules/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app"><canvas id="canvas"></canvas></div>
+  <div id="title">SoterCare — Patient Avatar</div>
+  <div id="status">Loading model…</div>
+  <div id="controls"></div>
+  <div id="hint">drag to rotate · scroll to zoom</div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // Same activity → frame-range mapping as components/PatientAvatar.tsx
+    const FPS = 24;
+    const CLIPS = {
+      walking:      { start: 1,   end: 86,  loop: true,  label: 'Walking' },
+      standingUp:   { start: 121, end: 151, loop: false, label: 'Standing Up' },
+      standingDown: { start: 90,  end: 121, loop: false, label: 'Sitting Down' },
+      sitting:      { start: 119, end: 123, loop: true,  timeScale: 0.4, label: 'Sitting' },
+      idle:         { start: 146, end: 156, loop: true,  timeScale: 0.5, label: 'Idle' },
+    };
+
+    const canvas = document.getElementById('canvas');
+    const statusEl = document.getElementById('status');
+    const controlsEl = document.getElementById('controls');
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf2f3f7);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb4c0, 1.1));
+    const key = new THREE.DirectionalLight(0xffffff, 1.4); key.position.set(3, 6, 5); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.5); fill.position.set(-4, 2, -3); scene.add(fill);
+
+    const orbit = new OrbitControls(camera, renderer.domElement);
+    orbit.enableDamping = true;
+
+    let mixer = null;
+    const actions = {};
+    let activeAction = null;
+
+    function fadeTo(name) {
+      const action = actions[name];
+      if (!action || action === activeAction) return;
+      action.reset();
+      action.setEffectiveTimeScale(CLIPS[name].timeScale ?? 1);
+      action.setEffectiveWeight(1);
+      if (CLIPS[name].loop) { action.setLoop(THREE.LoopRepeat, Infinity); action.clampWhenFinished = false; }
+      else { action.setLoop(THREE.LoopOnce, 1); action.clampWhenFinished = true; }
+      if (activeAction) activeAction.fadeOut(0.3);
+      action.fadeIn(0.3).play();
+      activeAction = action;
+      [...controlsEl.children].forEach(b => b.classList.toggle('active', b.dataset.name === name));
+    }
+
+    Object.keys(CLIPS).forEach(name => {
+      const b = document.createElement('button');
+      b.textContent = CLIPS[name].label;
+      b.dataset.name = name;
+      b.onclick = () => fadeTo(name);
+      controlsEl.appendChild(b);
+    });
+
+    new GLTFLoader().load(
+      '/assets/models/patient-avatar.glb',
+      (gltf) => {
+        const model = gltf.scene;
+        scene.add(model);
+
+        model.traverse((o) => {
+          if (o.isMesh && o.material) {
+            const mats = Array.isArray(o.material) ? o.material : [o.material];
+            mats.forEach((m) => { m.color = new THREE.Color(0xc2c9d2); m.roughness = 0.9; m.metalness = 0; m.needsUpdate = true; });
+          }
+        });
+
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y);
+        const dist = (maxDim / 2) / Math.tan((camera.fov * Math.PI) / 360) * 1.45;
+        camera.position.set(center.x + dist * 0.3, center.y, center.z + dist);
+        camera.near = dist / 100; camera.far = dist * 100; camera.updateProjectionMatrix();
+        orbit.target.copy(center); orbit.update();
+
+        const full = gltf.animations[0];
+        mixer = new THREE.AnimationMixer(model);
+        Object.keys(CLIPS).forEach(name => {
+          const { start, end } = CLIPS[name];
+          const sub = THREE.AnimationUtils.subclip(full, name, start, end, FPS);
+          actions[name] = mixer.clipAction(sub);
+        });
+        statusEl.textContent = 'Loaded: ' + full.name + ' (' + full.duration.toFixed(1) + 's). Pick an activity ↓';
+        fadeTo('walking');
+      },
+      (e) => { if (e.total) statusEl.textContent = 'Loading model… ' + Math.round((e.loaded / e.total) * 100) + '%'; },
+      (err) => { statusEl.textContent = 'Failed to load GLB: ' + err; console.error(err); },
+    );
+
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      if (mixer) mixer.update(clock.getDelta());
+      orbit.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

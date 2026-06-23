@@ -1,18 +1,37 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { VitalCard } from './VitalCard';
+import { PatientAvatar, AvatarActivity } from '@/components/PatientAvatar';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
-import { Colors, Radius, circle } from '@/theme/tokens';
+import { Colors, Radius } from '@/theme/tokens';
 import { Shadows } from '@/theme/shadows';
 
 const OFFLINE_COLOR = '#BBBBBB';
 
-const GaitAnalysisCard = ({ value = 'N/A', offline = false }: { value?: string; offline?: boolean }) => (
+// Map the device's gait/activity state to an avatar animation.
+function gaitToActivity(gaitRaw?: string | null, offline?: boolean): AvatarActivity {
+    if (offline) return 'idle';
+    const g = (gaitRaw ?? '').toLowerCase();
+    if (g.includes('walk')) return 'walking';
+    if (g.includes('sit') && g.includes('down')) return 'standingDown'; // sitting-down transition
+    if (g.includes('sit')) return 'sitting';                            // sustained sitting (idle)
+    if (g.includes('stand') && g.includes('up')) return 'standingUp';   // standing-up transition
+    return 'idle';                                                      // standing / unknown
+}
+
+const GaitAnalysisCard = ({
+    value = 'N/A',
+    offline = false,
+    activity,
+}: {
+    value?: string;
+    offline?: boolean;
+    activity: AvatarActivity;
+}) => (
     <View style={styles.gaitCard}>
-        <View style={styles.gaitIconCircle}>
-            <Ionicons name="pulse-outline" size={24} color={offline ? OFFLINE_COLOR : '#6BA8C4'} />
+        <View style={styles.gaitAvatar}>
+            <PatientAvatar activity={activity} backgroundColor="#ffffff" />
         </View>
         <View style={{ flex: 1, justifyContent: 'center' }}>
             <Text style={[styles.gaitValue, offline && styles.gaitValueOffline]} numberOfLines={2}>
@@ -45,6 +64,7 @@ export const VitalsGrid = () => {
         : null;
 
     const offline = !isDeviceStreaming;
+    const gaitActivity = gaitToActivity(typeof gaitRaw === 'string' ? gaitRaw : null, offline);
 
     return (
         <View style={styles.gridContainer}>
@@ -81,7 +101,7 @@ export const VitalsGrid = () => {
                     label="Moisture · Dry"
                     valueColor={offline ? OFFLINE_COLOR : Colors.brand}
                 />
-                <GaitAnalysisCard value={gaitValue ?? 'N/A'} offline={offline} />
+                <GaitAnalysisCard value={gaitValue ?? 'N/A'} offline={offline} activity={gaitActivity} />
             </View>
         </View>
     );
@@ -108,13 +128,12 @@ const styles = StyleSheet.create({
         ...Shadows.card,
         gap: 12,
     },
-    gaitIconCircle: {
-        width: 46,
-        height: 46,
-        borderRadius: circle(46),
-        backgroundColor: Colors.brandTint,
-        alignItems: 'center',
-        justifyContent: 'center',
+    gaitAvatar: {
+        width: 54,
+        alignSelf: 'stretch',
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: '#ffffff',
         flexShrink: 0,
     },
     gaitValue: {
