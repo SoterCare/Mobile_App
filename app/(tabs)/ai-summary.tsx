@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Modal, Pressable, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DottedBackground } from '@/components/ui/DottedBackground';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
@@ -165,6 +166,7 @@ export default function AISummaryScreen() {
 
     return (
         <SafeAreaView style={styles.container} edges={['top']} {...(swipeHandlers as any)}>
+            <DottedBackground />
             <StatusBar style="dark" />
             <ScrollView
                 style={styles.scrollView}
@@ -367,7 +369,7 @@ export default function AISummaryScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.screenBg,
+        backgroundColor: 'transparent',
     },
     scrollView: {
         flex: 1,

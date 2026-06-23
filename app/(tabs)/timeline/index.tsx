@@ -13,6 +13,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DottedBackground } from '@/components/ui/DottedBackground';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
@@ -292,6 +293,7 @@ export default function TimelineScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']} {...(swipeHandlers as any)}>
+      <DottedBackground />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.mainContent}>
           {/* ── Top row ── */}
@@ -455,7 +457,7 @@ export default function TimelineScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.screenBg,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,

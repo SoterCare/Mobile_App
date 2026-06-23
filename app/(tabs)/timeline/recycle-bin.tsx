@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DottedBackground } from '@/components/ui/DottedBackground';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { BackButton } from '@/components/ui/BackButton';
@@ -149,6 +150,7 @@ export default function RecycleBinScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <DottedBackground />
       <View style={styles.header}>
         <BackButton />
         <Text style={styles.headerTitle}>Recycle Bin</Text>
@@ -262,7 +264,7 @@ export default function RecycleBinScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.screenBg },
+  container: { flex: 1, backgroundColor: 'transparent' },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 8, marginTop: 10 },
   backButton: { padding: 4 },
   headerTitle: { fontSize: 20, fontWeight: '600', color: '#333333' },

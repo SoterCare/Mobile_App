@@ -65,6 +65,7 @@ export default function HelpSupportScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+      <DottedBackground />
             <Stack.Screen
                 options={{
                     headerLeft: () => <BackButton />,
@@ -182,7 +183,7 @@ export default function HelpSupportScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F7F7',
+        backgroundColor: 'transparent',
     },
     headerBackBtn: { marginLeft: 4, marginTop: 20 },
     

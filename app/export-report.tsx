@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { BackButton } from '@/components/ui/BackButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DottedBackground } from '@/components/ui/DottedBackground';
 import { Calendar } from 'react-native-calendars';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -337,7 +338,8 @@ export default function ExportReportScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <DottedBackground />
 
             {/* ── Hide the default Stack header ── */}
             <Stack.Screen options={{ headerShown: false }} />
@@ -722,7 +724,7 @@ function MetricCard({ icon, color, bgColor, label, checked, onPress, iconSize = 
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f2f3f7' },
+    container: { flex: 1, backgroundColor: 'transparent' },
     scrollContent: { padding: 30, paddingBottom: 40 },
     section: { marginBottom: 25 },
     sectionTitle: { fontSize: 16, fontWeight: '600', color: '#B0B0B0', marginBottom: 16 },

@@ -15,6 +15,7 @@ const FEATURES = [
 export default function AboutScreen() {
     return (
         <SafeAreaView style={styles.container}>
+      <DottedBackground />
             <Stack.Screen
                 options={{
                     headerLeft: () => <BackButton />,
@@ -129,7 +130,7 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F7F7',
+        backgroundColor: 'transparent',
     },
     headerBackBtn: { 
         marginLeft: 4,

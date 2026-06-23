@@ -57,6 +57,7 @@ export default function SubscriptionScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+      <DottedBackground />
             <Stack.Screen
                 options={{
                     headerLeft: () => <BackButton />,
@@ -149,7 +150,7 @@ export default function SubscriptionScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F9FA',
+        backgroundColor: 'transparent',
     },
     headerBackBtn: {
         marginTop: 20,

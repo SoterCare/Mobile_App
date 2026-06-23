@@ -10,6 +10,7 @@ import {
     TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DottedBackground } from '@/components/ui/DottedBackground';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
@@ -127,6 +128,7 @@ export default function DeviceScreen() {
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']} {...(swipeHandlers as any)}>
+            <DottedBackground />
             <StatusBar style="dark" />
 
             <View style={styles.header}>
@@ -221,7 +223,7 @@ export default function DeviceScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.screenBg,
+        backgroundColor: 'transparent',
     },
     header: {
         padding: 20,

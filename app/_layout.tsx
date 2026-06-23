@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
@@ -11,43 +11,39 @@ import { RaspberryPiProvider } from '@/contexts/RaspberryPiContext';
 import { reportError } from '@/services/crashReportService';
 import { CustomSplashScreen } from '@/components/ui/CustomSplashScreen';
 
+const APP_BG = '#fafafa';
+
+const AppTheme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: APP_BG },
+};
+
 export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const [isSplashAnimationFinished, setIsSplashAnimationFinished] = useState(false);
 
-  useEffect(() => {
-    // Database initialization has been removed
-  }, []);
+  useEffect(() => {}, []);
 
   useEffect(() => {
-    // Only trigger routing logic if BOTH data loading AND animation are done
-    // Or, allow routing behind the scenes, but cover with splash.
-
-    // Optimization: Let the router work, splash covers it.
     if (isLoading) return;
-
     const inAuthGroup = segments[0] === '(auth)';
     const isRoot = (segments as string[]).length === 0;
-
     if (!isAuthenticated && !inAuthGroup) {
-      // Not authenticated and not in auth group -> redirect to welcome
       router.replace('/(auth)/welcome');
     } else if (isAuthenticated && (inAuthGroup || isRoot)) {
-      // Authenticated but trying to access auth screens or root -> redirect to tabs
       router.replace('/(tabs)');
     }
   }, [isAuthenticated, segments, isLoading, router]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+    <ThemeProvider value={AppTheme}>
+      <Stack screenOptions={{ contentStyle: { backgroundColor: APP_BG } }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="subscription" />
@@ -59,7 +55,7 @@ function RootLayoutNav() {
         <Stack.Screen name="settings/help" />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
       {(isLoading || !isSplashAnimationFinished) && (
         <CustomSplashScreen onFinish={() => setIsSplashAnimationFinished(true)} />
       )}
@@ -80,7 +76,7 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: APP_BG }}>
       <AuthProvider>
         <VitalsProvider>
           <RaspberryPiProvider>
@@ -91,4 +87,3 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
-

@@ -103,7 +103,7 @@ export const RecentAlerts = () => {
     };
 
     return (
-        <View style={styles.alertsContainer}>
+        <View style={[styles.alertsContainer, { flex: 1 }]}>
             {/* Header */}
             <View style={styles.alertsHeader}>
                 <Text style={styles.alertsTitle}>Recent Alerts</Text>
@@ -132,7 +132,7 @@ export const RecentAlerts = () => {
                 <Text style={styles.emptyText}>No recent alerts</Text>
             ) : (
                 <ScrollView
-                    style={{ maxHeight: CARD_HEIGHT * VISIBLE_CARDS }}
+                    style={{ flex: 1 }}
                     showsVerticalScrollIndicator={false}
                     nestedScrollEnabled
                 >

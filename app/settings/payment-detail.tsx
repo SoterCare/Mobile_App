@@ -14,6 +14,7 @@ export default function PaymentDetailScreen() {
     if (!card) {
         return (
             <SafeAreaView style={styles.container}>
+      <DottedBackground />
                 <Stack.Screen options={{
                     title: '',
                     headerLeft: () => <BackButton />,
@@ -21,7 +22,7 @@ export default function PaymentDetailScreen() {
                     headerTitleAlign: 'left',
                     headerRight: () => <View />,
                     headerShadowVisible: false,
-                    headerStyle: { backgroundColor: '#F8F9FA' },
+                    headerStyle: { backgroundColor: 'transparent' },
                 }} />
                 <View style={styles.notFound}><Text style={styles.notFoundText}>Card not found.</Text></View>
             </SafeAreaView>
@@ -55,7 +56,7 @@ export default function PaymentDetailScreen() {
                         </TouchableOpacity>
                     ),
                     headerShadowVisible: false,
-                    headerStyle: { backgroundColor: '#F8F9FA' },
+                    headerStyle: { backgroundColor: 'transparent' },
                 }}
             />
 
@@ -105,7 +106,7 @@ export default function PaymentDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8F9FA' },
+    container: { flex: 1, backgroundColor: 'transparent' },
     headerBackBtn: { marginLeft: 4, marginTop:20 },
     headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop:20 },
     editIconBtn: { marginRight: 4 },

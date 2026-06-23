@@ -39,6 +39,7 @@ export default function TemperatureScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+      <DottedBackground />
             <Stack.Screen
                 options={{
                     title: '',
@@ -47,7 +48,7 @@ export default function TemperatureScreen() {
                     headerTitleAlign: 'left',
                     headerRight: () => <View />,
                     headerShadowVisible: false,
-                    headerStyle: { backgroundColor: '#F8F9FA' },
+                    headerStyle: { backgroundColor: 'transparent' },
                 }}
             />
 
@@ -98,7 +99,7 @@ export default function TemperatureScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8F9FA' },
+    container: { flex: 1, backgroundColor: 'transparent' },
 
     headerBackBtn: { marginLeft: 4, marginTop: 20 },
     headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop: 20 },

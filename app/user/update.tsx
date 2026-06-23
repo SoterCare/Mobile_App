@@ -13,6 +13,7 @@ import {
     Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DottedBackground } from '@/components/ui/DottedBackground';
 import { Stack, useRouter } from 'expo-router';
 import { Colors, Radius, circle } from '@/theme/tokens';
 import { Ionicons } from '@expo/vector-icons';
@@ -109,6 +110,7 @@ export default function EditProfileScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+      <DottedBackground />
             {/* Hide default Stack header */}
             <Stack.Screen options={{ headerShown: false }} />
 

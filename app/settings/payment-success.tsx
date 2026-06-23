@@ -45,6 +45,7 @@ export default function PaymentSuccessScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+      <DottedBackground />
             {/* ── Left-aligned title ── */}
             <Stack.Screen
                 options={{
@@ -56,7 +57,7 @@ export default function PaymentSuccessScreen() {
                     headerTitleAlign: 'left',
                     headerRight: () => <View />,
                     headerShadowVisible: false,
-                    headerStyle: { backgroundColor: '#F8F9FA' },
+                    headerStyle: { backgroundColor: 'transparent' },
                 }}
             />
 
@@ -109,7 +110,7 @@ export default function PaymentSuccessScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F8F9FA' },
+    container: { flex: 1, backgroundColor: 'transparent' },
     headerBackBtn: { marginLeft: 4, marginTop: 20 },
     headerTitle: { fontSize: 20, fontWeight: '700', color: '#333', marginLeft: 12, marginTop: 20 },
     content: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28 },

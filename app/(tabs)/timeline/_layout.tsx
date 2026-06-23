@@ -6,7 +6,7 @@ export default function TimelineLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#F6F6F6' },
+        contentStyle: { backgroundColor: '#fafafa' },
       }}
     >
       <Stack.Screen name="index" />
