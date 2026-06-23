@@ -137,6 +137,21 @@ export function PatientAvatar({ activity = 'idle', backgroundColor = '#f2f3f7', 
         const model = gltf.scene;
         scene.add(model);
 
+        // Clean, consistent material (model ships without textures for RN).
+        model.traverse((o) => {
+          const mesh = o as THREE.Mesh;
+          if (mesh.isMesh && mesh.material) {
+            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            mats.forEach((m) => {
+              const sm = m as THREE.MeshStandardMaterial;
+              sm.color = new THREE.Color(0xc2c9d2);
+              sm.roughness = 0.9;
+              sm.metalness = 0;
+              sm.needsUpdate = true;
+            });
+          }
+        });
+
         // Auto-frame the model regardless of its export scale.
         const box = new THREE.Box3().setFromObject(model);
         const size = box.getSize(new THREE.Vector3());

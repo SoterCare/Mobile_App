@@ -98,6 +98,13 @@
         const model = gltf.scene;
         scene.add(model);
 
+        model.traverse((o) => {
+          if (o.isMesh && o.material) {
+            const mats = Array.isArray(o.material) ? o.material : [o.material];
+            mats.forEach((m) => { m.color = new THREE.Color(0xc2c9d2); m.roughness = 0.9; m.metalness = 0; m.needsUpdate = true; });
+          }
+        });
+
         const box = new THREE.Box3().setFromObject(model);
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
