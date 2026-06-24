@@ -69,6 +69,8 @@ export function PatientAvatar({ activity = 'idle', backgroundColor = '#f2f3f7', 
   const activeActionRef = useRef<THREE.AnimationAction | null>(null);
   const activityRef = useRef<AvatarActivity>(activity);
   const frameRef = useRef<number | null>(null);
+  const rendererRef = useRef<{ dispose?: () => void } | null>(null);
+  const runningRef = useRef(false);
 
   const fadeTo = (next: AvatarActivity) => {
     const action = actionsRef.current[next];
@@ -97,11 +99,18 @@ export function PatientAvatar({ activity = 'idle', backgroundColor = '#f2f3f7', 
     if (mixerRef.current) fadeTo(activity);
   }, [activity]);
 
-  // Stop the render loop on unmount.
+  // Stop the render loop and release GPU resources on unmount (tab switches /
+  // Fast Refresh) so the GL context can't keep ticking against a torn-down view.
   useEffect(() => {
     return () => {
+      runningRef.current = false;
       if (frameRef.current != null) cancelAnimationFrame(frameRef.current);
       mixerRef.current?.stopAllAction();
+      try {
+        rendererRef.current?.dispose?.();
+      } catch {
+        // ignore disposal errors on teardown
+      }
     };
   }, []);
 
@@ -124,6 +133,8 @@ export function PatientAvatar({ activity = 'idle', backgroundColor = '#f2f3f7', 
     const renderer = new Renderer({ gl });
     renderer.setSize(width, height);
     renderer.setClearColor(new THREE.Color(backgroundColor), 1);
+    rendererRef.current = renderer;
+    runningRef.current = true;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
@@ -198,11 +209,17 @@ export function PatientAvatar({ activity = 'idle', backgroundColor = '#f2f3f7', 
 
     const clock = new THREE.Clock();
     const animate = () => {
+      if (!runningRef.current) return; // stopped on unmount
       frameRef.current = requestAnimationFrame(animate);
-      const delta = clock.getDelta();
-      mixerRef.current?.update(delta);
-      renderer.render(scene, camera);
-      gl.endFrameEXP();
+      try {
+        const delta = clock.getDelta();
+        mixerRef.current?.update(delta);
+        renderer.render(scene, camera);
+        gl.endFrameEXP();
+      } catch {
+        // GL context torn down mid-frame — stop quietly.
+        runningRef.current = false;
+      }
     };
     animate();
   };
