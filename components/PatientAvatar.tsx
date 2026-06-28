@@ -50,17 +50,41 @@ interface Props {
   style?: ViewStyle;
 }
 
-async function loadGlbArrayBuffer(): Promise<ArrayBuffer> {
+// The GLB is static — decode it once and reuse the buffer across every avatar
+// mount/remount so a transient asset/FS read can't make the model vanish.
+let cachedGlb: ArrayBuffer | null = null;
+let glbPromise: Promise<ArrayBuffer> | null = null;
+
+async function fetchGlbArrayBuffer(): Promise<ArrayBuffer> {
   // require() is the required way to reference a bundled asset for expo-asset.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const asset = Asset.fromModule(require('@/assets/models/patient-avatar.glb'));
-  await asset.downloadAsync();
+  if (!asset.downloaded || !asset.localUri) {
+    await asset.downloadAsync();
+  }
   const uri = asset.localUri ?? asset.uri;
+  if (!uri) throw new Error('GLB asset uri unavailable');
   const base64 = await LegacyFS.readAsStringAsync(uri, {
     encoding: LegacyFS.EncodingType.Base64,
   });
   const bytes = Buffer.from(base64, 'base64');
   return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+}
+
+function loadGlbArrayBuffer(): Promise<ArrayBuffer> {
+  if (cachedGlb) return Promise.resolve(cachedGlb);
+  if (!glbPromise) {
+    glbPromise = fetchGlbArrayBuffer()
+      .then((buf) => {
+        cachedGlb = buf;
+        return buf;
+      })
+      .catch((err) => {
+        glbPromise = null; // allow a retry on the next attempt
+        throw err;
+      });
+  }
+  return glbPromise;
 }
 
 export function PatientAvatar({ activity = 'idle', backgroundColor = '#f2f3f7', style }: Props) {
@@ -148,19 +172,26 @@ export function PatientAvatar({ activity = 'idle', backgroundColor = '#f2f3f7', 
     fill.position.set(-4, 2, -3);
     scene.add(fill);
 
-    let arrayBuffer: ArrayBuffer;
-    try {
-      arrayBuffer = await loadGlbArrayBuffer();
-    } catch (err) {
-      console.warn('[PatientAvatar] Failed to load GLB', err);
-      return;
+    let arrayBuffer: ArrayBuffer | null = null;
+    for (let attempt = 0; attempt < 3 && arrayBuffer === null; attempt++) {
+      try {
+        arrayBuffer = await loadGlbArrayBuffer();
+      } catch (err) {
+        if (attempt === 2) {
+          console.warn('[PatientAvatar] Failed to load GLB', err);
+          return;
+        }
+      }
     }
+    // View was unmounted (tab switch / Fast Refresh) while loading — bail.
+    if (arrayBuffer === null || !runningRef.current) return;
 
     const loader = new GLTFLoader();
     loader.parse(
       arrayBuffer,
       '',
       (gltf) => {
+        if (!runningRef.current) return; // unmounted before parse finished
         const model = gltf.scene;
         scene.add(model);
 
