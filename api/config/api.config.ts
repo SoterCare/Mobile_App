@@ -64,6 +64,7 @@ export const API_CONFIG = {
       VITALS: '/timeline/vitals',
       EVENTS: '/timeline/events',
       STATS: '/timeline/stats',
+      GAIT: '/timeline/gait',
       DATE_OPTIONS: '/timeline/date-options',
       DISMISSED: '/timeline/dismissed',
       RESTORE: '/timeline/restore',

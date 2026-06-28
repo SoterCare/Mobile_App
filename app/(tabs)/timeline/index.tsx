@@ -2,7 +2,7 @@
  * Timeline Screen — Vitals Statistics + Activity
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import {
   VitalsChartCard,
   ActivityTimeline,
   ActivityStatsCards,
+  GaitActivityRing,
 } from '../../../components/timeline';
 import { TimelineColors } from '../../../theme/colors';
 import { Shadows } from '../../../theme/shadows';
@@ -36,6 +37,12 @@ import { useRaspberryPi } from '@/contexts/RaspberryPiContext';
 import { useRealtimeVitals } from '@/hooks/useRealtimeVitals';
 import { timelineService } from '@/services/timelineService';
 import { useSwipeTabs } from '@/hooks/useSwipeTabs';
+import {
+  buildDaySegments,
+  deriveApproxChanges,
+  localDayStartMs,
+  type GaitChange,
+} from '@/utils/gaitSegments';
 
 const PERIOD_OPTIONS = [
   { key: 'day',    label: 'Day'    },
@@ -51,6 +58,7 @@ const TEMP_METRIC = METRIC_CONFIG['temp'];
 export default function TimelineScreen() {
   const router = useRouter();
   const { selectedDeviceId } = useRaspberryPi();
+  const scrollRef = useRef<ScrollView>(null);
 
   // Live socket for chart patching (period=day, today only)
   const { vitals: liveVitals } = useRealtimeVitals(selectedDeviceId || undefined);
@@ -108,6 +116,7 @@ export default function TimelineScreen() {
   const [stats, setStats]                   = useState<any>(null);
   const [isLoading, setIsLoading]           = useState(false);
   const [chartError, setChartError]         = useState<string | null>(null);
+  const [gaitChanges, setGaitChanges]       = useState<{ sec: number; state: string }[] | null>(null);
 
   // ── Fetch timeline data ──────────────────────────────────────────────────
   const fetchTimelineData = useCallback(async () => {
@@ -227,6 +236,41 @@ export default function TimelineScreen() {
     });
   }, [liveVitals, period, selectedDay, todayISO]);
 
+  // ── Gait ring (day view) ──────────────────────────────────────────────────
+  React.useEffect(() => {
+    if (period !== 'day' || !selectedDeviceId) { setGaitChanges(null); return; }
+    const apiDate = selectedDay.replace(/\//g, '-');
+    let cancelled = false;
+    timelineService.getGaitSegments(selectedDeviceId, apiDate)
+      .then((res) => { if (!cancelled) setGaitChanges(res); })
+      .catch(() => { if (!cancelled) setGaitChanges(null); });
+    return () => { cancelled = true; };
+  }, [selectedDeviceId, period, selectedDay]);
+
+  const gaitSegments = useMemo(() => {
+    if (period !== 'day') return [];
+    const dayStartMs = localDayStartMs(selectedDay);
+    if (gaitChanges && gaitChanges.length) {
+      return buildDaySegments(gaitChanges as GaitChange[]);
+    }
+    // Fallback until a backend gait endpoint exists: approximate posture from
+    // device on/off (hourly vitals) + movement events.
+    const approx = deriveApproxChanges(timelineEvents as any, vitalsData?.points ?? [], dayStartMs);
+    return buildDaySegments(approx);
+  }, [period, selectedDay, gaitChanges, timelineEvents, vitalsData]);
+
+  const nowSec = useMemo(() => {
+    if (selectedDay.replace(/\//g, '-') !== todayISO) return null;
+    const n = new Date();
+    return n.getHours() * 3600 + n.getMinutes() * 60 + n.getSeconds();
+  }, [selectedDay, todayISO]);
+
+  const gaitDayLabel = useMemo(() => {
+    const d = new Date();
+    const today = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+    return selectedDay === today ? 'Today' : selectedDay.replace(/\//g, '-');
+  }, [selectedDay]);
+
   // ── Derived chart data ───────────────────────────────────────────────────
   const chartData = useMemo(() => vitalsData?.points ?? [], [vitalsData]);
 
@@ -294,7 +338,7 @@ export default function TimelineScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']} {...(swipeHandlers as any)}>
       <DottedBackground />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.mainContent}>
           {/* ── Top row ── */}
           <View style={styles.topHeader}>
@@ -328,6 +372,17 @@ export default function TimelineScreen() {
             <Text style={styles.dateSelectorText}>{periodLabel}</Text>
             <Ionicons name="caret-down" size={16} color="#666" />
           </TouchableOpacity>
+
+          {/* ── 24-hour gait activity ring (day view only) ── */}
+          {period === 'day' && (
+            <GaitActivityRing
+              segments={gaitSegments}
+              dayLabel={gaitDayLabel}
+              nowSec={nowSec}
+              onPressDetails={() => scrollRef.current?.scrollToEnd({ animated: true })}
+              style={styles.gaitRing}
+            />
+          )}
 
           {/* ── Vitals chart card ── */}
           <VitalsChartCard
@@ -511,6 +566,10 @@ const styles = StyleSheet.create({
   },
   chartCard: {
     marginTop: 12,
+  },
+  gaitRing: {
+    marginTop: 12,
+    marginBottom: 4,
   },
   bottomSection: {
     flex: 1,

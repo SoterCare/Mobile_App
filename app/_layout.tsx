@@ -3,8 +3,9 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { VitalsProvider } from '@/contexts/VitalsContext';
 import { RaspberryPiProvider } from '@/contexts/RaspberryPiContext';
@@ -27,6 +28,9 @@ function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
   const [isSplashAnimationFinished, setIsSplashAnimationFinished] = useState(false);
+  // Preload icon fonts so glyphs (esp. MaterialCommunityIcons in the activity
+  // timeline + export report) never render blank on first paint.
+  const [fontsLoaded] = useFonts({ ...Ionicons.font, ...MaterialCommunityIcons.font });
 
   useEffect(() => {}, []);
 
@@ -56,7 +60,7 @@ function RootLayoutNav() {
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="dark" />
-      {(isLoading || !isSplashAnimationFinished) && (
+      {(isLoading || !fontsLoaded || !isSplashAnimationFinished) && (
         <CustomSplashScreen onFinish={() => setIsSplashAnimationFinished(true)} />
       )}
     </ThemeProvider>

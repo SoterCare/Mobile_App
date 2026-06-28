@@ -16,6 +16,12 @@ export function useRealtimeVitals(deviceId?: string, options?: { onNewAlert?: ()
   const [isDeviceStreaming, setIsDeviceStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const offlineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Coalesce high-frequency socket vitals into one render per flush window so a
+  // burst of packets can't overflow React's update queue ("max update depth").
+  const vitalsBufferRef = useRef<DashboardVitals | null>(null);
+  const vitalsFlushRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const streamingRef = useRef(false);
+  const VITALS_FLUSH_MS = 500;
 
   useEffect(() => {
     if (!deviceId) return;
@@ -44,16 +50,33 @@ export function useRealtimeVitals(deviceId?: string, options?: { onNewAlert?: ()
         });
 
         const markDeviceOnline = () => {
-          setIsDeviceStreaming(true);
+          // Guard so redundant packets don't enqueue no-op state updates.
+          if (!streamingRef.current) {
+            streamingRef.current = true;
+            setIsDeviceStreaming(true);
+          }
           if (offlineTimerRef.current) clearTimeout(offlineTimerRef.current);
           offlineTimerRef.current = setTimeout(() => {
+            streamingRef.current = false;
             setIsDeviceStreaming(false);
           }, DEVICE_OFFLINE_TIMEOUT_MS);
+        };
+
+        // Buffer vitals and commit at most once per flush window.
+        const pushVitals = (next: DashboardVitals) => {
+          vitalsBufferRef.current = next;
+          if (!vitalsFlushRef.current) {
+            vitalsFlushRef.current = setTimeout(() => {
+              vitalsFlushRef.current = null;
+              if (vitalsBufferRef.current) setVitals(vitalsBufferRef.current);
+            }, VITALS_FLUSH_MS);
+          }
         };
 
         socketInstance.on('disconnect', () => {
           console.log('[Socket] Disconnected from server');
           setIsConnected(false);
+          streamingRef.current = false;
           setIsDeviceStreaming(false);
           if (offlineTimerRef.current) clearTimeout(offlineTimerRef.current);
         });
@@ -65,7 +88,7 @@ export function useRealtimeVitals(deviceId?: string, options?: { onNewAlert?: ()
 
         socketInstance.on('vitals_update', (data: DashboardVitals) => {
           if (!deviceId || data.deviceId === deviceId) {
-            setVitals(data);
+            pushVitals(data);
           }
         });
 
@@ -125,7 +148,8 @@ export function useRealtimeVitals(deviceId?: string, options?: { onNewAlert?: ()
               const moistureVal = latestLog.moisture;
               const gaitLabelVal = latestLog.gait_label ?? latestLog.gaitLabel;
 
-              setVitals((prev) => ({
+              const prev = vitalsBufferRef.current;
+              pushVitals({
                 ...(prev || {}),
                 deviceId: logDeviceId,
                 timestamp: timestampMs,
@@ -133,7 +157,7 @@ export function useRealtimeVitals(deviceId?: string, options?: { onNewAlert?: ()
                 ...(ambientTempVal !== undefined && { roomTemperature: Number(ambientTempVal) }),
                 ...(moistureVal !== undefined && { moisture: Number(moistureVal) }),
                 ...(gaitLabelVal !== undefined && { gaitAnalysis: String(gaitLabelVal) }),
-              }) as DashboardVitals);
+              } as DashboardVitals);
 
               // Alert cards come exclusively from the alert.new socket event (real backend IDs).
               // device.logs.ingested is for vitals/analytics only — never generate alerts here.
@@ -152,6 +176,10 @@ export function useRealtimeVitals(deviceId?: string, options?: { onNewAlert?: ()
       if (socketInstance) {
         socketInstance.disconnect();
       }
+      if (offlineTimerRef.current) clearTimeout(offlineTimerRef.current);
+      if (vitalsFlushRef.current) clearTimeout(vitalsFlushRef.current);
+      vitalsFlushRef.current = null;
+      streamingRef.current = false;
     };
   }, [deviceId]);
 

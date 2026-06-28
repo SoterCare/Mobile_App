@@ -62,6 +62,45 @@ export const timelineService = {
     return unwrapData<any>(response.data);
   },
 
+  /**
+   * Per-time gait states for a single day → change-events ({ sec, state },
+   * seconds-since-local-midnight) for the 24-hour gait ring. Returns null when
+   * the backend has no gait endpoint/data yet, so the caller can fall back to
+   * deriving an approximation from events + vitals.
+   */
+  getGaitSegments: async (
+    deviceId: string,
+    date: string,
+  ): Promise<{ sec: number; state: string }[] | null> => {
+    try {
+      const response = await apiClient.get<any>(API_CONFIG.ENDPOINTS.TIMELINE.GAIT, {
+        params: { deviceId, date, tzOffsetMinutes: tzOffsetMinutes() },
+      });
+      const result = unwrapData<any>(response.data);
+
+      if (Array.isArray(result?.changes)) return result.changes;
+      const raw: any[] = Array.isArray(result)
+        ? result
+        : Array.isArray(result?.samples)
+          ? result.samples
+          : Array.isArray(result?.segments)
+            ? result.segments
+            : [];
+      if (raw.length === 0) return null;
+
+      const dayStartMs = new Date(date.replace(/\//g, '-') + 'T00:00:00').getTime();
+      return raw.map((r: any) => ({
+        state: r.state,
+        sec:
+          typeof r.sec === 'number'
+            ? r.sec
+            : (parseToUnixMs(r.timestamp ?? r.ts ?? r.time) - dayStartMs) / 1000,
+      }));
+    } catch {
+      return null; // no gait endpoint yet → caller derives a fallback
+    }
+  },
+
   getDateOptions: async (deviceId: string, period: string) => {
     const response = await apiClient.get<any>(API_CONFIG.ENDPOINTS.TIMELINE.DATE_OPTIONS, {
       params: { deviceId, period, tzOffsetMinutes: tzOffsetMinutes() },

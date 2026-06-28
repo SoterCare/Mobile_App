@@ -34,6 +34,11 @@ export const TimelineColors = {
   urineBlue: '#5A9CF0',
   urineBlueBg: '#EBF3FF',
 
+  // Gait activity ring (24h, Timeline) — cool family = sustained states,
+  // warm = posture transitions. Added for the gait ring.
+  gaitSittingViolet: '#7B6FE0', // sitting_idle (3rd legible cool hue)
+  gaitTransitionOrange: '#EB6834', // sitting_down (warm partner to amber warning)
+
   // Misc
   borderLight: '#E5E5E5',
   shadowColor: '#000000',
