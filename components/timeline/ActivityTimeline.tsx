@@ -24,56 +24,112 @@ interface ActivityTimelineProps {
   style?: ViewStyle;
 }
 
-const getIconConfig = (type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call' | 'moisture') => {
+const getIconConfig = (type: string) => {
   switch (type) {
+    // ── Movement / Gait ──────────────────────────────────────────────────────
     case 'movement':
+    case 'walking':
       return {
         iconName: 'walk' as const,
         iconComponent: MaterialCommunityIcons,
-        backgroundColor: '#42dfdf', // Cyan
+        backgroundColor: '#42dfdf',
         cardBackground: '#dffcfc',
       };
+    case 'running':
+      return {
+        iconName: 'run' as const,
+        iconComponent: MaterialCommunityIcons,
+        backgroundColor: '#FB923C',
+        cardBackground: '#FFF3E8',
+      };
+    case 'sitting':
+      return {
+        iconName: 'seat' as const,
+        iconComponent: MaterialCommunityIcons,
+        backgroundColor: '#A78BFA',
+        cardBackground: '#F3EFFE',
+      };
+    case 'standing':
+      return {
+        iconName: 'human-male' as const,
+        iconComponent: MaterialCommunityIcons,
+        backgroundColor: '#60A5FA',
+        cardBackground: '#EBF4FF',
+      };
+    case 'lying':
+    case 'lying_down':
+      return {
+        iconName: 'sleep' as const,
+        iconComponent: MaterialCommunityIcons,
+        backgroundColor: '#818CF8',
+        cardBackground: '#EEEFFE',
+      };
+    case 'inactive':
+      return {
+        iconName: 'timer-off-outline' as const,
+        iconComponent: MaterialCommunityIcons,
+        backgroundColor: '#9CA3AF',
+        cardBackground: '#F3F4F6',
+      };
+
+    // ── Alerts ───────────────────────────────────────────────────────────────
     case 'fall':
       return {
         iconName: 'warning' as const,
         iconComponent: Ionicons,
-        backgroundColor: '#FF9D93', // Light Red Pastel
+        backgroundColor: '#FF9D93',
         cardBackground: '#FFF0F0',
       };
-    case 'moisture':
+    case 'temperature_alert':
       return {
-        iconName: 'water' as const,
-        iconComponent: Ionicons,
-        backgroundColor: Colors.brand, // Light Blue
-        cardBackground: '#EBF7F9', // Very light blue tint
+        iconName: 'thermometer-alert' as const,
+        iconComponent: MaterialCommunityIcons,
+        backgroundColor: '#F87171',
+        cardBackground: '#FEF2F2',
       };
+
+    // ── SOS / Help ───────────────────────────────────────────────────────────
     case 'help_call':
+    case 'sos':
       return {
         iconName: 'call' as const,
         iconComponent: Ionicons,
         backgroundColor: '#FFA94D',
         cardBackground: '#FFF5E6',
       };
+
+    // ── Moisture ─────────────────────────────────────────────────────────────
+    case 'moisture':
+    case 'urine':
+      return {
+        iconName: 'water' as const,
+        iconComponent: Ionicons,
+        backgroundColor: Colors.brand,
+        cardBackground: '#EBF7F9',
+      };
+
+    // ── Connectivity ─────────────────────────────────────────────────────────
     case 'connected':
       return {
         iconName: 'wifi' as const,
         iconComponent: Ionicons,
-        backgroundColor: '#6BCB77', // Green
+        backgroundColor: '#6BCB77',
         cardBackground: '#EDFBEF',
       };
     case 'disconnected':
       return {
         iconName: 'wifi-outline' as const,
         iconComponent: Ionicons,
-        backgroundColor: '#9A9A9A', // Grey
+        backgroundColor: '#9A9A9A',
         cardBackground: '#F0F0F0',
       };
+
     default:
       return {
-        iconName: 'help' as const,
+        iconName: 'help-circle-outline' as const,
         iconComponent: Ionicons,
-        backgroundColor: '#999999',
-        cardBackground: '#F0F0F0',
+        backgroundColor: '#CBD5E1',
+        cardBackground: '#F8FAFC',
       };
   }
 };

@@ -10,7 +10,23 @@ export interface VitalDataPoint {
 
 export interface ActivityEvent {
   id: string;
-  type: 'movement' | 'fall' | 'connected' | 'disconnected' | 'help_call';
+  type:
+    | 'movement'
+    | 'walking'
+    | 'running'
+    | 'sitting'
+    | 'standing'
+    | 'lying'
+    | 'lying_down'
+    | 'inactive'
+    | 'fall'
+    | 'connected'
+    | 'disconnected'
+    | 'help_call'
+    | 'sos'
+    | 'moisture'
+    | 'urine'
+    | 'temperature_alert';
   label: string;
   /** Unix milliseconds */
   timestamp: number;

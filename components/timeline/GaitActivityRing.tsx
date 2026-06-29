@@ -220,6 +220,12 @@ export const GaitActivityRing: React.FC<Props> = ({
 
   return (
     <View style={[styles.card, style]}>
+      {/* ── Header (mirrors VitalsChartCard) ── */}
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardHeaderMetric}>Gait Activity</Text>
+        {!!dayLabel && <Text style={styles.cardHeaderLabel}>{dayLabel}</Text>}
+      </View>
+
       <View style={styles.ringWrap}>
         <Svg
           width={size}
@@ -283,6 +289,23 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     ...Shadows.card,
+  },
+  cardHeader: {
+    alignSelf: 'stretch',
+    marginBottom: 12,
+  },
+  cardHeaderMetric: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.brand,
+    marginBottom: 2,
+  },
+  cardHeaderLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#9AABB8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   ringWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
   centerOverlay: {

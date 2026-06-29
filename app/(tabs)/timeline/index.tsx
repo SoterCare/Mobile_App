@@ -352,7 +352,7 @@ export default function TimelineScreen() {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.headerTitle}>Temperature Statistics</Text>
+          <Text style={styles.headerTitle}>Temp & Gait</Text>
 
           {/* ── Period tabs ── */}
           <SegmentedControl
