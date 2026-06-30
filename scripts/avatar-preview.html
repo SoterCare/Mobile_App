@@ -3,25 +3,49 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SoterCare — Patient Avatar Preview</title>
+  <title>SoterCare — Patient Avatar Preview (live)</title>
   <style>
     :root { --bg:#f2f3f7; --cyan:#91D7E4; --ink:#4A4A4A; }
     * { box-sizing: border-box; }
     html, body { margin:0; height:100%; background:var(--bg); font-family:-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink); }
     #app { position:fixed; inset:0; }
     #canvas { width:100%; height:100%; display:block; }
-    #title { position:fixed; top:16px; left:0; right:0; text-align:center; font-weight:700; font-size:18px; pointer-events:none; }
-    #status { position:fixed; top:44px; left:0; right:0; text-align:center; font-size:13px; color:#8a929c; pointer-events:none; }
-    #controls { position:fixed; bottom:24px; left:0; right:0; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding:0 16px; }
-    button { padding:12px 18px; border-radius:16px; border:1px solid #e6e8ee; background:#fff; color:var(--ink); font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.05); }
-    button.active { background:var(--cyan); border-color:var(--cyan); color:#fff; }
+    #title { position:fixed; top:14px; left:0; right:0; text-align:center; font-weight:700; font-size:17px; pointer-events:none; }
+    #status { position:fixed; top:40px; left:0; right:0; text-align:center; font-size:13px; color:#8a929c; pointer-events:none; }
+
+    #panel { position:fixed; top:12px; left:12px; width:300px; max-width:calc(100% - 24px);
+             background:#fff; border:1px solid #e6e8ee; border-radius:14px; padding:12px 12px 14px;
+             box-shadow:0 6px 18px rgba(0,0,0,.08); font-size:13px; z-index:10; }
+    #panel h3 { margin:0 0 4px; font-size:13px; }
+    #panel label { display:block; font-size:11px; color:#8a929c; margin:9px 0 2px; }
+    #panel input, #panel select { width:100%; padding:8px 10px; border:1px solid #e6e8ee; border-radius:9px; font-size:12px; background:#fff; }
+    #panel .row { display:flex; gap:8px; align-items:flex-end; margin-top:9px; }
+    #panel .row input { flex:1; }
+    #panel button { padding:9px 12px; border:none; border-radius:10px; background:var(--cyan); color:#fff; font-weight:700; font-size:12px; cursor:pointer; white-space:nowrap; }
+    #panel button.secondary { background:#eef1f5; color:var(--ink); }
+    #panel button:disabled { opacity:.5; cursor:default; }
+    #conn { font-weight:700; }
+    #conn.on { color:#27C93F; } #conn.off { color:#EF4444; } #conn.wait { color:#FFAB66; }
+    #msg { margin-top:8px; font-size:11px; min-height:14px; color:#8a929c; }
+    #msg.err { color:#EF4444; }
+    #gaitLive { margin-top:8px; font-size:12px; }
+    #gaitLive b { color:var(--cyan); }
+    .adv { margin-top:8px; }
+    .adv summary { font-size:11px; color:#8a929c; cursor:pointer; }
+    .min { position:absolute; top:8px; right:10px; cursor:pointer; color:#8a929c; font-size:14px; background:none; border:none; padding:0; }
+    .hidden { display:none; }
+
+    #controls { position:fixed; bottom:22px; left:0; right:0; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; padding:0 16px; }
+    #controls button { padding:11px 16px; border-radius:14px; border:1px solid #e6e8ee; background:#fff; color:var(--ink); font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.05); }
+    #controls button.active { background:var(--cyan); border-color:var(--cyan); color:#fff; }
     #hint { position:fixed; bottom:4px; left:0; right:0; text-align:center; font-size:11px; color:#aeb4bd; }
   </style>
   <script type="importmap">
   {
     "imports": {
       "three": "/node_modules/three/build/three.module.js",
-      "three/addons/": "/node_modules/three/examples/jsm/"
+      "three/addons/": "/node_modules/three/examples/jsm/",
+      "socket.io-client": "/node_modules/socket.io-client/dist/socket.io.esm.min.js"
     }
   }
   </script>
@@ -30,15 +54,62 @@
   <div id="app"><canvas id="canvas"></canvas></div>
   <div id="title">SoterCare — Patient Avatar</div>
   <div id="status">Loading model…</div>
+
+  <div id="panel">
+    <button class="min" id="minBtn" title="collapse">–</button>
+    <h3>Live backend · <span id="conn" class="off">offline</span></h3>
+    <div id="body">
+      <!-- Step 1: email -->
+      <div id="stepEmail">
+        <label>Email</label>
+        <div class="row">
+          <input id="emailInput" type="email" placeholder="you@example.com" />
+          <button id="sendBtn">Send code</button>
+        </div>
+      </div>
+
+      <!-- Step 2: otp -->
+      <div id="stepOtp" class="hidden">
+        <label>Verification code (sent to your email)</label>
+        <div class="row">
+          <input id="otpInput" inputmode="numeric" placeholder="6-digit code" />
+          <button id="verifyBtn">Verify</button>
+        </div>
+        <div class="row"><button id="backBtn" class="secondary" style="flex:1">Use a different email</button></div>
+      </div>
+
+      <!-- Step 3: device + connect -->
+      <div id="stepDevice" class="hidden">
+        <label>Device</label>
+        <select id="devSelect"></select>
+        <div class="row">
+          <button id="connectBtn" style="flex:1">Connect</button>
+          <button id="logoutBtn" class="secondary">Log out</button>
+        </div>
+        <div id="gaitLive">Gait: <b id="gaitVal">—</b> &rarr; <span id="actVal">idle</span></div>
+      </div>
+
+      <div id="msg"></div>
+
+      <details class="adv">
+        <summary>Advanced (server URLs)</summary>
+        <label>Base URL (REST)</label>
+        <input id="baseInput" />
+        <label>Realtime URL (socket)</label>
+        <input id="rtInput" />
+      </details>
+    </div>
+  </div>
+
   <div id="controls"></div>
-  <div id="hint">drag to rotate · scroll to zoom</div>
+  <div id="hint">drag to rotate · scroll to zoom · live data overrides manual buttons</div>
 
   <script type="module">
     import * as THREE from 'three';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { io } from 'socket.io-client';
 
-    // Same activity → frame-range mapping as components/PatientAvatar.tsx
     const FPS = 24;
     const CLIPS = {
       walking:      { start: 1,   end: 86,  loop: true,  label: 'Walking' },
@@ -48,6 +119,16 @@
       idle:         { start: 146, end: 156, loop: true,  timeScale: 0.5, label: 'Idle' },
     };
 
+    function gaitToActivity(gaitRaw) {
+      const g = (gaitRaw == null ? '' : String(gaitRaw)).toLowerCase();
+      if (g.includes('walk')) return 'walking';
+      if (g.includes('sit') && g.includes('down')) return 'standingDown';
+      if (g.includes('sit')) return 'sitting';
+      if (g.includes('stand') && g.includes('up')) return 'standingUp';
+      return 'idle';
+    }
+
+    // ── three.js scene ────────────────────────────────────────────────────────
     const canvas = document.getElementById('canvas');
     const statusEl = document.getElementById('status');
     const controlsEl = document.getElementById('controls');
@@ -59,11 +140,9 @@
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf2f3f7);
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-
     scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb4c0, 1.1));
     const key = new THREE.DirectionalLight(0xffffff, 1.4); key.position.set(3, 6, 5); scene.add(key);
     const fill = new THREE.DirectionalLight(0xffffff, 0.5); fill.position.set(-4, 2, -3); scene.add(fill);
-
     const orbit = new OrbitControls(camera, renderer.domElement);
     orbit.enableDamping = true;
 
@@ -93,56 +172,168 @@
       controlsEl.appendChild(b);
     });
 
-    new GLTFLoader().load(
-      '/assets/models/patient-avatar.glb',
-      (gltf) => {
-        const model = gltf.scene;
-        scene.add(model);
-
-        model.traverse((o) => {
-          if (o.isMesh && o.material) {
-            const mats = Array.isArray(o.material) ? o.material : [o.material];
-            mats.forEach((m) => { m.color = new THREE.Color(0xc2c9d2); m.roughness = 0.9; m.metalness = 0; m.needsUpdate = true; });
-          }
-        });
-
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y);
-        const dist = (maxDim / 2) / Math.tan((camera.fov * Math.PI) / 360) * 1.45;
-        camera.position.set(center.x + dist * 0.3, center.y, center.z + dist);
-        camera.near = dist / 100; camera.far = dist * 100; camera.updateProjectionMatrix();
-        orbit.target.copy(center); orbit.update();
-
-        const full = gltf.animations[0];
-        mixer = new THREE.AnimationMixer(model);
-        Object.keys(CLIPS).forEach(name => {
-          const { start, end } = CLIPS[name];
-          const sub = THREE.AnimationUtils.subclip(full, name, start, end, FPS);
-          actions[name] = mixer.clipAction(sub);
-        });
-        statusEl.textContent = 'Loaded: ' + full.name + ' (' + full.duration.toFixed(1) + 's). Pick an activity ↓';
-        fadeTo('walking');
-      },
-      (e) => { if (e.total) statusEl.textContent = 'Loading model… ' + Math.round((e.loaded / e.total) * 100) + '%'; },
-      (err) => { statusEl.textContent = 'Failed to load GLB: ' + err; console.error(err); },
-    );
+    new GLTFLoader().load('/assets/models/patient-avatar.glb', (gltf) => {
+      const model = gltf.scene;
+      scene.add(model);
+      model.traverse((o) => {
+        if (o.isMesh && o.material) {
+          const mats = Array.isArray(o.material) ? o.material : [o.material];
+          mats.forEach((m) => { m.color = new THREE.Color(0xc2c9d2); m.roughness = 0.9; m.metalness = 0; m.needsUpdate = true; });
+        }
+      });
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y);
+      const dist = (maxDim / 2) / Math.tan((camera.fov * Math.PI) / 360) * 1.45;
+      camera.position.set(center.x + dist * 0.3, center.y, center.z + dist);
+      camera.near = dist / 100; camera.far = dist * 100; camera.updateProjectionMatrix();
+      orbit.target.copy(center); orbit.update();
+      const full = gltf.animations[0];
+      mixer = new THREE.AnimationMixer(model);
+      Object.keys(CLIPS).forEach(name => {
+        const { start, end } = CLIPS[name];
+        actions[name] = mixer.clipAction(THREE.AnimationUtils.subclip(full, name, start, end, FPS));
+      });
+      statusEl.textContent = 'Loaded. Log in to drive the avatar from live data.';
+      fadeTo('idle');
+    }, undefined, (err) => { statusEl.textContent = 'Failed to load GLB: ' + err; console.error(err); });
 
     const clock = new THREE.Clock();
-    function animate() {
+    (function animate() {
       requestAnimationFrame(animate);
       if (mixer) mixer.update(clock.getDelta());
       orbit.update();
       renderer.render(scene, camera);
-    }
-    animate();
-
+    })();
     addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // ── Auth + live backend (email → OTP → token, like the mobile app) ────────
+    const $ = (id) => document.getElementById(id);
+    const LS = { base:'sc_base', rt:'sc_rt', email:'sc_email', tok:'sc_tok', dev:'sc_dev' };
+    const DEFAULT_BASE = 'https://unlikely-caryn-sotercare-873e6112.koyeb.app';
+
+    $('baseInput').value = localStorage.getItem(LS.base) || DEFAULT_BASE;
+    $('rtInput').value = localStorage.getItem(LS.rt) || (DEFAULT_BASE + '/realtime');
+    $('emailInput').value = localStorage.getItem(LS.email) || '';
+
+    let token = localStorage.getItem(LS.tok) || '';
+    let socket = null;
+
+    const baseUrl = () => $('baseInput').value.trim().replace(/\/+$/, '');
+    const rtUrl = () => $('rtInput').value.trim();
+    const setConn = (t, c) => { const e = $('conn'); e.textContent = t; e.className = c; };
+    const setMsg = (t, err=false) => { const e = $('msg'); e.textContent = t || ''; e.className = err ? 'err' : ''; };
+    const show = (id, on) => $(id).classList.toggle('hidden', !on);
+
+    async function api(path, { method='GET', body } = {}) {
+      const res = await fetch(baseUrl() + path, {
+        method,
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const text = await res.text();
+      let data; try { data = JSON.parse(text); } catch { data = text; }
+      if (!res.ok) throw new Error((data && (data.message || data.error)) || ('HTTP ' + res.status));
+      return (data && typeof data === 'object' && 'success' in data && 'data' in data) ? data.data : data;
+    }
+
+    async function sendCode() {
+      const email = $('emailInput').value.trim();
+      if (!email) return setMsg('Enter your email', true);
+      localStorage.setItem(LS.email, email);
+      localStorage.setItem(LS.base, baseUrl());
+      localStorage.setItem(LS.rt, rtUrl());
+      $('sendBtn').disabled = true; setMsg('Sending code…');
+      try {
+        await api('/auth/login', { method: 'POST', body: { email } });
+        show('stepEmail', false); show('stepOtp', true);
+        setMsg('Code sent — check your email.');
+      } catch (e) { setMsg(e.message || 'Failed to send code', true); }
+      finally { $('sendBtn').disabled = false; }
+    }
+
+    async function verify() {
+      const email = $('emailInput').value.trim();
+      const otp = $('otpInput').value.trim();
+      if (!otp) return setMsg('Enter the code', true);
+      $('verifyBtn').disabled = true; setMsg('Verifying…');
+      try {
+        const r = await api('/auth/login-verify', { method: 'POST', body: { email, otp } });
+        token = r?.accessToken || r?.token || r?.data?.accessToken || '';
+        if (!token) throw new Error('No accessToken in response');
+        localStorage.setItem(LS.tok, token);
+        setMsg('Logged in. Loading devices…');
+        show('stepOtp', false); show('stepDevice', true);
+        await loadDevices();
+        connect();
+      } catch (e) { setMsg(e.message || 'Verification failed', true); }
+      finally { $('verifyBtn').disabled = false; }
+    }
+
+    async function loadDevices() {
+      try {
+        const r = await api('/devices');
+        const list = Array.isArray(r) ? r : (r?.devices || r?.items || []);
+        const sel = $('devSelect');
+        sel.innerHTML = '';
+        if (!list.length) { sel.innerHTML = '<option value="">(no devices)</option>'; return; }
+        const saved = localStorage.getItem(LS.dev);
+        list.forEach((d) => {
+          const id = d.id || d.deviceId || d;
+          const o = document.createElement('option');
+          o.value = id; o.textContent = (d.name ? d.name + ' · ' : '') + id;
+          if (id === saved) o.selected = true;
+          sel.appendChild(o);
+        });
+      } catch (e) { setMsg('Could not load devices: ' + e.message, true); }
+    }
+
+    function applyGait(g) {
+      if (g == null || g === '') return;
+      $('gaitVal').textContent = g;
+      const act = gaitToActivity(g);
+      $('actVal').textContent = act;
+      fadeTo(act);
+    }
+
+    function connect() {
+      const deviceId = $('devSelect').value;
+      localStorage.setItem(LS.dev, deviceId);
+      if (socket) socket.disconnect();
+      setConn('connecting…', 'wait');
+      socket = io(rtUrl(), { transports: ['websocket', 'polling'], auth: { token }, reconnectionAttempts: 5, timeout: 10000 });
+      socket.on('connect', () => { setConn('live', 'on'); if (deviceId) socket.emit('subscribe', { deviceId }); });
+      socket.on('disconnect', () => setConn('offline', 'off'));
+      socket.on('connect_error', (e) => { setConn('error', 'off'); setMsg('Socket: ' + (e?.message || e), true); });
+      socket.on('vitals_update', (d) => { if (!deviceId || d?.deviceId === deviceId) applyGait(d?.gaitAnalysis); });
+      socket.on('device.logs.ingested', (d) => { const l = d?.logs?.[0]; applyGait(l?.gait_label ?? l?.gaitLabel ?? d?.gaitAnalysis); });
+    }
+
+    function logout() {
+      token = ''; localStorage.removeItem(LS.tok);
+      if (socket) socket.disconnect();
+      setConn('offline', 'off'); setMsg('');
+      show('stepDevice', false); show('stepOtp', false); show('stepEmail', true);
+    }
+
+    $('sendBtn').onclick = sendCode;
+    $('verifyBtn').onclick = verify;
+    $('connectBtn').onclick = connect;
+    $('logoutBtn').onclick = logout;
+    $('backBtn').onclick = () => { show('stepOtp', false); show('stepEmail', true); setMsg(''); };
+    $('devSelect').onchange = connect;
+    $('minBtn').onclick = (e) => {
+      const b = $('body'); const hidden = b.style.display === 'none';
+      b.style.display = hidden ? '' : 'none'; e.target.textContent = hidden ? '–' : '+';
+    };
+
+    // Resume a previous session without re-logging-in (until token expires).
+    if (token) { show('stepEmail', false); show('stepDevice', true); loadDevices().then(connect); }
   </script>
 </body>
 </html>
