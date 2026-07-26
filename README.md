@@ -48,3 +48,14 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+---
+
+### 🌱 SoterCare Developers
+
+This project is maintained by **[SoterCare Developers](https://github.com/SoterCare/community)**, SoterCare's student developer community.
+
+- 🏠 [Join the SoterCare community](https://github.com/SoterCare/community/blob/main/JOIN.md)
+- 🤝 [Contributing](https://github.com/SoterCare/community/blob/main/CONTRIBUTING.md)
+- 🌟 [Good First Issues](https://github.com/search?q=org%3ASoterCare+label%3A%22good+first+issue%22+state%3Aopen&type=issues)
+- 📜 [Code of Conduct](https://github.com/SoterCare/community/blob/main/CODE_OF_CONDUCT.md)
