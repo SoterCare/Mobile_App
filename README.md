@@ -1,61 +1,86 @@
-# Welcome to your Expo app 👋
+# SoterCare — Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The React Native (Expo) mobile client for **SoterCare**, an elderly-care monitoring system. The app is where carers and family members see a monitored person's status: live vitals, alerts, activity timeline, and exportable reports.
 
-## Get started
+Built collaboratively by student developers. See [SoterCare Developers](https://github.com/SoterCare/community) for the community behind it.
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- **Authentication** — email/password plus Apple Sign-In and OAuth via `expo-auth-session`, with JWT session handling
+- **Live vitals** — real-time data over a Socket.IO connection to the backend
+- **Alerts** — surfaced in-app when readings cross thresholds
+- **Activity timeline** — calendar-based history of events and readings
+- **3D avatar view** — Three.js / `expo-gl` rendering used to visualise posture and movement state
+- **Report export** — generate a PDF and share it via the native share sheet
+- **Subscription and settings** — plan screen, profile management, and per-user preferences
 
-2. Start the app
+## Tech stack
 
-   ```bash
-   npx expo start
-   ```
+| Layer | Choice |
+| --- | --- |
+| Framework | React Native via **Expo** (SDK managed workflow) |
+| Language | **TypeScript** |
+| Navigation | **Expo Router** (file-based, with `(auth)` and `(tabs)` groups) |
+| Data | **TanStack Query** for server state · **Zustand** for local state |
+| Realtime | **socket.io-client** |
+| Networking | **axios** |
+| 3D / charts | **three**, `expo-three`, `expo-gl`, `d3-shape`, `react-native-svg` |
+| Testing | **Jest** (`jest-expo`) + React Native Testing Library |
 
-In the output, you'll find options to open the app in a
+## Project structure
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+app/            Expo Router routes
+  (auth)/         sign-in / sign-up flow
+  (tabs)/         main tabbed navigation
+  settings/       preferences
+  user/           profile
+  subscription.tsx, export-report.tsx, avatar-demo.tsx
+api/            API client and request helpers
+components/     shared UI components
+constants/      theme and configuration values
+__tests__/      unit and component tests
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Running locally
 
-## Learn more
+Requires Node.js and the Expo tooling. An iOS simulator, Android emulator, or the Expo Go app is needed to view the running app.
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+git clone https://github.com/SoterCare/Mobile_App.git
+cd Mobile_App
+npm install
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+cp .env.example .env    # then fill in the API endpoint and keys
 
-## Join the community
+npm start               # Expo dev server — choose a target from the CLI
+```
 
-Join our community of developers creating universal apps.
+Platform-specific entry points:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+## Tests and linting
+
+```bash
+npm test            # watch mode
+npm run test:ci     # single run, CI reporter
+npm run lint
+```
+
+## Contributors
+
+Built by student developers in the SoterCare Developers community — Daham, Hirusha, Komudi, Kaweesha, Nimna, and Sanjula. See the [contributors graph](https://github.com/SoterCare/Mobile_App/graphs/contributors) for the full record.
+
+## Related repositories
+
+- [web-dev-v2](https://github.com/SoterCare/web-dev-v2) — the SoterCare website and web dashboard
+- [community](https://github.com/SoterCare/community) — events, guides, and how to get involved
 
 ---
 
-### 🌱 SoterCare Developers
-
-This project is maintained by **[SoterCare Developers](https://github.com/SoterCare/community)**, SoterCare's student developer community.
-
-- 🏠 [Join the SoterCare community](https://github.com/SoterCare/community/blob/main/JOIN.md)
-- 🤝 [Contributing](https://github.com/SoterCare/community/blob/main/CONTRIBUTING.md)
-- 🌟 [Good First Issues](https://github.com/search?q=org%3ASoterCare+label%3A%22good+first+issue%22+state%3Aopen&type=issues)
-- 📜 [Code of Conduct](https://github.com/SoterCare/community/blob/main/CODE_OF_CONDUCT.md)
+<sub>Maintained by <a href="https://github.com/SoterCare">SoterCare Developers</a>.</sub>
